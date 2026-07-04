@@ -1,11 +1,10 @@
 import React from 'react';
 import {
-  SignedIn,
-  SignedOut,
+  Show,
   SignInButton,
   SignUpButton,
   UserButton,
-} from '@clerk/clerk-react';
+} from '@clerk/react';
 import { useTier } from '../context/TierContext';
 
 /**
@@ -56,7 +55,7 @@ export default function Navbar() {
 
       <div className="flex items-center gap-3 sm:gap-4">
         {/* Shown only when the user is NOT signed in (Req 7.3, 7.5) */}
-        <SignedOut>
+        <Show when="signed-out">
           <SignInButton mode="modal">
             <button
               className="auth-btn auth-btn-ghost"
@@ -71,17 +70,17 @@ export default function Navbar() {
               Sign Up
             </button>
           </SignUpButton>
-        </SignedOut>
+        </Show>
 
         {/* Shown only when the user IS signed in (Req 7.4, 7.6) */}
-        <SignedIn>
+        <Show when="signed-in">
           {!loading && (
             <span className={badgeClass} title={badgeTitle}>
               {badgeLabel}
             </span>
           )}
-          <UserButton afterSignOutUrl="/" userProfileProps={{ enabledPages: ['account', 'security'] }} />
-        </SignedIn>
+          <UserButton signOutOptions={{ redirectUrl: '/' }} userProfileProps={{ enabledPages: ['account', 'security'] }} />
+        </Show>
       </div>
     </header>
   );

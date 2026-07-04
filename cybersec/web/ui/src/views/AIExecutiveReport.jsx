@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Brain, Loader } from 'lucide-react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/react';
 import { apiPost } from '../utils/apiClient';
 
 export default function AIExecutiveReport() {

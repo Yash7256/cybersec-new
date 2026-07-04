@@ -1,10 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import {
-  SignedIn,
-  SignedOut,
+  Show,
   SignInButton,
   SignUpButton,
-} from '@clerk/clerk-react';
+} from '@clerk/react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import PortScanner from './views/PortScanner';
@@ -93,12 +92,12 @@ function AuthenticatedApp() {
 export default function App() {
   return (
     <>
-      <SignedIn>
+      <Show when="signed-in">
         <AuthenticatedApp />
-      </SignedIn>
-      <SignedOut>
+      </Show>
+      <Show when="signed-out">
         <AuthLanding />
-      </SignedOut>
+      </Show>
     </>
   );
 }

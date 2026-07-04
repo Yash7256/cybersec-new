@@ -31,7 +31,8 @@ async function buildHeaders(getToken, extra = {}) {
         headers.set('Authorization', `Bearer ${token}`)
       }
     } catch {
-      // getToken() may throw if Clerk is not initialised — treat as anonymous
+      // getToken() may throw if Clerk is not initialised, offline (ClerkOfflineError
+      // in Core 3), or called during SSR — treat as anonymous in all cases.
     }
   }
 
@@ -61,12 +62,14 @@ function checkRateLimit(response) {
 
 /**
  * Handle a 401 response: attempt a single token refresh, then retry.
- * If the retry also 401s, sign the user out and redirect to '/'.
+ * If the retry also 401s AND signOut was provided, sign the user out and
+ * redirect to '/'.  When signOut is null (e.g. TierContext polling /api/user/me),
+ * just return null so the caller can handle gracefully without a redirect loop.
  *
  * @param {Function} requestFn - Zero-arg async function that performs the original request.
  * @param {Function|null} getToken - Clerk's getToken function.
  * @param {Function|null} signOut - Clerk's signOut function (from useClerk or useAuth).
- * @returns {Promise<Response>}
+ * @returns {Promise<Response|null>}
  */
 async function handleUnauthorized(requestFn, getToken, signOut) {
   if (typeof getToken !== 'function') return null
@@ -76,14 +79,16 @@ async function handleUnauthorized(requestFn, getToken, signOut) {
   try {
     freshToken = await getToken({ skipCache: true })
   } catch {
-    // token refresh failed — sign out below
+    // token refresh failed (ClerkOfflineError or similar)
   }
 
   if (!freshToken) {
+    // Only redirect/sign-out if the caller explicitly provided signOut,
+    // meaning it wants session-expiry behaviour (not a background poll).
     if (typeof signOut === 'function') {
       await signOut()
+      window.location.href = '/'
     }
-    window.location.href = '/'
     return null
   }
 
@@ -92,8 +97,8 @@ async function handleUnauthorized(requestFn, getToken, signOut) {
   if (retryResponse.status === 401) {
     if (typeof signOut === 'function') {
       await signOut()
+      window.location.href = '/'
     }
-    window.location.href = '/'
     return null
   }
 

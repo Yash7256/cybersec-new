@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ShieldHalf, X, AlertTriangle, CheckCircle, ArrowRight, Info,
          Globe, Lock, Server, Code2, Cpu, ChevronDown, ChevronRight } from 'lucide-react';
 import clsx from 'clsx';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/react';
 import { apiPost } from '../utils/apiClient';
 
 // ---------------------------------------------------------------------------

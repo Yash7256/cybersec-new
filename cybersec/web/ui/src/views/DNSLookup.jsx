@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Globe, X, ArrowRight } from 'lucide-react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/react';
 import { apiGet } from '../utils/apiClient';
 
 const RECORD_TYPES = ['A', 'AAAA', 'MX', 'NS', 'TXT', 'CNAME', 'SOA', 'PTR'];

@@ -14,7 +14,7 @@
  * defaulting to { count: 0, remaining: limit } if never used.
  */
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/react';
 import { apiGet } from '../utils/apiClient';
 
 const TierContext = createContext(null);
@@ -32,12 +32,27 @@ export function TierProvider({ children }) {
   const [state, setState] = useState(DEFAULT_STATE);
   const fetchingRef = useRef(false);
 
+  // Keep a ref to the latest getToken so refresh() never needs it as a
+  // useCallback dependency — avoids an infinite re-render loop caused by
+  // Clerk returning a new getToken function reference on every render.
+  const getTokenRef = useRef(getToken);
+  useEffect(() => {
+    getTokenRef.current = getToken;
+  });
+
+  // refresh is stable across renders (empty dep array) because it reads
+  // getToken via the ref rather than closing over the prop directly.
   const refresh = useCallback(async () => {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
     try {
-      const res = await apiGet('/api/user/me', null, getToken);
-      if (!res.ok) return;
+      const res = await apiGet('/api/user/me', null, getTokenRef.current);
+      // Silently swallow 401 — Clerk token may not be ready on the very first
+      // render immediately after sign-in; the next isSignedIn change will retry.
+      if (!res || !res.ok) {
+        setState((prev) => ({ ...prev, loading: false }));
+        return;
+      }
       const data = await res.json();
       setState({
         tier: data.tier ?? 'free',
@@ -51,9 +66,10 @@ export function TierProvider({ children }) {
     } finally {
       fetchingRef.current = false;
     }
-  }, [getToken]);
+  }, []); // stable — reads getToken via ref
 
-  // Fetch on mount and whenever sign-in state changes
+  // Fetch on mount and whenever sign-in state changes.
+  // refresh is stable so this only fires when isSignedIn actually changes.
   useEffect(() => {
     if (isSignedIn) {
       refresh();
