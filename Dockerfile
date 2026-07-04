@@ -28,7 +28,8 @@ RUN poetry install --only=main --no-root --no-interaction --no-ansi || \
     pip install fastapi uvicorn sqlalchemy asyncpg alembic python-jose[cryptography] \
                 passlib[bcrypt] click rich httpx dnspython python-whois cryptography \
                 reportlab pydantic-settings email-validator slowapi scapy groq \
-                mitreattack-python arq python-multipart playwright==1.52.0
+                mitreattack-python arq python-multipart playwright==1.52.0 gunicorn
+
 
 # Install Playwright's Chromium browser (required for port screenshot capture).
 # The PLAYWRIGHT_BROWSERS_PATH env var is set so the browser lives inside /app

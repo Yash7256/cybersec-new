@@ -46,10 +46,16 @@ echo "Setting environment variables..."
 read -p "Enter your GROQ API key: " GROQ_KEY
 read -p "Enter your database URL (leave empty to use Railway): " DB_URL
 read -p "Enter your app secret key: " APP_SECRET
+read -p "Enter your Clerk Secret Key (sk_live_...): " CLERK_SECRET_KEY
+read -p "Enter your Clerk JWKS URL (e.g., https://your-app.clerk.accounts.dev/.well-known/jwks.json): " CLERK_JWKS_URL
+read -p "Enter your Clerk Issuer URL (e.g., https://your-app.clerk.accounts.dev): " CLERK_ISSUER
 
 az webapp config appsettings set --name $APP_NAME --resource-group $RESOURCE_GROUP --setting GROQ_API_KEY=$GROQ_KEY
 az webapp config appsettings set --name $APP_NAME --resource-group $RESOURCE_GROUP --setting APP_DEBUG=false
 az webapp config appsettings set --name $APP_NAME --resource-group $RESOURCE_GROUP --setting APP_SECRET_KEY=$APP_SECRET
+az webapp config appsettings set --name $APP_NAME --resource-group $RESOURCE_GROUP --setting CLERK_SECRET_KEY=$CLERK_SECRET_KEY
+az webapp config appsettings set --name $APP_NAME --resource-group $RESOURCE_GROUP --setting CLERK_JWKS_URL=$CLERK_JWKS_URL
+az webapp config appsettings set --name $APP_NAME --resource-group $RESOURCE_GROUP --setting CLERK_ISSUER=$CLERK_ISSUER
 az webapp config appsettings set --name $APP_NAME --resource-group $RESOURCE_GROUP --setting CORS_ORIGINS=https://$APP_NAME.azurewebsites.net
 
 if [ ! -z "$DB_URL" ]; then

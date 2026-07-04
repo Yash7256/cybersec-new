@@ -151,9 +151,16 @@ async def get_current_user(
     Requirements: 3.9
     """
     if user is None:
+        # Provide detailed error message for debugging
+        if not settings.clerk_configured:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Authentication service not configured: CLERK_JWKS_URL and CLERK_ISSUER must be set",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required",
+            detail="Authentication required: valid JWT token missing or invalid",
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
