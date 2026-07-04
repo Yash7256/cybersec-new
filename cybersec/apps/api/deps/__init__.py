@@ -66,8 +66,11 @@ async def get_optional_user(
             logger.debug("JWT missing 'kid' header field — returning None")
             return None
 
+        logger.info(f"JWT kid: {kid}, issuer configured: {settings.CLERK_ISSUER}")
+
         # Retrieve the RSA public key from the JWKS cache (Req 3.3)
         public_key = await get_clerk_public_key(kid)
+        logger.info(f"Public key retrieved for kid: {kid}")
 
         # Verify signature, issuer, and expiry.
         # Clerk JWTs do not include an `aud` claim by default (it is an optional
@@ -96,6 +99,7 @@ async def get_optional_user(
             options=decode_options,
             **decode_kwargs,
         )
+        logger.info(f"JWT decoded successfully, sub: {payload.get('sub')}")
 
         clerk_user_id: str | None = payload.get("sub")
         if not clerk_user_id:
@@ -106,9 +110,12 @@ async def get_optional_user(
 
         # Upsert the local users row and return it (Req 3.5)
         try:
+            logger.info(f"Syncing Clerk user: {clerk_user_id}")
             user = await sync_clerk_user(clerk_user_id, email, db)
+            logger.info(f"User synced successfully: {user.id if user else 'None'}")
             return user
         except Exception as sync_exc:
+            logger.error(f"Failed to sync Clerk user: {sync_exc}")
             # User sync failure must not propagate as an unhandled 500 (Req 3.9 gap)
             logger.error("sync_clerk_user failed: %s", sync_exc, exc_info=True)
             return None
