@@ -286,18 +286,31 @@ def create_app() -> FastAPI:
             "React dist not found at %s — run `npm run build` inside cybersec/web/ui", react_dist
         )
     else:
-        # Serve all static assets (JS/CSS/images) under /assets
+        # Serve hashed JS/CSS/image assets with long-lived immutable caching.
+        # Vite appends a content hash to every asset filename (e.g. index-BqdvKc9m.js)
+        # so it is safe to cache them forever — a new deploy produces new filenames.
+        class ImmutableStaticFiles(StaticFiles):
+            async def get_response(self, path: str, scope):
+                response = await super().get_response(path, scope)
+                response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+                return response
+
         app.mount(
             "/assets",
-            StaticFiles(directory=str(react_dist / "assets")),
+            ImmutableStaticFiles(directory=str(react_dist / "assets")),
             name="assets",
         )
 
-        # Serve the React SPA index.html for every non-API route
+        # Serve the React SPA index.html for every non-API route.
+        # index.html must never be cached so browsers always fetch the latest
+        # entry point (which references the new hashed asset filenames).
         @app.get("/{full_path:path}", include_in_schema=False)
         async def serve_react(full_path: str):
             index = str(react_dist / "index.html")
-            return FileResponse(index, headers={"Cache-Control": "no-cache"})
+            return FileResponse(
+                index,
+                headers={"Cache-Control": "no-store, no-cache, must-revalidate"},
+            )
 
     return app
 
