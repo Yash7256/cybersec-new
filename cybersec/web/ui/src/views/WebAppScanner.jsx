@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ShieldHalf, X, AlertTriangle, CheckCircle, ArrowRight, Info,
          Globe, Lock, Server, Code2, Cpu, ChevronDown, ChevronRight } from 'lucide-react';
 import clsx from 'clsx';
-import { useAuth } from '@clerk/react';
+import { useSession } from '@clerk/react';
 import { apiPost } from '../utils/apiClient';
 
 // ---------------------------------------------------------------------------
@@ -168,7 +168,8 @@ export default function WebAppScanner() {
   const [results, setResults] = useState(null);
   const [filter, setFilter] = useState('all');
   const [catFilter, setCatFilter] = useState('all');
-  const { getToken } = useAuth();
+  const { session } = useSession();
+  const getToken = (opts) => session?.getToken(opts) ?? null;
 
   const run = async () => {
     if (!url || !authorized) return;

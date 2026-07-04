@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Brain, Loader } from 'lucide-react';
-import { useAuth } from '@clerk/react';
+import { useSession } from '@clerk/react';
 import { apiPost } from '../utils/apiClient';
 
 export default function AIExecutiveReport() {
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState(null);
-  const { getToken } = useAuth();
+  const { session } = useSession();
+  const getToken = (opts) => session?.getToken(opts) ?? null;
 
   const generate = async () => {
     setLoading(true);

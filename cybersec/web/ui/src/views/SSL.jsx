@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '@clerk/react';
+import { useSession } from '@clerk/react';
 import { apiPost } from '../utils/apiClient';
 import {
   ArrowRight,
@@ -312,7 +312,8 @@ export default function SSL() {
   const [host,    setHost]    = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
-  const { getToken } = useAuth();
+  const { session } = useSession();
+  const getToken = (opts) => session?.getToken(opts) ?? null;
 
   const run = async () => {
     if (!host.trim()) return;

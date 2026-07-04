@@ -14,7 +14,7 @@
  * defaulting to { count: 0, remaining: limit } if never used.
  */
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useAuth } from '@clerk/react';
+import { useAuth, useSession } from '@clerk/react';
 import { apiGet } from '../utils/apiClient';
 
 const TierContext = createContext(null);
@@ -28,26 +28,40 @@ const DEFAULT_STATE = {
 };
 
 export function TierProvider({ children }) {
-  const { isSignedIn, getToken } = useAuth();
+  const { isSignedIn } = useAuth();
+  // useSession gives us the React-state-synchronized session object.
+  // session.getToken() is always in sync with what React knows — unlike
+  // useAuth().getToken() which reads from isomorphicClerk.session that can
+  // be null briefly after sign-in in Clerk Core 3.
+  const { session } = useSession();
   const [state, setState] = useState(DEFAULT_STATE);
   const fetchingRef = useRef(false);
 
-  // Keep a ref to the latest getToken so refresh() never needs it as a
-  // useCallback dependency — avoids an infinite re-render loop caused by
-  // Clerk returning a new getToken function reference on every render.
-  const getTokenRef = useRef(getToken);
+  // Keep a ref to the latest session so refresh() never needs it as a dep.
+  const sessionRef = useRef(session);
   useEffect(() => {
-    getTokenRef.current = getToken;
+    sessionRef.current = session;
   });
 
+  // Stable getToken wrapper that reads from the session ref.
+  const getTokenFromSession = useCallback(async (opts) => {
+    const s = sessionRef.current;
+    if (!s) return null;
+    try {
+      return await s.getToken(opts);
+    } catch {
+      return null;
+    }
+  }, []);
+
   // refresh is stable across renders (empty dep array) because it reads
-  // getToken via the ref rather than closing over the prop directly.
+  // session via the ref rather than closing over the prop directly.
   const refresh = useCallback(async () => {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
     try {
-      const res = await apiGet('/api/user/me', null, getTokenRef.current);
-      // Silently swallow 401 — Clerk token may not be ready on the very first
+      const res = await apiGet('/api/user/me', null, getTokenFromSession);
+      // Silently swallow 401 — token may not be ready on the very first
       // render immediately after sign-in; the next isSignedIn change will retry.
       if (!res || !res.ok) {
         setState((prev) => ({ ...prev, loading: false }));
@@ -66,7 +80,7 @@ export function TierProvider({ children }) {
     } finally {
       fetchingRef.current = false;
     }
-  }, []); // stable — reads getToken via ref
+  }, [getTokenFromSession]); // getTokenFromSession is stable (empty useCallback deps)
 
   // Fetch on mount and whenever sign-in state changes.
   // refresh is stable so this only fires when isSignedIn actually changes.

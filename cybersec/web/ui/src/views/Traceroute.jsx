@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuth } from '@clerk/react';
+import { useSession } from '@clerk/react';
 import { apiPost } from '../utils/apiClient';
 import {
   Activity,
@@ -574,7 +574,8 @@ export default function Traceroute() {
   const [loading,  setLoading]  = useState(false);
   const [results,  setResults]  = useState(null);
   const liveRef = useRef(false);
-  const { getToken } = useAuth();
+  const { session } = useSession();
+  const getToken = (opts) => session?.getToken(opts) ?? null;
 
   const run = useCallback(async ({ silent = false, appendLive = false } = {}) => {
     if (!target) return;

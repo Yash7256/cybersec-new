@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuth } from '@clerk/react';
+import { useSession } from '@clerk/react';
 import { apiPost } from '../utils/apiClient';
 import {
   Activity,
@@ -191,7 +191,8 @@ export default function GenericTool({ toolId }) {
   const [activePingTab, setActivePingTab] = useState('monitoring');
   const liveRequestActive = useRef(false);
   const streamAbortRef = useRef(null);
-  const { getToken } = useAuth();
+  const { session } = useSession();
+  const getToken = (opts) => session?.getToken(opts) ?? null;
 
   const Icon = meta?.icon;
 
@@ -280,7 +281,7 @@ export default function GenericTool({ toolId }) {
       scanning: true,
     });
     try {
-      const token = typeof getToken === 'function' ? await getToken() : null;
+      const token = session ? await session.getToken() : null;
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
       const response = await fetch('/api/tools/subdomain/stream', {
@@ -416,7 +417,7 @@ export default function GenericTool({ toolId }) {
       scanning: true,
     });
     try {
-      const token = typeof getToken === 'function' ? await getToken() : null;
+      const token = session ? await session.getToken() : null;
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
       const response = await fetch('/api/tools/os-fingerprint/stream', {
@@ -484,7 +485,7 @@ export default function GenericTool({ toolId }) {
       scan_message: 'Starting GeoIP lookup',
     });
     try {
-      const token = typeof getToken === 'function' ? await getToken() : null;
+      const token = session ? await session.getToken() : null;
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
       const response = await fetch('/api/tools/geoip/stream', {
