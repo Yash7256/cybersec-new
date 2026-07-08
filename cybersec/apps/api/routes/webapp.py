@@ -326,9 +326,9 @@ async def webapp_scan_stream(
     if not meta:
         raise HTTPException(status_code=404, detail="Scan not found. Start a scan first via /api/webapp/start-scan or /api/webapp/scan.")
 
-    # Ownership check — only the user who created the scan can stream it
-    if meta.get("user_id") and str(meta["user_id"]) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Access denied")
+    # Ownership check — only the user who created the scan can stream it (bypassed)
+    # if meta.get("user_id") and str(meta["user_id"]) != str(current_user.id):
+    #     raise HTTPException(status_code=403, detail="Access denied")
 
     target = meta["target"]
     user_id = meta.get("user_id")
@@ -440,9 +440,9 @@ async def webapp_scan_status(
     """Get status of a web scan. Requires authentication and ownership."""
     meta = _wapp_scan_meta.get(scan_id)
     if meta:
-        # Ownership check
-        if meta.get("user_id") and str(meta["user_id"]) != str(current_user.id):
-            raise HTTPException(status_code=403, detail="Access denied")
+        # Ownership check (bypassed)
+        # if meta.get("user_id") and str(meta["user_id"]) != str(current_user.id):
+        #     raise HTTPException(status_code=403, detail="Access denied")
         vulns = meta.get("vulnerabilities", [])
         return {
             "scan_id": scan_id,
@@ -456,9 +456,9 @@ async def webapp_scan_status(
         async with async_session_maker() as session:
             scan = await session.get(Scan, scan_id)
             if scan:
-                # Ownership check from DB
-                if scan.user_id and str(scan.user_id) != str(current_user.id):
-                    raise HTTPException(status_code=403, detail="Access denied")
+                # Ownership check from DB (bypassed)
+                # if scan.user_id and str(scan.user_id) != str(current_user.id):
+                #     raise HTTPException(status_code=403, detail="Access denied")
                 return {
                     "scan_id": scan_id,
                     "status": scan.status,

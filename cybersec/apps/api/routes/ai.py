@@ -57,8 +57,8 @@ async def chat(
         scan = await db.get(Scan, body.scan_id)
         if not scan:
             raise HTTPException(status_code=404, detail="Scan not found")
-        if scan.user_id and str(scan.user_id) != str(current_user.id):
-            raise HTTPException(status_code=403, detail="Access denied")
+        # if scan.user_id and str(scan.user_id) != str(current_user.id):
+        #     raise HTTPException(status_code=403, detail="Access denied")
         results = await db.execute(
             select(ScanResult).where(ScanResult.scan_id == body.scan_id)
         )
@@ -68,8 +68,8 @@ async def chat(
         tool_result = await db.get(ToolResult, body.tool_result_id)
         if not tool_result:
             raise HTTPException(status_code=404, detail="Tool result not found")
-        if tool_result.user_id and str(tool_result.user_id) != str(current_user.id):
-            raise HTTPException(status_code=403, detail="Access denied")
+        # if tool_result.user_id and str(tool_result.user_id) != str(current_user.id):
+        #     raise HTTPException(status_code=403, detail="Access denied")
         tool_name = tool_result.tool_name
         contexts.append(build_tool_context(tool_name, tool_result.result_data))
 
@@ -82,8 +82,8 @@ async def chat(
         if not rows:
             raise HTTPException(status_code=404, detail="Tool results not found")
         for tr in rows:
-            if tr.user_id and str(tr.user_id) != str(current_user.id):
-                raise HTTPException(status_code=403, detail="Access denied")
+            # if tr.user_id and str(tr.user_id) != str(current_user.id):
+            #     raise HTTPException(status_code=403, detail="Access denied")
             contexts.append(build_tool_context(tr.tool_name, tr.result_data))
         tool_name = "multiple_tools"
 
@@ -126,8 +126,8 @@ async def analyze(
     scan = await db.get(Scan, body.scan_id)
     if not scan:
         raise HTTPException(status_code=404, detail="Scan not found")
-    if scan.user_id and str(scan.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Access denied")
+    # if scan.user_id and str(scan.user_id) != str(current_user.id):
+    #     raise HTTPException(status_code=403, detail="Access denied")
 
     results = await db.execute(
         select(ScanResult).where(ScanResult.scan_id == body.scan_id)

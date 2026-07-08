@@ -1,9 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
-import {
-  Show,
-  SignInButton,
-  SignUpButton,
-} from '@clerk/react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import PortScanner from './views/PortScanner';
@@ -14,7 +9,6 @@ import Traceroute from './views/Traceroute';
 import SSL from './views/SSL';
 import GenericTool from './views/GenericTool';
 import AIExecutiveReport from './views/AIExecutiveReport';
-import { Shield } from 'lucide-react';
 import { TierProvider } from './context/TierContext';
 import UpgradeModal from './components/UpgradeModal';
 
@@ -26,40 +20,6 @@ function DynamicTool() {
   if (toolId === 'traceroute') return <Traceroute />;
   if (toolId === 'ssl') return <SSL />;
   return <GenericTool toolId={toolId} />;
-}
-
-function AuthLanding() {
-  return (
-    <div className="min-h-screen flex items-center justify-center app-shell" style={{ background: '#100720' }}>
-      <div className="flex flex-col items-center text-center max-w-md px-6">
-        <Shield size={64} className="mb-6" style={{ color: '#b397f5' }} />
-        <h1 className="text-4xl font-bold mb-3" style={{ color: '#ede4fc', fontFamily: "'Space Grotesk', sans-serif" }}>
-          CyberSec Toolkit
-        </h1>
-        <p className="text-lg mb-10" style={{ color: '#b8aeca' }}>
-          Advanced security analysis tools — port scanning, threat intelligence, and more.
-        </p>
-        <div className="flex flex-col gap-4 w-full max-w-xs">
-          <SignInButton mode="modal">
-            <button
-              className="auth-btn auth-btn-solid w-full"
-              style={{ minWidth: 0, fontSize: 17 }}
-            >
-              Sign In
-            </button>
-          </SignInButton>
-          <SignUpButton mode="modal">
-            <button
-              className="auth-btn auth-btn-ghost w-full"
-              style={{ minWidth: 0, fontSize: 17, border: '1px solid rgba(216, 207, 255, 0.44)' }}
-            >
-              Create Account
-            </button>
-          </SignUpButton>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function AuthenticatedApp() {
@@ -90,14 +50,5 @@ function AuthenticatedApp() {
 }
 
 export default function App() {
-  return (
-    <>
-      <Show when="signed-in">
-        <AuthenticatedApp />
-      </Show>
-      <Show when="signed-out">
-        <AuthLanding />
-      </Show>
-    </>
-  );
+  return <AuthenticatedApp />;
 }
