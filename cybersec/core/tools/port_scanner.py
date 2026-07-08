@@ -1,6 +1,7 @@
 import asyncio
 import json
 import hashlib
+import logging
 import os
 import re
 import socket
@@ -9,6 +10,8 @@ from dataclasses import asdict, dataclass, field
 from ipaddress import ip_address
 from typing import List, Optional
 import time
+
+logger = logging.getLogger(__name__)
 
 import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
