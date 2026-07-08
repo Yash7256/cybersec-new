@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useSession } from '@clerk/react';
+import { useGetToken } from '../utils/useGetToken';
 import {
   Activity,
   ArrowRight,
@@ -716,8 +716,7 @@ function ScreenshotPreview({ row }) {
 }
 
 export default function PortScanner() {
-  const { session } = useSession();
-  const getToken = (opts) => session?.getToken(opts) ?? null;
+  const getToken = useGetToken();
   const [target, setTarget] = useState('');
   const [portRange, setPortRange] = useState('common');
   const [customPortRange, setCustomPortRange] = useState('');
@@ -833,7 +832,7 @@ export default function PortScanner() {
     let completed = false;
     let finalPayload = null;
 
-    const token = session ? await session.getToken() : null;
+    const token = await getToken();
     const headers = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     const response = await fetch('/api/tools/port_scan/stream', {

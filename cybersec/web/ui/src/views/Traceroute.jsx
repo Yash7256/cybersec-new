@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSession } from '@clerk/react';
 import { apiPost } from '../utils/apiClient';
+import { useGetToken } from '../utils/useGetToken';
 import {
   Activity,
   ArrowRight,
@@ -574,8 +574,7 @@ export default function Traceroute() {
   const [loading,  setLoading]  = useState(false);
   const [results,  setResults]  = useState(null);
   const liveRef = useRef(false);
-  const { session } = useSession();
-  const getToken = (opts) => session?.getToken(opts) ?? null;
+  const getToken = useGetToken();
 
   const run = useCallback(async ({ silent = false, appendLive = false } = {}) => {
     if (!target) return;
@@ -603,7 +602,7 @@ export default function Traceroute() {
       if (appendLive) liveRef.current = false;
       if (!silent) setLoading(false);
     }
-  }, [target, maxHops]);
+  }, [target, maxHops, getToken]);
 
   useEffect(() => {
     if (!liveMode || !target) return undefined;

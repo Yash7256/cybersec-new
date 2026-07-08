@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSession } from '@clerk/react';
+import { useGetToken } from '../utils/useGetToken';
 import {
   AlertTriangle,
   ArrowRight,
@@ -68,8 +68,7 @@ const cleanStatus = (status) => String(status || '')
   .trim();
 
 function Whois() {
-  const { session } = useSession();
-  const getToken = (opts) => session?.getToken(opts) ?? null;
+  const getToken = useGetToken();
   const [target, setTarget] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -133,7 +132,7 @@ function Whois() {
       cached: false,
     });
     try {
-      const token = session ? await session.getToken() : null;
+      const token = await getToken();
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
       const r = await fetch('/api/tools/whois/stream', {

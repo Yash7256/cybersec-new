@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { ShieldHalf, X, AlertTriangle, CheckCircle, ArrowRight, Info,
          Globe, Lock, Server, Code2, Cpu, ChevronDown, ChevronRight } from 'lucide-react';
 import clsx from 'clsx';
-import { useSession } from '@clerk/react';
 import { apiPost } from '../utils/apiClient';
+import { useGetToken } from '../utils/useGetToken';
 
 // ---------------------------------------------------------------------------
 // Style maps
@@ -168,8 +168,7 @@ export default function WebAppScanner() {
   const [results, setResults] = useState(null);
   const [filter, setFilter] = useState('all');
   const [catFilter, setCatFilter] = useState('all');
-  const { session } = useSession();
-  const getToken = (opts) => session?.getToken(opts) ?? null;
+  const getToken = useGetToken();
 
   const run = async () => {
     if (!url || !authorized) return;

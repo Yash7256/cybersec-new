@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useSession } from '@clerk/react';
 import { apiPost } from '../utils/apiClient';
+import { useGetToken } from '../utils/useGetToken';
 import {
   ArrowRight,
   Building2,
@@ -312,8 +312,7 @@ export default function SSL() {
   const [host,    setHost]    = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
-  const { session } = useSession();
-  const getToken = (opts) => session?.getToken(opts) ?? null;
+  const getToken = useGetToken();
 
   const run = async () => {
     if (!host.trim()) return;

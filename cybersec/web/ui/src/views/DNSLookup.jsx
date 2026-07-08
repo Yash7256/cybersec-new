@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Globe, X, ArrowRight } from 'lucide-react';
-import { useSession } from '@clerk/react';
 import { apiGet } from '../utils/apiClient';
+import { useGetToken } from '../utils/useGetToken';
 
 const RECORD_TYPES = ['A', 'AAAA', 'MX', 'NS', 'TXT', 'CNAME', 'SOA', 'PTR'];
 
@@ -10,8 +10,7 @@ export default function DNSLookup() {
   const [recordType, setRecordType] = useState('A');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
-  const { session } = useSession();
-  const getToken = (opts) => session?.getToken(opts) ?? null;
+  const getToken = useGetToken();
 
   const run = async () => {
     if (!target) return;
