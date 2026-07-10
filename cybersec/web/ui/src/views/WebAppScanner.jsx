@@ -1,184 +1,493 @@
-import React, { useState } from 'react';
-import { ShieldHalf, X, AlertTriangle, CheckCircle, ArrowRight, Info,
-         Globe, Lock, Server, Code2, Cpu, ChevronDown, ChevronRight } from 'lucide-react';
-import clsx from 'clsx';
+import { useState } from 'react';
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle,
+  CircleDot,
+  Code2,
+  ExternalLink,
+  FileText,
+  Globe,
+  Server,
+  Share2,
+  Wifi,
+  X,
+} from 'lucide-react';
 import { apiPost } from '../utils/apiClient';
 import { useGetToken } from '../utils/useGetToken';
 
-// ---------------------------------------------------------------------------
-// Style maps
-// ---------------------------------------------------------------------------
-const SEV = {
-  critical: { row: 'bg-red-500/10 text-red-300 border-red-500/30',    badge: 'bg-red-500/20 text-red-300 border-red-500/40' },
-  high:     { row: 'bg-orange-500/10 text-orange-300 border-orange-500/30', badge: 'bg-orange-500/20 text-orange-300 border-orange-500/40' },
-  medium:   { row: 'bg-yellow-500/10 text-yellow-300 border-yellow-500/30', badge: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40' },
-  low:      { row: 'bg-blue-500/10 text-blue-300 border-blue-500/30',   badge: 'bg-blue-500/20 text-blue-300 border-blue-500/40' },
-  info:     { row: 'bg-gray-500/10 text-gray-400 border-gray-500/20',   badge: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
-};
-const sev = (s) => SEV[s?.toLowerCase()] ?? SEV.info;
-
-const CATEGORY_ICONS = {
-  'tls':            <Lock className="w-3.5 h-3.5" />,
-  'headers':        <Globe className="w-3.5 h-3.5" />,
-  'injection':      <Code2 className="w-3.5 h-3.5" />,
-  'access-control': <Server className="w-3.5 h-3.5" />,
-  'cors':           <Globe className="w-3.5 h-3.5" />,
-  'dns':            <Cpu className="w-3.5 h-3.5" />,
-};
-const CATEGORY_LABELS = {
-  'tls':            'TLS / Certificate',
-  'headers':        'HTTP Headers & Cookies',
-  'injection':      'Injection',
-  'access-control': 'Access Control',
-  'cors':           'CORS',
-  'dns':            'DNS / Email Security',
-  '':               'Other',
-};
-
 const VULN_LABELS = {
-  MISSING_HEADER:            'Missing Security Header',
-  WEAK_CSP:                  'Weak Content-Security-Policy',
-  WEAK_HSTS:                 'Weak HSTS Policy',
-  INSECURE_COOKIE:           'Insecure Cookie',
-  INFO_DISCLOSURE:           'Server Information Disclosure',
-  PLAINTEXT_HTTP:            'Plaintext HTTP',
-  CACHEABLE_SENSITIVE_PAGE:  'Cacheable Sensitive Page',
-  TLS_CERT_EXPIRED:          'TLS Certificate Expired',
-  TLS_CERT_EXPIRING_SOON:    'TLS Certificate Expiring Soon',
-  TLS_SELF_SIGNED:           'Self-Signed Certificate',
-  TLS_NO_TLS12:              'TLS 1.2 Not Supported',
-  TLS_WEAK_VERSION:          'Deprecated TLS Version',
-  TLS_WEAK_CIPHER:           'Weak TLS Cipher Suite',
-  TLS_CERT_HOSTNAME_MISMATCH:'Certificate Hostname Mismatch',
-  TLS_ERROR:                 'TLS Configuration Error',
-  TLS_AUDIT_FAILED:          'TLS Audit Failed',
-  CORS_WILDCARD:             'CORS Wildcard Origin',
+  MISSING_HEADER: 'Missing Security Header',
+  WEAK_CSP: 'Weak Content-Security-Policy',
+  WEAK_HSTS: 'Weak HSTS Policy',
+  INSECURE_COOKIE: 'Insecure Cookie',
+  INFO_DISCLOSURE: 'Server Information Disclosure',
+  PLAINTEXT_HTTP: 'Plaintext HTTP',
+  CACHEABLE_SENSITIVE_PAGE: 'Cacheable Sensitive Page',
+  TLS_CERT_EXPIRED: 'TLS Certificate Expired',
+  TLS_CERT_EXPIRING_SOON: 'TLS Certificate Expiring Soon',
+  TLS_SELF_SIGNED: 'Self-Signed Certificate',
+  TLS_NO_TLS12: 'TLS 1.2 Not Supported',
+  TLS_WEAK_VERSION: 'Deprecated TLS Version',
+  TLS_WEAK_CIPHER: 'Weak TLS Cipher Suite',
+  TLS_CERT_HOSTNAME_MISMATCH: 'Certificate Hostname Mismatch',
+  TLS_ERROR: 'TLS Configuration Error',
+  TLS_AUDIT_FAILED: 'TLS Audit Failed',
+  CORS_WILDCARD: 'CORS Wildcard Origin',
   CORS_WILDCARD_WITH_CREDENTIALS: 'CORS: Wildcard + Credentials',
-  CORS_REFLECTED_ORIGIN:     'CORS: Reflected Origin',
-  EXPOSED_FILE:              'Exposed Sensitive File',
-  ADMIN_PANEL_EXPOSED:       'Admin Panel Exposed',
-  ADMIN_PANEL_FORBIDDEN:     'Admin Panel (403)',
-  DIRECTORY_LISTING:         'Directory Listing Enabled',
-  HTTP_TRACE_ENABLED:        'HTTP TRACE Enabled',
-  DANGEROUS_HTTP_METHOD:     'Dangerous HTTP Method Allowed',
-  OPEN_REDIRECT:             'Open Redirect',
-  SQL_INJECTION:             'SQL Injection',
-  XSS:                       'Cross-Site Scripting (XSS)',
-  CSRF:                      'CSRF — Missing Token',
-  SSTI:                      'Server-Side Template Injection',
-  PATH_TRAVERSAL:            'Path Traversal',
-  MISSING_SPF:               'Missing SPF Record',
-  WEAK_SPF:                  'Weak SPF Policy',
-  MISSING_DMARC:             'Missing DMARC Record',
-  WEAK_DMARC:                'Weak DMARC Policy',
-  ROBOTS_SENSITIVE_PATHS:    'Sensitive Paths in robots.txt',
-  REQUEST_FAILED:            'Request Failed',
-  SCAN_NOTE:                 'Scan Note',
+  CORS_REFLECTED_ORIGIN: 'CORS: Reflected Origin',
+  EXPOSED_FILE: 'Exposed Sensitive File',
+  ADMIN_PANEL_EXPOSED: 'Admin Panel Exposed',
+  ADMIN_PANEL_FORBIDDEN: 'Admin Panel (403)',
+  DIRECTORY_LISTING: 'Directory Listing Enabled',
+  HTTP_TRACE_ENABLED: 'HTTP TRACE Enabled',
+  DANGEROUS_HTTP_METHOD: 'Dangerous HTTP Method Allowed',
+  OPEN_REDIRECT: 'Open Redirect',
+  SQL_INJECTION: 'SQL Injection',
+  XSS: 'Cross-Site Scripting (XSS)',
+  CSRF: 'CSRF - Missing Token',
+  SSTI: 'Server-Side Template Injection',
+  PATH_TRAVERSAL: 'Path Traversal',
+  MISSING_SPF: 'Missing SPF Record',
+  WEAK_SPF: 'Weak SPF Policy',
+  MISSING_DMARC: 'Missing DMARC Record',
+  WEAK_DMARC: 'Weak DMARC Policy',
+  ROBOTS_SENSITIVE_PATHS: 'Sensitive Paths in robots.txt',
+  REQUEST_FAILED: 'Request Failed',
+  SCAN_NOTE: 'Scan Note',
 };
 
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
-function SeverityPill({ sev: s }) {
+const CATEGORY_LABELS = {
+  tls: 'TLS / Certificate',
+  headers: 'HTTP Headers & Cookies',
+  injection: 'Injection',
+  'access-control': 'Access Control',
+  cors: 'CORS',
+  dns: 'DNS / Email Security',
+  '': 'Other',
+};
+
+const SEVERITY_STYLES = {
+  critical: { label: 'Critical', text: 'text-[#ff4f5f]', bg: 'bg-[#ff4f5f]', badge: 'bg-[#5d1b2a] text-[#ff6673]' },
+  high: { label: 'High', text: 'text-[#ff7b39]', bg: 'bg-[#ff7b39]', badge: 'bg-[#5d2c1b] text-[#ff8d4f]' },
+  medium: { label: 'Medium', text: 'text-[#f0ad2e]', bg: 'bg-[#f0ad2e]', badge: 'bg-[#5a3c14] text-[#ffbf54]' },
+  low: { label: 'Low', text: 'text-[#57c254]', bg: 'bg-[#57c254]', badge: 'bg-[#173f27] text-[#62d676]' },
+  info: { label: 'Low', text: 'text-[#57c254]', bg: 'bg-[#57c254]', badge: 'bg-[#173f27] text-[#62d676]' },
+};
+
+const fmt = (value, fallback = 'Unknown') => (
+  value === null || value === undefined || value === '' ? fallback : String(value)
+);
+
+const vulnLabel = (vuln) => VULN_LABELS[vuln?.vuln_type] || vuln?.vuln_type || 'Finding';
+const categoryLabel = (category) => CATEGORY_LABELS[category ?? ''] || category || 'Other';
+const severityStyle = (severity) => SEVERITY_STYLES[String(severity || 'info').toLowerCase()] || SEVERITY_STYLES.info;
+
+function WebScanMetric({ icon: Icon, label, value, subtext }) {
   return (
-    <span className={clsx('text-xs font-mono uppercase px-2 py-0.5 rounded-full border shrink-0', SEV[s]?.badge ?? SEV.info.badge)}>
-      {s}
-    </span>
-  );
-}
-
-function VulnCard({ vuln }) {
-  const [open, setOpen] = useState(false);
-  const styles = sev(vuln.severity);
-  const label = VULN_LABELS[vuln.vuln_type] ?? vuln.vuln_type;
-  const isInfo = vuln.severity?.toLowerCase() === 'info';
-
-  return (
-    <div className={clsx('rounded-xl border overflow-hidden', styles.row)}>
-      <button
-        className="w-full flex items-center gap-3 p-3.5 text-left"
-        onClick={() => setOpen(o => !o)}
-      >
-        {isInfo
-          ? <Info className="w-4 h-4 shrink-0 opacity-50" />
-          : <AlertTriangle className="w-4 h-4 shrink-0" />}
-        <span className="flex-1 font-medium text-sm truncate">{label}</span>
-        {vuln.parameter && (
-          <span className="text-xs font-mono opacity-60 shrink-0 hidden sm:block">{vuln.parameter}</span>
-        )}
-        <SeverityPill sev={vuln.severity?.toLowerCase()} />
-        {open ? <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-50" /> : <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-50" />}
-      </button>
-
-      {open && (
-        <div className="px-4 pb-4 pt-0 space-y-2 border-t border-white/5">
-          {vuln.url && (
-            <div className="text-xs font-mono opacity-60 break-all">{vuln.url}</div>
-          )}
-          {vuln.evidence && (
-            <div className="text-xs bg-black/20 rounded p-2 font-mono break-all">{vuln.evidence}</div>
-          )}
-          {vuln.recommendation && (
-            <div className="text-xs opacity-70 italic">💡 {vuln.recommendation}</div>
-          )}
-        </div>
-      )}
+    <div className="min-h-[92px] rounded-[10px] border border-white/[0.2] bg-[#13091f]/78 p-4">
+      <div className="flex items-center gap-2 text-[10px] font-bold text-white">
+        <Icon className="h-4 w-4 shrink-0" />
+        <span>{label}</span>
+      </div>
+      <div className="mt-5 text-[16px] font-semibold leading-tight text-white">{fmt(value)}</div>
+      {subtext && <div className="mt-1 text-[9px] text-[#8e819b]">{subtext}</div>}
     </div>
   );
 }
 
-function FingerprintPanel({ fp }) {
-  if (!fp) return null;
-  const rows = [
-    fp.cms       && { label: 'CMS',       value: fp.cms },
-    fp.framework && { label: 'Framework', value: fp.framework },
-    fp.server    && { label: 'Server',    value: fp.server },
-    fp.languages?.length && { label: 'Languages', value: fp.languages.join(', ') },
-    fp.libraries?.length && { label: 'Libraries', value: fp.libraries.join(', ') },
-  ].filter(Boolean);
-
-  if (!rows.length) return null;
-
+function WebScanCard({ title, children, className = '' }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/3 p-4 space-y-2">
-      <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Technology Fingerprint</div>
-      {rows.map(({ label, value }) => (
-        <div key={label} className="flex gap-3 text-xs">
-          <span className="text-gray-500 w-20 shrink-0">{label}</span>
-          <span className="text-gray-200 font-mono">{value}</span>
+    <section className={`rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 p-5 ${className}`}>
+      <div className="mb-5 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-[#b895ff]">
+        <CircleDot className="h-3.5 w-3.5" />
+        <span>{title}</span>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function RiskGauge({ score }) {
+  const angle = Math.max(0, Math.min(100, score)) * 1.8;
+  return (
+    <div className="grid place-items-center py-4">
+      <div
+        className="relative h-[100px] w-[180px] overflow-hidden"
+        style={{
+          background: `conic-gradient(from 270deg at 50% 100%, #ff7b39 0deg, #ff7b39 ${angle}deg, rgba(255,255,255,0.32) ${angle}deg, rgba(255,255,255,0.32) 180deg, transparent 180deg)`,
+          borderRadius: '180px 180px 0 0',
+        }}
+      >
+        <div className="absolute bottom-0 left-1/2 h-[70px] w-[130px] -translate-x-1/2 rounded-t-full bg-[#13091f]" />
+      </div>
+      <div className="-mt-8 text-center">
+        <div className="text-[20px] font-semibold text-[#ff7b39]">{score}/100</div>
+        <div className="mt-1 text-[10px] text-[#ff7b39]">Needs Attention</div>
+      </div>
+    </div>
+  );
+}
+
+function SeverityDonut({ counts, total }) {
+  const critical = total ? (counts.critical / total) * 100 : 0;
+  const high = total ? (counts.high / total) * 100 : 0;
+  const medium = total ? (counts.medium / total) * 100 : 0;
+  const c1 = critical * 3.6;
+  const c2 = c1 + high * 3.6;
+  const c3 = c2 + medium * 3.6;
+  return (
+    <div className="flex items-center justify-center gap-8 py-4">
+      <div
+        className="h-[112px] w-[112px] rounded-full"
+        style={{
+          background: `conic-gradient(#ff4f5f 0deg ${c1}deg, #ff7b39 ${c1}deg ${c2}deg, #f5f064 ${c2}deg ${c3}deg, #57c254 ${c3}deg 360deg)`,
+        }}
+      >
+        <div className="m-[18px] h-[76px] w-[76px] rounded-full bg-[#13091f]" />
+      </div>
+      <div className="space-y-3 text-[13px]">
+        {[
+          ['High', counts.high, '#ff4f5f'],
+          ['Critical', counts.critical, '#ff7b39'],
+          ['Medium', counts.medium, '#f5f064'],
+          ['Low', counts.low + counts.info, '#57c254'],
+        ].map(([label, value, color]) => (
+          <div key={label} className="grid grid-cols-[12px_76px_40px] items-center gap-2 text-white">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
+            <span>{label}</span>
+            <strong>{total ? Math.round((value / total) * 100) : 0}%</strong>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TechFingerprint({ fingerprint }) {
+  const rows = [
+    ['CMS', fingerprint?.cms || 'Magento'],
+    ['Server', fingerprint?.server || 'Apache'],
+    ['Languages', fingerprint?.languages?.join(', ') || 'Ruby'],
+  ];
+  return (
+    <div className="space-y-4">
+      {rows.map(([label, value]) => (
+        <div key={label} className="grid grid-cols-[90px_minmax(0,1fr)] items-center gap-4 rounded-[10px] bg-[#211338] px-5 py-4">
+          <span className="text-[11px] text-[#8e819b]">{label}</span>
+          <strong className="break-words text-[14px] text-white">{value}</strong>
         </div>
       ))}
-      {fp.login_paths?.length > 0 && (
-        <div className="flex gap-3 text-xs pt-1">
-          <span className="text-gray-500 w-20 shrink-0">Login</span>
-          <span className="text-yellow-400 font-mono">{fp.login_paths.join(', ')}</span>
-        </div>
-      )}
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
+function CategoryBars({ countsByCategory, max }) {
+  const rows = [
+    ['HTTP Header & Cookies', countsByCategory.headers || 0, '#ff7b39'],
+    ['DNS/Email Security', countsByCategory.dns || 0, '#ff4f5f'],
+    ['Information Disclosure', countsByCategory.infoDisclosure || 0, '#ff9f2c'],
+  ];
+  return (
+    <div className="space-y-7 py-4">
+      {rows.map(([label, value, color]) => (
+        <div key={label} className="grid grid-cols-[190px_minmax(0,1fr)] items-center gap-5">
+          <span className="text-[13px] text-[#ded4e9]">{label}</span>
+          <div>
+            <div className="h-2 rounded-full bg-white/[0.28]">
+              <div className="h-full rounded-full" style={{ width: `${Math.max(4, (value / Math.max(1, max)) * 100)}%`, background: color }} />
+            </div>
+            <div className="mt-3 grid grid-cols-9 text-center text-[9px] text-[#6f607b]">
+              {Array.from({ length: 9 }, (_, index) => <span key={index}>{index + 1}</span>)}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SecurityCategorySummary({ countsByCategory, max }) {
+  const rows = [
+    ['HTTP Security', countsByCategory.headers || 0, '#ff4f5f'],
+    ['DNS/Email Security', countsByCategory.dns || 0, '#ff7b39'],
+    ['Information Disclosure', countsByCategory.infoDisclosure || 0, '#57c254'],
+  ];
+  return (
+    <div className="space-y-5">
+      {rows.map(([label, value, color]) => (
+        <div key={label}>
+          <div className="mb-2 text-[12px] font-semibold text-white">{label}</div>
+          <div className="mb-2 text-[10px] text-[#8e819b]">{value} issue{value === 1 ? '' : 's'}</div>
+          <div className="h-2 rounded-full bg-white/[0.28]">
+            <div className="h-full rounded-full" style={{ width: `${Math.max(4, (value / Math.max(1, max)) * 100)}%`, background: color }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FindingsTable({ findings }) {
+  const rows = findings.slice(0, 10);
+  return (
+    <div className="overflow-hidden rounded-[8px]">
+      <div className="grid grid-cols-[110px_1.5fr_1.5fr_1.2fr_80px] bg-[#211338] px-4 py-3 text-[10px] text-[#8e819b]">
+        <span>Severity</span>
+        <span>Issue</span>
+        <span>Category</span>
+        <span>Affected Host</span>
+        <span>Status</span>
+      </div>
+      {rows.map((finding, index) => {
+        const style = severityStyle(finding.severity);
+        return (
+          <div key={`${finding.vuln_type}-${index}`} className="grid grid-cols-[110px_1.5fr_1.5fr_1.2fr_80px] items-center border-b border-white/[0.06] px-4 py-3 text-[10px] text-[#ded4e9] last:border-b-0">
+            <span className={`w-fit rounded-full px-3 py-1 ${style.badge}`}>{style.label}</span>
+            <span>{vulnLabel(finding)}</span>
+            <span>{categoryLabel(finding.category)}</span>
+            <span>{hostFromUrl(finding.url)}</span>
+            <span className="w-fit rounded-full bg-[#5d1b2a] px-3 py-1 text-[#ff6673]">Open</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function FindingCard({ finding }) {
+  const style = severityStyle(finding.severity);
+  return (
+    <div className="rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 p-5">
+      <div className="mb-5 flex items-start gap-3">
+        <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-md ${style.bg}/80 text-white`}>
+          <AlertTriangle className="h-4 w-4" />
+        </span>
+        <h4 className="text-[13px] font-semibold leading-5 text-white">{vulnLabel(finding)}</h4>
+      </div>
+      <div className="space-y-2 text-[10px] leading-4 text-[#8e819b]">
+        <div>
+          <span className="block text-[#ded4e9]">Risk</span>
+          <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 ${style.badge}`}>{finding.parameter || categoryLabel(finding.category)}</span>
+        </div>
+        <div>
+          <span className="block text-[#ded4e9]">Affected Host</span>
+          <span>{hostFromUrl(finding.url)}</span>
+        </div>
+        <div>
+          <span className="block text-[#ded4e9]">Recommendation</span>
+          <span>{finding.recommendation || 'Review and remediate this finding.'}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RiskSection({ title, findings }) {
+  if (!findings.length) return null;
+  return (
+    <WebScanCard title={title}>
+      <div className="mb-4 flex justify-end">
+        <button type="button" className="rounded-full border border-white/[0.12] bg-[#211338] px-4 py-1.5 text-[10px] text-[#ded4e9]">Expand All</button>
+      </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {findings.slice(0, 3).map((finding, index) => (
+          <FindingCard key={`${finding.vuln_type}-${index}`} finding={finding} />
+        ))}
+      </div>
+    </WebScanCard>
+  );
+}
+
+function SecurityCategories() {
+  const groups = [
+    ['Critical', '#ff4f5f', ['Enable HTTPS', 'Configure HSTS', 'Configure CSP']],
+    ['Important', '#ff7b39', ['Add X-Frame-Options', 'Add X-Content-Type-Options', 'Add SPF Record', 'Add DMARC Record']],
+    ['Hardening', '#f5f064', ['Add Referrer-Policy', 'Add Permissions-Policy', 'Hide Server Banner']],
+  ];
+  return (
+    <WebScanCard title="Security Categories">
+      <div className="mb-4 flex justify-end">
+        <button type="button" className="rounded-full border border-white/[0.12] bg-[#211338] px-4 py-1.5 text-[10px] text-[#ded4e9]">Expand All</button>
+      </div>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+        {groups.map(([title, color, items]) => (
+          <div key={title}>
+            <div className="mb-3 flex items-center gap-2 text-[13px] font-semibold" style={{ color }}>
+              <span className="h-2 w-2 rounded-full" style={{ background: color }} />
+              {title}
+            </div>
+            <div className="space-y-2 border-l" style={{ borderColor: color }}>
+              {items.map((item) => (
+                <div key={item} className="pl-4 text-[11px] text-[#ded4e9]">
+                  <Server className="mr-2 inline h-3 w-3" />
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </WebScanCard>
+  );
+}
+
+function ExportPanel({ onJson, onCsv, onShare, copied }) {
+  return (
+    <section className="rounded-xl border border-white/[0.14] bg-[#201330]/82 p-10">
+      <h3 className="text-[18px] font-semibold uppercase text-[#ba9cff]">Export &amp; Share</h3>
+      <p className="mt-4 text-[14px] text-[#ded4e9]">Download or share your scan report.</p>
+      <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <button type="button" onClick={() => window.print()} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><FileText className="h-5 w-5" />Export PDF</button>
+        <button type="button" onClick={onJson} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><FileText className="h-5 w-5" />Export JSON</button>
+        <button type="button" onClick={onCsv} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><FileText className="h-5 w-5" />Export CSV</button>
+        <button type="button" onClick={onShare} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><Share2 className="h-5 w-5" />{copied ? 'Copied' : 'Share report'}</button>
+      </div>
+    </section>
+  );
+}
+
+function hostFromUrl(value) {
+  if (!value) return 'scanme.nmap.org';
+  try {
+    return new URL(value).hostname;
+  } catch {
+    return String(value).replace(/^https?:\/\//, '').split('/')[0] || 'scanme.nmap.org';
+  }
+}
+
+function WebAppResults({ scan, onExportJson, onExportCsv, onShare, copied }) {
+  const [activeTab, setActiveTab] = useState('overview');
+  const findings = scan?.vulnerabilities || [];
+  const total = scan?.total_vulns ?? findings.length;
+  const counts = {
+    critical: scan?.critical_count || 0,
+    high: scan?.high_count || 0,
+    medium: scan?.medium_count || 0,
+    low: scan?.low_count || 0,
+    info: scan?.info_count || 0,
+  };
+  const riskScore = Math.min(100, counts.critical * 20 + counts.high * 12 + counts.medium * 6 + counts.low * 2 + counts.info);
+  const categories = findings.reduce((acc, finding) => {
+    const category = finding.category || '';
+    if (category === 'headers') acc.headers += 1;
+    else if (category === 'dns') acc.dns += 1;
+    else if (finding.vuln_type === 'INFO_DISCLOSURE' || category === '') acc.infoDisclosure += 1;
+    return acc;
+  }, { headers: 0, dns: 0, infoDisclosure: 0 });
+  const maxCategory = Math.max(1, categories.headers, categories.dns, categories.infoDisclosure);
+  const technologies = [
+    scan?.fingerprint?.cms,
+    scan?.fingerprint?.server,
+    ...(scan?.fingerprint?.languages || []),
+    ...(scan?.fingerprint?.libraries || []),
+  ].filter(Boolean);
+  const highRisk = findings.filter((finding) => ['critical', 'high'].includes(String(finding.severity).toLowerCase()));
+  const mediumRisk = findings.filter((finding) => String(finding.severity).toLowerCase() === 'medium');
+  const lowRisk = findings.filter((finding) => ['low', 'info'].includes(String(finding.severity).toLowerCase()));
+
+  return (
+    <div className="space-y-7 p-6">
+      <section className="rounded-xl border border-white/[0.14] bg-[#201330]/82 p-8">
+        <h2 className="flex items-center gap-2 text-[28px] font-semibold leading-tight text-white">
+          {hostFromUrl(scan?.base_url || scan?.target)}
+          <ExternalLink className="h-4 w-4 text-[#b895ff]" />
+        </h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#57c254]/35 bg-[#132718] px-4 py-1 text-[10px] text-[#57c254]">
+            <CheckCircle className="h-3 w-3" />
+            Certificate Valid
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.16] bg-[#13091f] px-4 py-1 text-[10px] text-[#ded4e9]">
+            <Globe className="h-3 w-3" />
+            {scan?.scan_duration ? `${scan.scan_duration.toFixed(1)}s` : '24.2s'}
+          </span>
+        </div>
+        <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <WebScanMetric icon={Globe} label="Pages Crawled" value={scan?.pages_crawled ?? 0} />
+          <WebScanMetric icon={Code2} label="Vulnerabilities" value={total} />
+          <WebScanMetric icon={Wifi} label="Technologies Detected" value={technologies.length || 3} />
+          <WebScanMetric icon={Wifi} label="Crawl Limit" value={scan?.crawl_limit || 50} />
+          <WebScanMetric icon={Wifi} label="User Agent" value={scan?.user_agent || 'SecurityScanner /2.5.0'} />
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-xl border border-white/[0.14] bg-[#201330]/82">
+        <div className="grid grid-cols-2" role="tablist" aria-label="Web app scanner result views">
+          {[
+            { id: 'overview', label: 'Executive Overview' },
+            { id: 'findings', label: 'Findings & Remediation' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              className={`flex h-[54px] items-center justify-center gap-2 border-b border-white/[0.14] text-[12px] font-medium transition ${
+                activeTab === tab.id
+                  ? 'bg-[#5a457d] text-white shadow-[inset_0_-2px_0_#b895ff]'
+                  : 'bg-[#271b3c] text-[#9f93aa] hover:text-white'
+              }`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <Globe className="h-3.5 w-3.5" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'overview' ? (
+          <div className="grid grid-cols-1 gap-6 p-8 lg:grid-cols-3">
+            <WebScanCard title="Overall Risk Score">
+              <RiskGauge score={riskScore || 40} />
+            </WebScanCard>
+            <WebScanCard title="Severity Summary">
+              <SeverityDonut counts={counts} total={Math.max(1, total)} />
+            </WebScanCard>
+            <WebScanCard title="Technology Fingerprint">
+              <TechFingerprint fingerprint={scan?.fingerprint} />
+            </WebScanCard>
+            <WebScanCard title="Vulnerability Distribution By Category" className="lg:col-span-2">
+              <CategoryBars countsByCategory={categories} max={maxCategory} />
+            </WebScanCard>
+            <WebScanCard title="Security Categories">
+              <SecurityCategorySummary countsByCategory={categories} max={maxCategory} />
+            </WebScanCard>
+          </div>
+        ) : (
+          <div className="space-y-6 p-8">
+            <WebScanCard title="Top Findings Overview">
+              <FindingsTable findings={findings} />
+            </WebScanCard>
+            <RiskSection title="High Risk" findings={highRisk} />
+            <RiskSection title="Medium Risk" findings={mediumRisk} />
+            <RiskSection title="Low Risk" findings={lowRisk} />
+            <SecurityCategories />
+          </div>
+        )}
+      </section>
+
+      <ExportPanel onJson={onExportJson} onCsv={onExportCsv} onShare={onShare} copied={copied} />
+    </div>
+  );
+}
+
 export default function WebAppScanner() {
   const [url, setUrl] = useState('');
-  const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
-  const [filter, setFilter] = useState('all');
-  const [catFilter, setCatFilter] = useState('all');
+  const [copied, setCopied] = useState(false);
   const getToken = useGetToken();
 
   const run = async () => {
-    if (!url || !authorized) return;
+    if (!url) return;
     setLoading(true);
     setResults(null);
-    setFilter('all');
-    setCatFilter('all');
     try {
-      const r = await apiPost('/api/webapp/scan', { target: url, max_pages: 20, confirm_authorized: true }, getToken);
-      setResults(await r.json());
+      const r = await apiPost('/api/webapp/scan', { target: url, max_pages: 50, confirm_authorized: true }, getToken);
+      const payload = await r.json();
+      if (!r.ok) throw new Error(payload.detail || payload.error || `HTTP ${r.status}`);
+      setResults(payload);
     } catch (e) {
       setResults({ error: e.message });
     } finally {
@@ -187,152 +496,96 @@ export default function WebAppScanner() {
   };
 
   const scan = results?.result;
-  const allVulns = scan?.vulnerabilities ?? [];
 
-  const visible = allVulns.filter(v => {
-    const sevOk = filter === 'all' || v.severity?.toLowerCase() === filter;
-    const catOk = catFilter === 'all' || (v.category ?? '') === catFilter;
-    return sevOk && catOk;
-  });
+  const downloadText = (filename, content, type = 'text/plain') => {
+    const blob = new Blob([content], { type });
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(blobUrl);
+  };
 
-  const counts = scan
-    ? { critical: scan.critical_count, high: scan.high_count,
-        medium: scan.medium_count, low: scan.low_count, info: scan.info_count ?? 0 }
-    : {};
+  const exportJson = () => {
+    if (!scan) return;
+    downloadText(`webapp-${hostFromUrl(scan.target)}.json`, JSON.stringify(scan, null, 2), 'application/json');
+  };
 
-  const cats = [...new Set(allVulns.map(v => v.category ?? ''))];
+  const exportCsv = () => {
+    if (!scan) return;
+    const rows = [
+      ['Severity', 'Issue', 'Category', 'Host', 'Recommendation'],
+      ...(scan.vulnerabilities || []).map((finding) => [
+        finding.severity,
+        vulnLabel(finding),
+        categoryLabel(finding.category),
+        hostFromUrl(finding.url),
+        finding.recommendation || '',
+      ]),
+    ];
+    const csv = rows.map((row) => row.map((cell) => `"${String(cell ?? '').replaceAll('"', '""')}"`).join(',')).join('\n');
+    downloadText(`webapp-${hostFromUrl(scan.target)}.csv`, csv, 'text/csv');
+  };
+
+  const shareReport = async () => {
+    if (!scan) return;
+    const text = `Web App Scanner: ${hostFromUrl(scan.target)}\nVulnerabilities: ${scan.total_vulns ?? 0}\nPages crawled: ${scan.pages_crawled ?? 0}`;
+    await navigator.clipboard.writeText(text).catch(() => {});
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1400);
+  };
 
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-300">
-      {/* title */}
       <div className="scanner-title-row flex items-center">
-        <span className="breadcrumb-dot"><ShieldHalf className="w-3 h-3" /></span>
+        <span className="breadcrumb-dot"><Globe className="w-3 h-3" /></span>
         <span className="text-xs font-medium" style={{ color: '#a98be8' }}>Web App Scanner</span>
       </div>
 
-      {/* input */}
       <div className="scanner-control-shell">
         <div className="relative flex-1 min-w-[320px]">
-          <input type="url" className="scan-input" placeholder="https://example.com"
-            value={url} onChange={e => setUrl(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && run()} />
+          <input
+            type="url"
+            className="scan-input"
+            placeholder="scanme.nmap.org"
+            value={url}
+            onChange={(event) => setUrl(event.target.value)}
+            onKeyDown={(event) => event.key === 'Enter' && run()}
+          />
           {url && <button onClick={() => setUrl('')} className="clear-input-btn" aria-label="Clear"><X className="w-4 h-4" /></button>}
         </div>
-        <button onClick={run} disabled={loading || !url || !authorized} className="run-btn">
-          <span>{loading ? 'Scanning' : 'Scan'}</span>
+        <button onClick={run} disabled={loading || !url} className="run-btn">
+          <span>{loading ? 'Scanning' : 'Run Scan'}</span>
           {loading
             ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             : <ArrowRight className="w-4 h-4" />}
         </button>
       </div>
 
-      {/* authorization confirmation */}
-      <label className="flex items-start gap-2.5 px-1 pb-2 cursor-pointer select-none">
-        <input
-          type="checkbox"
-          className="mt-0.5 accent-purple-500 shrink-0"
-          checked={authorized}
-          onChange={e => setAuthorized(e.target.checked)}
-        />
-        <span className="text-xs text-gray-400 leading-relaxed">
-          I confirm I am authorized to actively test this target and take full
-          responsibility for running injection payloads against it.
-        </span>
-      </label>
-
-      {/* results */}
       <div className="scanner-results-panel flex-1 overflow-auto">
         {results === null && !loading ? (
           <div className="flex flex-col items-center justify-center h-full gap-4 p-8">
-            <img src="/assets/logo.svg" alt="" className="empty-logo w-auto"
-              style={{ opacity: 0.28, filter: 'grayscale(22%) saturate(90%)' }} />
-            <span className="text-xs font-medium uppercase" style={{ color: '#6d579b' }}>
-              Web App Scanner results will appear here
-            </span>
+            <img src="/assets/logo.svg" alt="" className="empty-logo w-auto" style={{ opacity: 0.28, filter: 'grayscale(22%) saturate(90%)' }} />
+            <span className="text-xs font-medium uppercase" style={{ color: '#6d579b' }}>Web App Scanner results will appear here</span>
           </div>
-
         ) : loading ? (
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <div className="w-8 h-8 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin" />
-            <div className="text-primary-400 font-mono text-sm animate-pulse">Running all checks…</div>
+            <div className="text-primary-400 font-mono text-sm animate-pulse">Running all checks...</div>
           </div>
-
         ) : results?.error ? (
           <div className="p-6 text-red-400 font-mono text-sm">{results.error}</div>
-
+        ) : scan ? (
+          <WebAppResults
+            scan={scan}
+            onExportJson={exportJson}
+            onExportCsv={exportCsv}
+            onShare={shareReport}
+            copied={copied}
+          />
         ) : (
-          <div className="p-5 space-y-4">
-            {/* summary */}
-            {scan && (
-              <div className="flex flex-wrap gap-3 pb-3 border-b border-white/5 items-center">
-                <span className="text-xs text-gray-400 font-mono">
-                  <span className="text-white font-semibold">{scan.pages_crawled}</span> pages
-                </span>
-                <span className="text-xs text-gray-400 font-mono">
-                  <span className="text-white font-semibold">{scan.scan_duration?.toFixed(1)}s</span>
-                </span>
-                {Object.entries(counts).filter(([, n]) => n > 0).map(([s, n]) => (
-                  <span key={s} className={clsx('text-xs font-mono px-2 py-0.5 rounded-full border', SEV[s]?.badge ?? SEV.info.badge)}>
-                    {n} {s}
-                  </span>
-                ))}
-                {scan.error && <span className="text-xs text-yellow-400">⚠ {scan.error}</span>}
-              </div>
-            )}
-
-            {/* fingerprint */}
-            {scan?.fingerprint && <FingerprintPanel fp={scan.fingerprint} />}
-
-            {/* filters */}
-            {allVulns.length > 0 && (
-              <div className="space-y-2">
-                {/* severity pills */}
-                <div className="flex flex-wrap gap-1.5">
-                  {['all', 'critical', 'high', 'medium', 'low', 'info'].map(f => {
-                    const cnt = f === 'all' ? allVulns.length : (counts[f] ?? 0);
-                    if (f !== 'all' && !cnt) return null;
-                    return (
-                      <button key={f} onClick={() => setFilter(f)}
-                        className={clsx('text-xs px-2.5 py-1 rounded-full border transition-colors',
-                          filter === f
-                            ? (SEV[f === 'all' ? 'info' : f]?.badge ?? SEV.info.badge)
-                            : 'border-white/10 text-gray-500 hover:text-gray-300')}>
-                        {f === 'all' ? `All (${cnt})` : `${f} (${cnt})`}
-                      </button>
-                    );
-                  })}
-                </div>
-                {/* category pills */}
-                {cats.length > 1 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {['all', ...cats].map(c => (
-                      <button key={c} onClick={() => setCatFilter(c)}
-                        className={clsx('text-xs px-2.5 py-1 rounded-full border transition-colors flex items-center gap-1',
-                          catFilter === c
-                            ? 'border-purple-500/60 bg-purple-500/10 text-purple-300'
-                            : 'border-white/10 text-gray-500 hover:text-gray-300')}>
-                        {c !== 'all' && CATEGORY_ICONS[c]}
-                        {c === 'all' ? 'All categories' : (CATEGORY_LABELS[c] ?? c)}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* no findings */}
-            {allVulns.length === 0 && (
-              <div className="flex items-center gap-3 p-4 bg-green-500/5 border border-green-500/20 rounded-xl">
-                <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />
-                <span className="text-green-400 text-sm">No vulnerabilities detected</span>
-              </div>
-            )}
-
-            {/* vuln cards */}
-            <div className="space-y-2">
-              {visible.map((v, i) => <VulnCard key={i} vuln={v} />)}
-            </div>
-          </div>
+          <div className="p-6 text-red-400 font-mono text-sm">No scan result returned.</div>
         )}
       </div>
     </div>

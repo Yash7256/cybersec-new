@@ -515,6 +515,10 @@ async def capture_web_port_screenshots(
         await asyncio.wait_for(_take_screenshots(), timeout=_SCREENSHOT_TOTAL_TIMEOUT)
     except asyncio.TimeoutError:
         pass  # Ran out of time — return whatever was captured so far.
+    except Exception:
+        # Screenshot previews are optional enrichment. Missing Playwright
+        # browsers or launch failures must not fail the port scan itself.
+        return
 
 
 def _recommendation_payload(target: str, open_ports: list[OpenPortDetail]) -> dict:

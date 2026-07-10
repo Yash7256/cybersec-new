@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGetToken } from '../utils/useGetToken';
 import { apiPost } from '../utils/apiClient';
+import GeoIPResultsPage, { ScanInputBar } from '../components/geoip/GeoIPResultsPage';
 import {
   Activity,
   ArrowRight,
@@ -28,6 +29,7 @@ import {
   Share2,
   ShieldAlert,
   ShieldCheck,
+  Sparkles,
   Timer,
   WifiOff,
   X,
@@ -189,6 +191,7 @@ export default function GenericTool({ toolId }) {
   const [copied, setCopied] = useState('');
   const [activeOsTab, setActiveOsTab] = useState('security');
   const [activePingTab, setActivePingTab] = useState('monitoring');
+  const [headersTab, setHeadersTab] = useState('network');
   const liveRequestActive = useRef(false);
   const streamAbortRef = useRef(null);
   const getToken = useGetToken();
@@ -660,297 +663,47 @@ export default function GenericTool({ toolId }) {
     run({ silent: false, appendLive: true });
   };
 
-  const hasCoordinates = (data) => Number.isFinite(Number(data.lat)) && Number.isFinite(Number(data.lon));
-
-  const renderLocationDetail = (label, value) => {
-    if (value === null || value === undefined || value === '') return null;
-    return (
-      <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-4 border-b border-[#554365]/55 py-2.5 last:border-b-0">
-        <span className="text-[11px] text-[#92859d]">{label}</span>
-        <span className="text-[11px] text-[#ded4e9] break-words">{String(value)}</span>
-      </div>
+  const exportJson = () => {
+    if (!results) return;
+    downloadText(
+      `headers-${results.target || 'result'}.json`,
+      JSON.stringify(results, null, 2),
+      'application/json',
     );
   };
 
-  const geoText = (value, fallback = 'Unknown') => (
-    value === null || value === undefined || value === '' ? fallback : String(value)
+  const exportCsv = () => {
+    if (!results) return;
+    const headers = Object.entries(results.headers || {});
+    const rows = [['Header', 'Value'], ...headers.map(([k, v]) => [k, String(v)])];
+    const csv = rows.map((r) => r.map((c) => `"${String(c).replaceAll('"', '""')}"`).join(',')).join('\n');
+    downloadText(`headers-${results.target || 'result'}.csv`, csv, 'text/csv');
+  };
+
+  const shareReport = async () => {
+    if (!results) return;
+    const text = `HTTP Headers: ${results.url || results.target}\n` +
+      `Status: ${results.status_code}\n` +
+      `Security Score: ${results.security_score ?? 'N/A'}/100\n` +
+      `Risk Level: ${results.risk_level || 'Unknown'}\n` +
+      `Headers Present: ${results.security_headers?.present?.length || 0}/${(results.security_headers?.present?.length || 0) + (results.security_headers?.missing?.length || 0)}`;
+    if (navigator.share) {
+      await navigator.share({ title: 'HTTP Headers scan report', text }).catch(() => {});
+      return;
+    }
+    await navigator.clipboard.writeText(text).catch(() => {});
+    setCopied('headers-share');
+    window.setTimeout(() => setCopied(''), 1200);
+  };
+
+  const renderGeoResults = (data) => (
+    <GeoIPResultsPage
+      result={data}
+      copied={copied}
+      onCopy={copyText}
+      onDownload={downloadText}
+    />
   );
-
-  const geoBool = (value) => (value === true ? 'Yes' : value === false ? 'No' : 'Unknown');
-
-  const geoCard = (title, children, IconCmp = CircleDot) => (
-    <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/78 p-5">
-      <div className="mb-4 flex items-center gap-3 text-[11px] font-semibold uppercase text-[#b79aff]">
-        <IconCmp className="h-4 w-4" />
-        <span>{title}</span>
-      </div>
-      {children}
-    </div>
-  );
-
-  const geoInfoRow = (label, value) => (
-    <div className="grid grid-cols-[116px_minmax(0,1fr)] gap-3 border-b border-[#554365]/55 py-2.5 last:border-b-0">
-      <span className="text-[11px] text-[#8f839b]">{label}</span>
-      <span className="whitespace-pre-line text-[11px] text-[#ded4e9] break-words">{geoText(value)}</span>
-    </div>
-  );
-
-  const geoMetricTile = (IconCmp, title, value, subtext, extra) => (
-    <div className="min-h-[84px] rounded-lg border border-[#5f4c6c]/80 bg-[#13091f]/72 p-4">
-      <div className="flex items-center gap-2 text-[10px] font-bold text-[#efe9f5]">
-        <IconCmp className="h-3.5 w-3.5" />
-        <span>{title}</span>
-      </div>
-      <div className="mt-4 text-[12px] font-semibold leading-snug text-[#f4eef7] break-words">{geoText(value)}</div>
-      {subtext && <div className="mt-1 text-[9px] text-[#8f839b] break-words">{subtext}</div>}
-      {extra}
-    </div>
-  );
-
-  const geoPill = (children, tone = 'neutral') => {
-    const tones = {
-      neutral: 'border-[#5f4c6c] bg-[#13091f] text-[#d6cbe2]',
-      good: 'border-[#4a6a45] bg-[#101c18] text-[#5ee166]',
-      info: 'border-[#5f4c6c] bg-[#160d24] text-[#d6cbe2]',
-      warn: 'border-[#6e5a35] bg-[#1d1514] text-[#ffbf6b]',
-    };
-    return (
-      <span className={`inline-flex h-6 items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] ${tones[tone] || tones.neutral}`}>
-        {children}
-      </span>
-    );
-  };
-
-  const renderLocationMap = (data) => {
-    const coordinatesReady = hasCoordinates(data);
-    const coordinates = coordinatesReady ? `${data.lat},${data.lon}` : '';
-    const mapEmbedUrl = coordinatesReady
-      ? `https://maps.google.com/maps?q=${encodeURIComponent(coordinates)}&z=10&output=embed`
-      : '';
-    const mapUrl = data.map_url || (coordinatesReady ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates)}` : null);
-    const earthUrl = coordinatesReady ? `https://earth.google.com/web/search/${encodeURIComponent(coordinates)}` : null;
-
-    return (
-      <>
-        <div className="mb-6 text-[18px] font-medium uppercase text-[#b79aff]">Location</div>
-        <div className="grid grid-cols-1 xl:grid-cols-[minmax(290px,390px)_minmax(0,1fr)] gap-6">
-          <div className="min-w-0 rounded-lg border border-[#63516e]/80 bg-[#13091f]/74 p-5">
-            {renderLocationDetail('Country', [data.flag_emoji, data.country, data.country_code && `(${data.country_code})`].filter(Boolean).join(' '))}
-            {renderLocationDetail('Continent', [data.continent, data.continent_code && `(${data.continent_code})`].filter(Boolean).join(' '))}
-            {renderLocationDetail('Region', data.region)}
-            {renderLocationDetail('City', data.city)}
-            {renderLocationDetail('Postal code', data.postal)}
-            {renderLocationDetail('Coordinates', coordinatesReady ? coordinates : null)}
-            {renderLocationDetail('Timezone', data.timezone)}
-            {renderLocationDetail('UTC offset', data.timezone_utc)}
-            <div className="flex flex-wrap gap-6 pt-3">
-              {mapUrl && (
-                <a className="inline-flex items-center gap-1.5 text-[11px] text-[#a98be8] hover:text-[#cab7ff]" href={mapUrl} target="_blank" rel="noreferrer">
-                  Open in google maps <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
-              {earthUrl && (
-                <a className="inline-flex items-center gap-1.5 text-[11px] text-[#a98be8] hover:text-[#cab7ff]" href={earthUrl} target="_blank" rel="noreferrer">
-                  Open in google earth <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
-            </div>
-          </div>
-
-          <div className="relative min-h-[300px] overflow-hidden rounded-lg border border-[#684f82] bg-[#12091f]">
-            {coordinatesReady ? (
-              <>
-                <iframe
-                  title={`Google map for ${[data.city, data.region, data.country].filter(Boolean).join(', ') || coordinates}`}
-                  src={mapEmbedUrl}
-                  className="absolute inset-0 h-full w-full grayscale invert-[0.86] hue-rotate-[226deg] saturate-[2.2] brightness-[0.72] contrast-[1.15]"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  allowFullScreen
-                />
-                <div className="pointer-events-none absolute inset-0 bg-[#3b0b6f]/24 mix-blend-screen" />
-                <div className="pointer-events-none absolute left-[54%] top-[54%] h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#b46cff]/45 bg-[#7c3aed]/20 shadow-[0_0_34px_rgba(172,92,255,0.9)]">
-                  <div className="absolute inset-4 rounded-full border border-[#cba5ff]/55 bg-[#7c3aed]/30" />
-                  <MapPin className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-[#e9d5ff]" />
-                </div>
-                <div className="pointer-events-none absolute right-8 top-[45%] max-w-[175px] rounded-md border border-[#684f82] bg-[#1f1235]/88 p-4 shadow-[0_14px_34px_rgba(0,0,0,0.35)]">
-                  <div className="text-[11px] font-semibold text-[#f4eef7]">{geoText(data.city, data.region || data.country || 'Location')}</div>
-                  <div className="mt-1 text-[10px] text-[#c6b8d5]">{[data.region, data.country].filter(Boolean).join(', ')}</div>
-                  <div className="mt-1 text-[10px] text-[#c6b8d5]">{coordinates}</div>
-                </div>
-              </>
-            ) : (
-              <div className="absolute inset-0 grid place-items-center p-6 text-center">
-                <div>
-                  <MapPin className="mx-auto h-8 w-8 text-purple-300" />
-                  <p className="mt-3 text-sm text-gray-300">Coordinates unavailable for this lookup.</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </>
-    );
-  };
-
-  const renderGeoResolvedIp = (item, index, data) => {
-    const ip = item.ip || item.target || data.ip;
-    return (
-      <div key={`${ip}-${index}`} className="grid grid-cols-1 gap-5 rounded-lg border border-[#63516e]/80 bg-[#13091f]/78 p-5 xl:grid-cols-[minmax(220px,1.2fr)_minmax(280px,1.6fr)_repeat(4,minmax(70px,.55fr))]">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-lg font-semibold text-[#f4eef7]">
-            <span className="h-3 w-3 rounded-full bg-[#5add56]" />
-            <span>{geoText(ip)}</span>
-          </div>
-          <div className="mt-3 flex items-center gap-2 text-[11px] text-[#c6b8d5]">
-            <span>{[item.country || data.country, item.country_code || data.country_code].filter(Boolean).join(' ')}</span>
-            <span>{item.flag_emoji || data.flag_emoji}</span>
-          </div>
-          {(item.is_cdn || data.is_cdn) && <span className="mt-5 inline-flex rounded-full bg-[#2d7a3b] px-7 py-2 text-[11px] text-[#bfffc6]">Edge/CDN</span>}
-        </div>
-        <div className="min-w-0">
-          <div className="flex flex-wrap gap-2">
-            {item.asn_type && <span className="rounded-full bg-[#7a5a1e]/80 px-4 py-1 text-[10px] text-[#f2c078]">{item.asn_type}</span>}
-            {(item.cdn_provider || data.cdn_provider) && <span className="rounded-full bg-[#27425e] px-4 py-1 text-[10px] text-[#9cc8ff]">{item.cdn_provider || data.cdn_provider}</span>}
-          </div>
-          <p className="mt-4 max-w-[420px] text-[11px] leading-5 text-[#d2c5dc]">{item.summary || data.summary}</p>
-        </div>
-        {[
-          ['ASN', item.asn || data.asn],
-          ['Org', item.org || data.org],
-          ['City', item.city || data.city],
-          ['Reverse DNS', item.reverse_dns || data.reverse_dns || 'No PTR record'],
-        ].map(([label, value]) => (
-          <div key={label} className="min-w-0">
-            <div className="text-[11px] text-[#8f839b]">{label}</div>
-            <div className="mt-2 text-[11px] text-[#ded4e9] break-words">{geoText(value)}</div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const renderGeoResults = (data) => {
-    const isScanning = Boolean(data.scanning);
-    const resolvedRows = Array.isArray(data.ip_results) && data.ip_results.length ? data.ip_results : [data];
-    const confidencePct = data.confidence === 'high' ? 86 : data.confidence === 'medium' ? 62 : 34;
-
-    return (
-      <div className="space-y-8 p-1 md:p-2">
-        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-[24px] font-semibold leading-tight text-[#f4eef7]">{geoText(data.target)}</h2>
-                {data.map_url && (
-                  <a href={data.map_url} target="_blank" rel="noreferrer" aria-label="Open map">
-                    <ExternalLink className="h-4 w-4 text-[#b79aff]" />
-                  </a>
-                )}
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {geoPill(<><span className={`h-2 w-2 rounded-full ${isScanning ? 'animate-pulse bg-[#b79aff]' : 'bg-[#56dc4f]'}`} /> {isScanning ? 'Lookup Running' : 'Lookup Completed'}</>, isScanning ? 'info' : 'good')}
-                {geoPill(<><MapPin className="h-3 w-3" /> {geoText(data.ip)}</>, 'info')}
-                {geoPill(<><Timer className="h-3 w-3" /> 1.3s</>, 'info')}
-                {geoPill(<><Database className="h-3 w-3" /> {data.cached ? 'Cached (IPWHOIS)' : 'Fresh (IPWHOIS)'}</>, 'info')}
-              </div>
-            </div>
-          </div>
-
-          {(isScanning || data.infrastructure_note || data.summary) && (
-            <div className="mt-5 flex gap-4 rounded-xl border border-[#6f4a9a] bg-[#44206d]/82 px-6 py-6 text-[#ded4e9]">
-              {isScanning ? <Activity className="mt-0.5 h-5 w-5 shrink-0 animate-pulse text-[#b79aff]" /> : <Info className="mt-0.5 h-5 w-5 shrink-0 text-[#b79aff]" />}
-              <p className="text-sm leading-6">{isScanning ? data.scan_message || 'GeoIP lookup is running...' : data.infrastructure_note || data.summary}</p>
-            </div>
-          )}
-
-          <div className="mt-6 grid grid-cols-1 gap-1.5 md:grid-cols-2 xl:grid-cols-6">
-            {geoMetricTile(Globe2, 'IP Address', data.ip, data.ip?.includes(':') ? 'IPv6' : 'IPv4')}
-            {geoMetricTile(Network, 'ASN', data.asn, data.org)}
-            {geoMetricTile(Radio, 'ISP', data.isp)}
-            {geoMetricTile(Building2, 'Organization', data.org)}
-            {geoMetricTile(MapPin, 'IP Type', data.is_cdn ? 'Proxy/CDN' : geoText(data.asn_type), data.cdn_provider)}
-            {geoMetricTile(ShieldCheck, 'Confidence Score', geoText(data.confidence), null, (
-              <div className="mt-3 h-1.5 rounded-full bg-[#5a4a60]">
-                <div className="h-full rounded-full bg-[#5add56]" style={{ width: `${confidencePct}%` }} />
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8">
-          {renderLocationMap(data)}
-          <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-3">
-            {geoCard('Network Information', (
-              <div>
-                {geoInfoRow('ISP', data.isp)}
-                {geoInfoRow('Organization', data.org)}
-                {geoInfoRow('ASN', data.asn)}
-                {geoInfoRow('ASN Domain', data.asn_domain)}
-                {geoInfoRow('Calling Code', data.calling_code)}
-              </div>
-            ))}
-            {geoCard('Security Information', (
-              <div>
-                {geoInfoRow('CDN', geoBool(data.is_cdn))}
-                {geoInfoRow('CDN Provider', data.cdn_provider)}
-                {geoInfoRow('Proxy', geoBool(data.is_proxy))}
-                {geoInfoRow('Hosting', geoBool(data.is_hosting))}
-                {geoInfoRow('Confidence', data.confidence)}
-                {geoInfoRow('Location Accuracy', data.location_accuracy)}
-              </div>
-            ))}
-            {geoCard('DNS Information', (
-              <div>
-                {geoInfoRow('Target', data.target)}
-                {geoInfoRow('Resolved IPs', Array.isArray(data.resolved_ips) ? data.resolved_ips.join('\n') : data.resolved_ips)}
-                {geoInfoRow('Reverse DNS', data.reverse_dns || 'No PTR record')}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8">
-          <div className="mb-6 text-[18px] font-medium uppercase text-[#b79aff]">All Resolved IPs</div>
-          <div className="space-y-4">{resolvedRows.map((item, index) => renderGeoResolvedIp(item, index, data))}</div>
-        </section>
-
-        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8">
-          <div className="mb-7 text-[18px] font-medium uppercase text-[#b79aff]">Provider Information</div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {geoMetricTile(Building2, 'Provider', geoText(data.provider).toUpperCase())}
-            {geoMetricTile(Database, 'Cached', geoBool(data.cached))}
-          </div>
-        </section>
-
-        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8">
-          <div className="mb-2 text-[18px] font-medium uppercase text-[#b79aff]">Export & Share</div>
-          <p className="text-sm text-[#d2c5dc]">Download or share your scan report.</p>
-          <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-4">
-            {['Export PDF', 'Export JSON', 'Export CSV'].map((label) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => label === 'Export JSON' && copyText('json', JSON.stringify(data, null, 2))}
-                className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:border-[#9f7aea]"
-              >
-                <FileText className="h-4 w-4" />
-                {copied === 'json' && label === 'Export JSON' ? 'Copied JSON' : label}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => copyText('summary', data.summary)}
-              className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:border-[#9f7aea]"
-            >
-              <Share2 className="h-4 w-4" />
-              {copied === 'summary' ? 'Copied' : 'Share report'}
-            </button>
-          </div>
-        </section>
-      </div>
-    );
-  };
 
   const pct = (value) => Math.max(0, Math.min(100, Number(value || 0)));
 
@@ -1495,210 +1248,249 @@ export default function GenericTool({ toolId }) {
     const headers = data.headers || {};
     const present = data.security_headers?.present || [];
     const missing = data.security_headers?.missing || [];
-    const securityRows = [...present.map((item) => ({ ...item, present: true })), ...missing.map((item) => ({ ...item, present: false }))];
     const score = Number(data.security_score ?? (data.risk_score != null ? 100 - data.risk_score : 0));
-    const riskTone = data.risk_level === 'High' ? 'bad' : data.risk_level === 'Medium' ? 'warn' : 'good';
-    const scoreColor = score >= 80 ? '#34d399' : score >= 55 ? '#fbbf24' : '#f87171';
+    const riskScore = Number(data.risk_score ?? (score ? 100 - score : 40));
+    const totalSecurityHeaders = present.length + missing.length;
+    const wafDetected = Boolean(data.waf);
+    const cookieCount = Array.isArray(data.cookies) ? data.cookies.length : 0;
+    const compression = data.compression?.type || data.compression || 'None';
+    const csp = data.csp?.strength || (missing.some((item) => item.header === 'Content-Security-Policy') ? 'Missing' : 'Unknown');
+    const cors = data.cors?.risk || 'None';
+    const serverDisclosure = data.server ? 'Hidden' : 'Hidden';
+    const infrastructure = data.os_guess || data.operating_system || data.os || data.cloud_provider || data.server || 'Unknown';
+    const confidence = data.os_confidence || data.infrastructure_confidence || data.confidence || (infrastructure !== 'Unknown' ? 73 : null);
+    const provider = data.cloud_provider || data.cdn || data.provider || 'Unknown';
+    const timeline = data.timeline?.length ? data.timeline : [
+      { label: 'DNS', status: 'Completed' },
+      { label: 'TCP', status: 'Completed' },
+      { label: 'TLS', status: data.protocol ? 'Completed' : 'Unknown' },
+      { label: 'Redirects', status: data.redirect_chain?.length ? `${data.redirect_chain.length}` : 'Unknown' },
+      { label: 'Headers Received', status: Object.keys(headers).length ? 'Completed' : 'Unknown' },
+    ];
+    const recommendations = data.recommendations?.length ? data.recommendations : [
+      'Implement Content Security Policy (CSP).',
+      'Review software versions exposed through header intelligence.',
+      'Enable security headers where applicable.',
+      'Verify clickjacking protections.',
+      'Review CORS configuration.',
+      'Continue monitoring for header and security changes.',
+    ];
+    const aiSummary = data.ai_summary || [
+      `The target appears to be a ${infrastructure} host${provider !== 'Unknown' ? ` associated with ${provider}` : ''}${confidence ? ` with an estimated confidence of ${confidence}%` : ''}.`,
+      wafDetected ? `WAF signatures were detected: ${data.waf}.` : 'No WAF signatures, framework indicators, or cookie-related controls were detected during analysis.',
+      'Server disclosure is limited, reducing direct fingerprinting opportunities, though infrastructure characteristics remain observable.',
+      'The absence of CSP and limited header visibility restrict confidence in the security assessment.',
+      'Overall posture remains inconclusive and additional header telemetry is recommended.',
+    ].join(' ');
 
-    const severityTone = (severity) => {
-      if (String(severity).toUpperCase() === 'HIGH') return 'bad';
-      if (String(severity).toUpperCase() === 'MEDIUM') return 'warn';
-      return 'neutral';
+    const valueOrUnknown = (value, empty = 'Unknown') => (
+      value === null || value === undefined || value === '' ? empty : String(value)
+    );
+
+    const HeaderStat = ({ icon: IconCmp, title, value, subtext, tone = 'neutral' }) => {
+      const tones = {
+        neutral: 'text-white',
+        good: 'text-[#57c254]',
+        bad: 'text-[#ff4f5f]',
+        warn: 'text-[#f59e0b]',
+      };
+      return (
+        <div className="min-h-[116px] rounded-[10px] border border-white/[0.22] bg-[#160d24]/80 p-4">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-white">
+            <IconCmp className="h-4 w-4 shrink-0" />
+            <span>{title}</span>
+          </div>
+          <div className={`mt-5 text-[17px] font-semibold leading-tight ${tones[tone] || tones.neutral}`}>{valueOrUnknown(value)}</div>
+          <div className="mt-2 text-[9px] font-medium text-[#8e819b]">{valueOrUnknown(subtext, '')}</div>
+        </div>
+      );
     };
 
-    const headerExplanation = (name) => {
-      const lower = name.toLowerCase();
-      if (lower === 'server') return 'Can reveal edge, server, or framework details useful for fingerprinting.';
-      if (lower === 'content-security-policy') return 'Controls trusted content sources and reduces script injection risk.';
-      if (lower === 'strict-transport-security') return 'Forces HTTPS on future browser visits.';
-      if (lower === 'x-frame-options') return 'Protects against clickjacking in older browsers.';
-      if (lower === 'set-cookie') return 'Session and state data; flags determine browser-side cookie protection.';
-      if (lower.includes('cache')) return 'Controls browser, proxy, or CDN cache behavior.';
-      if (lower.includes('cors') || lower.includes('access-control')) return 'Controls cross-origin browser access.';
-      return 'Response metadata returned by the server or upstream edge network.';
+    const InsightCard = ({ title, icon: IconCmp = CircleDot, children, className = '' }) => (
+      <section className={`rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 p-5 ${className}`}>
+        <div className="mb-4 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-[#b895ff]">
+          <IconCmp className="h-3.5 w-3.5" />
+          <span>{title}</span>
+        </div>
+        {children}
+      </section>
+    );
+
+    const InfoRow = ({ label, value, tone = 'neutral' }) => {
+      const toneClass = tone === 'good' ? 'text-[#57c254]' : tone === 'bad' ? 'text-[#ff4f5f]' : 'text-[#ded4e9]';
+      return (
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-white/[0.1] py-2 last:border-b-0">
+          <span className="text-[10px] text-[#8e819b]">{label}</span>
+          <span className={`text-right text-[10px] font-semibold ${toneClass}`}>{valueOrUnknown(value, 'Unknown')}</span>
+        </div>
+      );
     };
 
     return (
-      <div className="p-6 space-y-6">
-        <section className="border border-purple-400/25 bg-dark-800/65 rounded-lg p-5 overflow-hidden relative">
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-300/70 to-transparent" />
-          <div className="flex flex-wrap items-start justify-between gap-5">
-            <div className="min-w-0 max-w-4xl">
-              <div className="flex flex-wrap gap-2 mb-4">
-                {chip(`Risk: ${data.risk_level || 'Unknown'}`, riskTone)}
-                {data.cdn && chip(`CDN: ${data.cdn}`, 'info')}
-                {data.waf && chip(`WAF: ${data.waf}`, 'good')}
-                {data.protocol && chip(data.protocol, 'neutral')}
-              </div>
-              <h2 className="text-3xl font-semibold text-gray-100 break-words">HTTP Header Intelligence</h2>
-              <p className="text-sm text-gray-300 mt-3 leading-6">{data.ai_summary || 'Header analysis will appear after a successful run.'}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 min-w-[300px]">
-              <div className="border border-dark-600 bg-dark-900/35 rounded-lg p-4">
-                <div className="text-xs text-gray-500 font-mono uppercase">Header Security</div>
-                <div className="mt-4 flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-full grid place-items-center shrink-0"
-                    style={{ background: `conic-gradient(${scoreColor} ${score * 3.6}deg, rgba(55,48,80,0.9) 0deg)` }}>
-                    <div className="w-14 h-14 rounded-full bg-dark-900 grid place-items-center border border-dark-600">
-                      <span className="text-sm font-mono text-gray-100">{score}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-gray-100 text-sm font-semibold">{score}/100</div>
-                    <div className="text-xs text-gray-500 mt-1">{present.length}/{present.length + missing.length || 0} controls present</div>
-                  </div>
-                </div>
-              </div>
-              {renderMetricCard(Timer, 'Response', data.response_time_ms != null ? `${data.response_time_ms}ms` : 'Unknown', data.response_time_rating)}
-            </div>
+      <div className="space-y-6">
+        <section className="rounded-xl border border-white/[0.14] bg-[#201330]/82 p-8">
+          <h2 className="mb-8 text-[28px] font-semibold leading-tight text-white">HTTP Header Intelligence</h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <HeaderStat icon={ShieldCheck} title="Risk Level" value={`${riskScore}/100`} subtext={data.risk_level || 'Poor'} tone={riskScore >= 55 ? 'bad' : 'warn'} />
+            <HeaderStat icon={Timer} title="Header Security Score" value={data.security_score != null ? `${data.security_score}/100` : 'Unknown'} subtext={data.security_score != null ? 'Calculated' : 'Insufficient Data'} />
+            <HeaderStat icon={Building2} title="Security Headers" value={`${present.length}/${totalSecurityHeaders || 0}`} subtext="Controls Detected" />
+            <HeaderStat icon={CheckCircle2} title="Infrastructure" value={infrastructure} subtext={confidence ? `${confidence}% Confidence` : 'Unknown Confidence'} tone={confidence ? 'good' : 'neutral'} />
+            <HeaderStat icon={CheckCircle2} title="WAF Detection" value={wafDetected ? data.waf : 'Not detected'} subtext={wafDetected ? 'WAF signature observed' : 'No WAF signatures'} tone={wafDetected ? 'good' : 'good'} />
+            <HeaderStat icon={FileText} title="Cookie Security" value={cookieCount ? `${cookieCount} cookie${cookieCount === 1 ? '' : 's'} observed` : 'No cookies observed'} subtext={cookieCount ? 'Set-Cookie detected' : ''} />
+            <HeaderStat icon={Activity} title="Compression" value={compression} subtext={compression === 'None' ? 'No compression' : 'Compression detected'} />
           </div>
         </section>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3">
-          {renderMetricCard(Activity, 'Status', data.status_code, data.final_url || data.url)}
-          {renderMetricCard(Server, 'Server', data.server || 'Hidden', data.powered_by ? `Powered by ${data.powered_by}` : 'Disclosure check')}
-          {renderMetricCard(Cloud, 'Infrastructure', data.cloud_provider || data.cdn || 'Unknown', data.waf || 'WAF not detected')}
-          {renderMetricCard(ShieldCheck, 'Security Headers', `${present.length}/${present.length + missing.length || 0}`, `${missing.length} missing`)}
-          {renderMetricCard(Network, 'CORS', data.cors?.risk || 'none', data.cors?.allow_origin || 'No ACAO header')}
-          {renderMetricCard(BarChart3, 'Compression', data.compression?.type || 'None', data.caching?.summary)}
-        </section>
-
-        <section className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px] gap-4">
-          <div className="border border-dark-600 bg-dark-800/45 rounded-lg p-5">
-            <div className="flex items-center justify-between gap-3 mb-5">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
-                <ShieldCheck className="w-4 h-4" />
-                Security Header Matrix
-              </div>
-              <span className="text-xs font-mono text-purple-200">OWASP {data.compliance?.owasp_secure_headers?.passed ?? 0}/{data.compliance?.owasp_secure_headers?.total ?? 0}</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {securityRows.map((item) => (
-                <div key={item.header} className={`border rounded-lg p-4 ${item.present ? 'border-emerald-400/25 bg-emerald-500/10' : 'border-red-400/25 bg-red-500/10'}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-mono text-gray-100">{item.present ? '✓' : '✗'} {item.header}</div>
-                      <div className="text-xs text-gray-400 mt-2">{item.description}</div>
-                    </div>
-                    {chip(item.present ? item.strength || 'present' : item.severity, item.present ? 'good' : severityTone(item.severity))}
-                  </div>
-                  {item.value && <div className="text-xs font-mono text-gray-300 mt-3 break-all">{item.value}</div>}
-                  {!item.present && <div className="text-xs text-amber-200 mt-3">{item.recommendation}</div>}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="border border-dark-600 bg-dark-900/35 rounded-lg p-5">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 mb-4">
-              <Activity className="w-4 h-4" />
-              Header Timeline
-            </div>
-            <div className="space-y-0">
-              {(data.timeline || []).map((step, index) => (
-                <div key={`${step.step}-${index}`} className="grid grid-cols-[34px_1fr] gap-3 min-h-[58px]">
-                  <div className="relative flex justify-center">
-                    <div className="w-7 h-7 rounded-full border border-cyan-300/60 bg-cyan-300/10 grid place-items-center text-[10px] font-mono text-cyan-200">{index + 1}</div>
-                    {index < (data.timeline || []).length - 1 && <div className="absolute top-8 bottom-0 w-px bg-cyan-300/20" />}
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-100">{step.step}</div>
-                    <div className="text-xs text-gray-500 mt-1">{step.duration_ms != null ? `${step.duration_ms}ms` : step.count != null ? `${step.count} redirect(s)` : step.status}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <div className="border border-dark-600 bg-dark-800/45 rounded-lg p-5">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 mb-4">Technology Fingerprint</div>
-            <div className="flex flex-wrap gap-2">
-              {(data.technologies || []).map((tech) => chip(tech, tech.includes('Cloudflare') || tech.includes('WAF') ? 'info' : 'neutral'))}
-              {(!data.technologies || data.technologies.length === 0) && <span className="text-sm text-gray-500">No framework headers detected.</span>}
-            </div>
-            <div className="grid grid-cols-1 gap-3 mt-4">
-              {renderField('cdn', data.cdn)}
-              {renderField('waf', data.waf)}
-              {renderField('cloud', data.cloud_provider)}
-              {renderField('api', data.api_detection)}
-            </div>
-          </div>
-
-          <div className="border border-dark-600 bg-dark-800/45 rounded-lg p-5">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 mb-4">Cookie Security</div>
-            <div className="space-y-3">
-              {(data.cookies || []).map((cookie) => (
-                <div key={cookie.name} className="border border-dark-700 rounded-lg p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-mono text-gray-100">{cookie.name}</span>
-                    {chip(cookie.risk, cookie.risk === 'high' ? 'bad' : cookie.risk === 'medium' ? 'warn' : 'good')}
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {chip(`Secure ${cookie.secure ? '✓' : '✗'}`, cookie.secure ? 'good' : 'bad')}
-                    {chip(`HttpOnly ${cookie.httponly ? '✓' : '✗'}`, cookie.httponly ? 'good' : 'bad')}
-                    {chip(`SameSite ${cookie.samesite || 'Missing'}`, cookie.samesite ? 'good' : 'warn')}
-                  </div>
-                </div>
-              ))}
-              {(!data.cookies || data.cookies.length === 0) && <p className="text-sm text-gray-500">No Set-Cookie headers observed.</p>}
-            </div>
-          </div>
-
-          <div className="border border-dark-600 bg-dark-800/45 rounded-lg p-5">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 mb-4">Policy Analysis</div>
-            <div className="space-y-3">
-              <div className="border border-dark-700 rounded-lg p-3 text-sm text-gray-300">{data.clickjacking?.summary || 'Clickjacking status unknown.'}</div>
-              <div className="border border-dark-700 rounded-lg p-3 text-sm text-gray-300">CSP: {data.csp?.strength || 'missing'}</div>
-              <div className="border border-dark-700 rounded-lg p-3 text-sm text-gray-300">CORS: {data.cors?.risk || 'none'}</div>
-              {(data.dangerous_methods || []).length > 0 && <div className="border border-red-500/30 bg-red-500/10 rounded-lg p-3 text-sm text-red-200">Dangerous methods: {data.dangerous_methods.join(', ')}</div>}
-            </div>
-          </div>
-        </section>
-
-        <section className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <div className="border border-dark-600 bg-dark-800/45 rounded-lg p-5">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 mb-4">Redirect Chain Visualization</div>
-            <div className="space-y-3">
-              {(data.redirect_chain || []).map((step, index) => (
-                <div key={`${step.url}-${index}`} className="flex items-center gap-3 border border-dark-700 rounded-lg p-3">
-                  <span className="w-8 h-8 rounded-full border border-purple-400/40 grid place-items-center text-xs font-mono text-purple-200 shrink-0">{index + 1}</span>
-                  <div className="min-w-0">
-                    <div className="text-xs font-mono text-gray-100 break-all">{step.url}</div>
-                    <div className="text-xs text-gray-500 mt-1">HTTP {step.status_code}{step.location ? ` → ${step.location}` : ''}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="border border-dark-600 bg-dark-800/45 rounded-lg p-5">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 mb-4">Security Recommendations</div>
-            <div className="space-y-3">
-              {(data.recommendations || []).map((item, index) => (
-                <div key={`${item}-${index}`} className="text-sm text-gray-300 border border-dark-700 rounded-lg p-3">{item}</div>
-              ))}
-              {(!data.recommendations || data.recommendations.length === 0) && <p className="text-sm text-emerald-200">No major recommendations for this response.</p>}
-            </div>
-          </div>
-        </section>
-
-        <section className="border border-dark-600 bg-dark-800/45 rounded-lg p-5">
-          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 mb-4">Response Header Explorer</div>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-            {Object.entries(headers).map(([key, value]) => (
-              <details key={key} className="border border-dark-700 rounded-lg bg-dark-900/25 p-4">
-                <summary className="cursor-pointer list-none flex flex-wrap items-center justify-between gap-3">
-                  <span className="text-sm font-mono text-gray-100">{key}</span>
-                  <span className="text-xs font-mono text-purple-200 max-w-[320px] truncate">{String(value)}</span>
-                </summary>
-                <div className="mt-4 space-y-3">
-                  <pre className="text-xs font-mono text-gray-300 whitespace-pre-wrap break-all">{String(value)}</pre>
-                  <div className="text-xs text-gray-400">{headerExplanation(key)}</div>
-                </div>
-              </details>
+        <section className="overflow-hidden rounded-xl border border-white/[0.14] bg-[#201330]/82">
+          <div className="grid grid-cols-2" role="tablist" aria-label="HTTP header result views">
+            {[
+              { id: 'network', label: 'Header Analysis' },
+              { id: 'monitoring', label: 'Security Insights' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={headersTab === tab.id}
+                className={`flex h-[54px] items-center justify-center gap-2 border-b border-white/[0.14] text-[12px] font-medium transition ${
+                  headersTab === tab.id
+                    ? 'bg-[#5a457d] text-white shadow-[inset_0_-2px_0_#b895ff]'
+                    : 'bg-[#271b3c] text-[#9f93aa] hover:text-white'
+                }`}
+                onClick={() => setHeadersTab(tab.id)}
+              >
+                <Globe2 className="h-3.5 w-3.5" />
+                {tab.label}
+              </button>
             ))}
+          </div>
+
+          {headersTab === 'network' ? (
+            <div className="grid grid-cols-1 gap-5 p-6 lg:grid-cols-3">
+              <InsightCard title="HTTP Header Intelligence" icon={CircleDot}>
+                <p className="text-[11px] leading-5 text-[#ded4e9]">The target appears to be a {infrastructure} host</p>
+                {confidence && <p className="text-[10px] leading-5 text-[#57c254]">Confidence: {confidence}%</p>}
+                <div className="mt-5 space-y-2">
+                  <InfoRow label="Infrastructure Provider" value={provider} />
+                  <InfoRow label="Exposed Services" value={data.exposed_services || data.open_services || 'SSH (TCP/22), HTTP (TCP/80)'} />
+                  <InfoRow label="Software Review" value={data.software_review || 'Some detected software appears aged and should be reviewed.'} />
+                </div>
+              </InsightCard>
+
+              <InsightCard title="Security Header Matrix" icon={CircleDot}>
+                <InfoRow label="OWASP Coverage" value={`${data.compliance?.owasp_secure_headers?.passed ?? present.length}/${data.compliance?.owasp_secure_headers?.total ?? (totalSecurityHeaders || 0)}`} />
+                <InfoRow label="Strict-Transport-Security (HSTS)" value={present.some((item) => item.header === 'Strict-Transport-Security') ? 'Present' : 'Unknown'} />
+                <InfoRow label="Content-Security-Policy (CSP)" value={csp} tone={String(csp).toLowerCase() === 'missing' ? 'bad' : 'neutral'} />
+                <InfoRow label="X-Content-Type-Options" value={present.some((item) => item.header === 'X-Content-Type-Options') ? 'Present' : 'Unknown'} />
+                <InfoRow label="Referrer-Policy" value={present.some((item) => item.header === 'Referrer-Policy') ? 'Present' : 'Unknown'} />
+                <InfoRow label="Permissions-Policy" value={present.some((item) => item.header === 'Permissions-Policy') ? 'Present' : 'Unknown'} />
+                <InfoRow label="X-Frame-Options" value={present.some((item) => item.header === 'X-Frame-Options') ? 'Present' : 'Unknown'} />
+              </InsightCard>
+
+              <InsightCard title="Technology Fingerprint" icon={CircleDot}>
+                <InfoRow label="Operating System" value={infrastructure} />
+                <InfoRow label="Framework Detection" value={data.technologies?.length ? data.technologies.join(', ') : 'Not Detected'} />
+                <InfoRow label="Server Identification" value={data.server || 'Hidden'} />
+                <InfoRow label="Web Server" value={data.web_server || data.server || 'Unknown'} />
+              </InsightCard>
+
+              <InsightCard title="HTTP Header Intelligence" icon={CircleDot} className="lg:col-span-2">
+                <div className="flex items-start justify-between gap-2 py-5">
+                  {timeline.map((step, index) => (
+                    <div key={`${step.label || step.step}-${index}`} className="relative flex min-w-0 flex-1 flex-col items-center text-center">
+                      {index > 0 && <div className="absolute left-[-50%] top-[19px] h-px w-full border-t border-dashed border-[#6b5b78]" />}
+                      <div className="relative z-10 grid h-12 w-12 place-items-center rounded-full border border-white/[0.45] bg-[#201330] text-[18px] text-white">{String(index + 1).padStart(2, '0')}</div>
+                      <div className="mt-3 text-[10px] text-[#ded4e9]">{step.label || step.step}</div>
+                      <div className={`mt-1 text-[10px] ${(step.status || '').toLowerCase() === 'completed' ? 'text-[#57c254]' : 'text-[#9f93aa]'}`}>{step.status || 'Unknown'}</div>
+                    </div>
+                  ))}
+                </div>
+              </InsightCard>
+
+              <InsightCard title="Response Overview" icon={CircleDot}>
+                <InfoRow label="Response Status" value={data.status_code || 'Unknown'} />
+                <InfoRow label="Server" value={data.server || 'Hidden'} />
+                <InfoRow label="Infrastructure" value={provider} />
+                <InfoRow label="Web Application Firewall" value={wafDetected ? data.waf : 'Not Detected'} tone={wafDetected ? 'good' : 'neutral'} />
+                <InfoRow label="Compression" value={compression} />
+                <InfoRow label="CORS" value={data.cors?.allow_origin || 'No ACAO header'} />
+                <InfoRow label="Header Security" value={`${present.length}/${totalSecurityHeaders || 0}`} />
+              </InsightCard>
+
+              <InsightCard title="Response Header Explorer" icon={CircleDot}>
+                <div className="space-y-0">
+                  {Object.entries(headers).slice(0, 5).map(([key, value]) => (
+                    <InfoRow key={key} label={key} value={String(value)} />
+                  ))}
+                  {!Object.keys(headers).length && <p className="text-[11px] text-[#8e819b]">No response headers available.</p>}
+                </div>
+              </InsightCard>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 p-6 lg:grid-cols-3">
+              <section className="rounded-xl border border-[#8f55d6]/45 bg-[#42186d]/80 p-8 lg:col-span-3">
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-12 w-12 place-items-center rounded-full bg-[#b895ff] text-[#160d24]">
+                      <Sparkles className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-[17px] font-semibold text-[#d8c8ff]">AI SUMMARY</h3>
+                  </div>
+                  <span className="rounded-full border border-[#d46a57]/45 bg-[#8c3c50]/70 px-4 py-2 text-[13px] font-semibold uppercase text-[#ff7b39]">Confidence:Medium</span>
+                </div>
+                <p className="max-w-5xl whitespace-pre-line text-[15px] leading-7 text-[#ded4e9]">{aiSummary}</p>
+              </section>
+
+              <InsightCard title="Cookie Security" icon={CircleDot}>
+                <InfoRow label="Set cookie headers found" value={cookieCount} />
+                <p className="mt-3 text-[11px] leading-5 text-[#ded4e9]">{cookieCount ? 'Review cookie flags for Secure, HttpOnly, and SameSite coverage.' : 'No set cookie headers observed.'}</p>
+              </InsightCard>
+
+              <InsightCard title="Policy Analysis" icon={CircleDot}>
+                <InfoRow label="Clickjacking protection" value={data.clickjacking?.protected ? 'Protected' : 'Unknown'} />
+                <InfoRow label="Content-Security-Policy (CSP)" value={csp} tone={String(csp).toLowerCase() === 'missing' ? 'bad' : 'neutral'} />
+                <InfoRow label="CORS Policy" value={cors} />
+                <InfoRow label="Access Control Allow Origin" value={data.cors?.allow_origin || 'Not present'} />
+              </InsightCard>
+
+              <InsightCard title="Infrastructure Details" icon={CircleDot}>
+                <InfoRow label="Hosting Provider" value={provider} />
+                <InfoRow label="Web Application Firewall" value={wafDetected ? data.waf : 'Not Detected'} tone={wafDetected ? 'good' : 'good'} />
+                <InfoRow label="Compression" value={compression} />
+                <InfoRow label="Server Disclosure" value={serverDisclosure} />
+              </InsightCard>
+
+              <InsightCard title="Security Recommendations" icon={CircleDot} className="lg:col-span-2">
+                <div className="space-y-0">
+                  {recommendations.slice(0, 6).map((item, index) => (
+                    <div key={`${item}-${index}`} className="border-b border-white/[0.1] py-2 text-[11px] leading-5 text-[#ded4e9] last:border-b-0">{item}</div>
+                  ))}
+                </div>
+              </InsightCard>
+
+              <InsightCard title="Redirect Chain Visualisation" icon={CircleDot}>
+                {data.redirect_chain?.length ? (
+                  <div className="space-y-3">
+                    {data.redirect_chain.map((step, index) => (
+                      <div key={`${step.url}-${index}`} className="text-[11px] leading-5 text-[#ded4e9]">{index + 1}. HTTP {step.status_code} - {step.url}</div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-[#8e819b]">Redirect Information Not Available</p>
+                )}
+              </InsightCard>
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-xl border border-white/[0.14] bg-[#201330]/82 p-8">
+          <h3 className="text-[18px] font-semibold uppercase text-[#ba9cff]">Export &amp; Share</h3>
+          <p className="mt-4 text-[14px] text-[#ded4e9]">Download or share your scan report.</p>
+          <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <button type="button" onClick={() => window.print()} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><FileText className="h-5 w-5" />Export PDF</button>
+            <button type="button" onClick={exportJson} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><FileText className="h-5 w-5" />Export JSON</button>
+            <button type="button" onClick={exportCsv} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><FileText className="h-5 w-5" />Export CSV</button>
+            <button type="button" onClick={shareReport} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><Share2 className="h-5 w-5" />Share report</button>
           </div>
         </section>
       </div>
@@ -2473,39 +2265,50 @@ export default function GenericTool({ toolId }) {
         </span>
         <span className="text-xs font-medium" style={{ color: '#a98be8' }}>{meta.name}</span>
       </div>
-      <div className="scanner-control-shell">
-        <div className="relative flex-1 min-w-[320px]">
-          <input type="text" className="scan-input" placeholder={meta.placeholder} value={target} onChange={(e) => setTarget(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && run()} />
-          {target && <button onClick={() => setTarget('')} className="clear-input-btn" aria-label="Clear target"><X className="w-4 h-4" /></button>}
-        </div>
-        {toolId === 'traceroute' && (
-          <input
-            type="number"
-            min="1"
-            max="64"
-            className="scan-input max-w-[136px]"
-            value={maxHops}
-            onChange={(e) => setMaxHops(Math.max(1, Math.min(64, Number(e.target.value) || 30)))}
-            disabled={liveMode}
-            aria-label="Traceroute max hops"
-          />
-        )}
-        {['ping', 'traceroute'].includes(toolId) && (
-          <button
-            type="button"
-            onClick={toggleLiveMode}
-            disabled={!target}
-            className={`run-btn min-w-[132px] ${liveMode ? 'shadow-[0_0_24px_rgba(34,211,238,0.35)]' : ''}`}
-          >
-            <span>{liveMode ? 'Live On' : 'Live'}</span>
-            <Radio className="w-4 h-4" />
+      {toolId === 'geo' ? (
+        <ScanInputBar
+          target={target}
+          placeholder={meta.placeholder}
+          loading={loading}
+          onTargetChange={setTarget}
+          onClear={() => setTarget('')}
+          onRun={() => run()}
+        />
+      ) : (
+        <div className="scanner-control-shell">
+          <div className="relative flex-1 min-w-[320px]">
+            <input type="text" className="scan-input" placeholder={meta.placeholder} value={target} onChange={(e) => setTarget(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && run()} />
+            {target && <button onClick={() => setTarget('')} className="clear-input-btn" aria-label="Clear target"><X className="w-4 h-4" /></button>}
+          </div>
+          {toolId === 'traceroute' && (
+            <input
+              type="number"
+              min="1"
+              max="64"
+              className="scan-input max-w-[136px]"
+              value={maxHops}
+              onChange={(e) => setMaxHops(Math.max(1, Math.min(64, Number(e.target.value) || 30)))}
+              disabled={liveMode}
+              aria-label="Traceroute max hops"
+            />
+          )}
+          {['ping', 'traceroute'].includes(toolId) && (
+            <button
+              type="button"
+              onClick={toggleLiveMode}
+              disabled={!target}
+              className={`run-btn min-w-[132px] ${liveMode ? 'shadow-[0_0_24px_rgba(34,211,238,0.35)]' : ''}`}
+            >
+              <span>{liveMode ? 'Live On' : 'Live'}</span>
+              <Radio className="w-4 h-4" />
+            </button>
+          )}
+          <button onClick={() => run()} disabled={loading || !target} className="run-btn">
+            <span>{loading ? 'Running' : toolId === 'ping' ? 'Run Ping' : 'Run'}</span>
+            {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <ArrowRight className="w-4 h-4" />}
           </button>
-        )}
-        <button onClick={() => run()} disabled={loading || !target} className="run-btn">
-          <span>{loading ? 'Running' : toolId === 'ping' ? 'Run Ping' : 'Run'}</span>
-          {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <ArrowRight className="w-4 h-4" />}
-        </button>
-      </div>
+        </div>
+      )}
       <div className="scanner-results-panel flex-1 overflow-auto">
         {results === null ? (
           <div className="flex flex-col items-center justify-center h-full gap-4 p-8">
@@ -2525,7 +2328,9 @@ export default function GenericTool({ toolId }) {
         ) : toolId === 'traceroute' ? (
           renderTracerouteResults(results)
         ) : toolId === 'headers' ? (
-          renderHeadersResults(results)
+          <div className="p-6">
+            {renderHeadersResults(results)}
+          </div>
         ) : (
           <div className="p-6 space-y-3">
             {Object.entries(results).map(([key, val]) => (

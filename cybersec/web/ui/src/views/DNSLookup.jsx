@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Globe, X, ArrowRight } from 'lucide-react';
 import { apiGet } from '../utils/apiClient';
 import { useGetToken } from '../utils/useGetToken';

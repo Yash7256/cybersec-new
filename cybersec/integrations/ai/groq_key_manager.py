@@ -1,8 +1,11 @@
 import asyncio
+import logging
 import time
 from dataclasses import dataclass, field
 from typing import Optional
 from cybersec.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -21,11 +24,15 @@ class GroqKeyManager:
 
     def __init__(self):
         self.keys: list[str] = settings.get_groq_keys()
-        if not self.keys:
-            raise ValueError("[Groq] No API keys found. Add GROQ_API_KEY_1 to .env")
-
         self.current_index: int = 0
         self.key_stats: dict[str, KeyStats] = {}
+
+        if not self.keys:
+            logger.warning(
+                "[Groq] No API keys found. AI features will be unavailable. "
+                "Add GROQ_API_KEY_1 to your .env file to enable them."
+            )
+            return
 
         for i, key in enumerate(self.keys):
             self.key_stats[key] = KeyStats(index=i + 1)
@@ -35,6 +42,10 @@ class GroqKeyManager:
             print(f"  Key {i + 1}: ...{key[-8:]}")
 
     def get_key(self) -> tuple[str, KeyStats]:
+        if not self.keys:
+            raise RuntimeError(
+                "[Groq] No API keys configured. Add GROQ_API_KEY_1 to your .env file."
+            )
         now = time.time()
         attempts = 0
 
