@@ -53,17 +53,21 @@
 
   .app-main-layout {
     gap: 14px;
-    padding: clamp(148px, 16vh, 210px) 70px 30px 40px;
+    padding: 14px 70px 30px 40px;
+    margin-top: 112px; /* clear the fixed navbar */
+    height: calc(100vh - 112px);
+    overflow: hidden; /* children manage their own scroll */
   }
 
   .app-content-panel {
-    min-height: calc(100vh - clamp(122px, 14vh, 166px));
     padding: 16px;
     border-radius: 15px;
     background: rgba(19, 9, 33, 0.5);
     border: 1px solid rgba(199, 183, 232, 0.14);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025), 0 26px 78px rgba(6, 1, 16, 0.28);
     backdrop-filter: blur(8px);
+    overflow-y: auto;   /* only the content area scrolls */
+    height: 100%;
   }
 
   .sidebar-panel {
@@ -71,6 +75,10 @@
     flex-shrink: 0;
     padding: 4px 0 0;
     background: transparent;
+    height: 100%;           /* fill the layout row height */
+    overflow-y: auto;       /* sidebar scrolls independently */
+    position: sticky;
+    top: 0;
   }
 
   .auth-btn {
@@ -118,9 +126,9 @@
     user-select: none;
   }
   .tier-badge.free {
-    background: rgba(251,191,36,0.12);
-    border: 1px solid rgba(251,191,36,0.32);
-    color: #fbbf24;
+    background: rgba(249,115,22,0.12);
+    border: 1px solid rgba(249,115,22,0.32);
+    color: #F97316;
   }
   .tier-badge.paid {
     background: rgba(167,139,250,0.14);
@@ -128,13 +136,13 @@
     color: #c4b5fd;
   }
   .tier-badge.limit {
-    background: rgba(248,113,113,0.14);
-    border: 1px solid rgba(248,113,113,0.32);
-    color: #f87171;
+    background: rgba(255,77,77,0.14);
+    border: 1px solid rgba(255,77,77,0.32);
+    color: #FF4D4D;
     cursor: pointer;
   }
   .tier-badge.limit:hover {
-    background: rgba(248,113,113,0.22);
+    background: rgba(255,77,77,0.22);
   }
 
   /* ── Upgrade modal overlay ───────────────────────────────────── */
@@ -205,8 +213,8 @@
     width: 56px;
     height: 56px;
     border-radius: 16px;
-    background: rgba(251,191,36,0.12);
-    border: 1px solid rgba(251,191,36,0.28);
+    background: rgba(249,115,22,0.12);
+    border: 1px solid rgba(249,115,22,0.28);
     margin-bottom: 16px;
   }
   .upgrade-modal-title {
@@ -232,7 +240,7 @@
   .upgrade-usage-bar-fill {
     height: 100%;
     border-radius: 999px;
-    background: linear-gradient(90deg, #f87171 0%, #ef4444 100%);
+    background: linear-gradient(90deg, #FF4D4D 0%, #FF4D4D 100%);
     transition: width 600ms cubic-bezier(0.4,0,0.2,1);
   }
   .upgrade-usage-label {
@@ -344,16 +352,16 @@
     font-size: 16px;
     font-weight: 700;
     color: #1a0e2e;
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
-    border: 1px solid rgba(251,191,36,0.6);
-    box-shadow: 0 8px 24px rgba(251,191,36,0.28), inset 0 1px 0 rgba(255,255,255,0.35);
+    background: linear-gradient(135deg, #F97316 0%, #F97316 50%, #F97316 100%);
+    border: 1px solid rgba(249,115,22,0.6);
+    box-shadow: 0 8px 24px rgba(249,115,22,0.28), inset 0 1px 0 rgba(255,255,255,0.35);
     transition: transform 150ms ease, box-shadow 150ms ease;
     text-decoration: none;
     cursor: pointer;
   }
   .upgrade-cta-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(251,191,36,0.38), inset 0 1px 0 rgba(255,255,255,0.40);
+    box-shadow: 0 12px 32px rgba(249,115,22,0.38), inset 0 1px 0 rgba(255,255,255,0.40);
   }
   .upgrade-dismiss-btn {
     font-size: 13px;
@@ -948,7 +956,7 @@
     font-size: 13px;
     line-height: 1.5;
     font-weight: 800;
-    color: #fed7aa;
+    color: #F97316;
   }
   .exposure-summary {
     display: flex;
@@ -992,7 +1000,7 @@
     font-family: 'Fira Code', ui-monospace, monospace;
     font-size: 11px;
     font-weight: 800;
-    color: #fca5a5;
+    color: #FF4D4D;
   }
   .exposure-finding {
     margin: 0;
@@ -1011,7 +1019,7 @@
     border-radius: 999px;
     border: 1px solid rgba(251, 146, 60, 0.24);
     background: rgba(251, 146, 60, 0.1);
-    color: #fed7aa;
+    color: #F97316;
     font-size: 10px;
   }
   .exposure-recommendation {
@@ -1022,7 +1030,7 @@
   }
   .exposure-recommendation span {
     font-weight: 800;
-    color: #facc15;
+    color: #F97316;
   }
 
   .attack-path-panel {
@@ -1101,7 +1109,7 @@
     margin-top: 5px;
     font-family: 'Fira Code', ui-monospace, monospace;
     font-size: 10px;
-    color: #facc15;
+    color: #F97316;
   }
   .attack-path-node-detail {
     margin-top: 5px;
@@ -1127,7 +1135,7 @@
   .attack-path-edge strong {
     font-size: 18px;
     line-height: 1;
-    color: #fb923c;
+    color: #F97316;
   }
   .attack-path-edge em {
     max-width: 96px;
@@ -1212,7 +1220,7 @@
     color: #ddd6fe;
   }
   .attack-sim-chain strong {
-    color: #fb923c;
+    color: #F97316;
     font-size: 14px;
   }
   .attack-sim-meta {
@@ -1239,7 +1247,7 @@
   }
   .attack-sim-recommendation span {
     font-weight: 800;
-    color: #facc15;
+    color: #F97316;
   }
 
   .misconfig-panel {
@@ -1265,7 +1273,7 @@
     font-family: 'Fira Code', ui-monospace, monospace;
     font-size: 12px;
     font-weight: 800;
-    color: #fb923c;
+    color: #F97316;
   }
   .misconfig-summary {
     display: flex;
@@ -1305,7 +1313,7 @@
   .misconfig-finding-title {
     font-size: 12px;
     font-weight: 800;
-    color: #fed7aa;
+    color: #F97316;
   }
   .misconfig-evidence {
     margin: 5px 0 0;
@@ -1321,7 +1329,7 @@
   }
   .misconfig-recommendation span {
     font-weight: 800;
-    color: #facc15;
+    color: #F97316;
   }
 
   .threat-intel-panel {
@@ -1473,7 +1481,7 @@
   }
   .mitre-threat span {
     font-weight: 800;
-    color: #facc15;
+    color: #F97316;
   }
 
   .exploit-panel {
@@ -1552,7 +1560,7 @@
     font-family: 'Fira Code', ui-monospace, monospace;
     font-size: 10px;
     font-weight: 800;
-    color: #f87171;
+    color: #FF4D4D;
   }
   .cve-cvss-line span {
     font-weight: 600;
@@ -1750,7 +1758,7 @@
   .whois-timeline-fill {
     display: block;
     height: 100%;
-    background: linear-gradient(90deg, #66f58a, #59c8ff, #ffd162);
+    background: linear-gradient(90deg, #7CFF9A, #59c8ff, #ffd162);
   }
 
   .whois-timeline-point {
@@ -1772,7 +1780,7 @@
   }
 
   .whois-timeline-point:first-of-type::after {
-    background: #66f58a;
+    background: #7CFF9A;
   }
 
   .whois-timeline-point span {
@@ -2137,11 +2145,11 @@
   }
 
   .ping-status-pill.is-online {
-    color: #69f08a;
+    color: #7CFF9A;
   }
 
   .ping-status-pill.is-offline {
-    color: #ff4f5f;
+    color: #FF4D4D;
   }
 
   .ping-metric-tile {
@@ -2184,17 +2192,17 @@
 
   .ping-metric-value.tone-good,
   .ping-metric-sub.tone-good {
-    color: #69f08a;
+    color: #7CFF9A;
   }
 
   .ping-metric-value.tone-warn,
   .ping-metric-sub.tone-warn {
-    color: #ff8b3d;
+    color: #F97316;
   }
 
   .ping-metric-value.tone-bad,
   .ping-metric-sub.tone-bad {
-    color: #ff4f5f;
+    color: #FF4D4D;
   }
 
   .ping-info-panel {
@@ -2400,7 +2408,7 @@
   }
 
   .ping-flow-dot.is-bad {
-    background: #ff4f5f;
+    background: #FF4D4D;
   }
 
   .ping-risk-list {
@@ -2432,7 +2440,7 @@
 
   .ping-action-row svg {
     flex: 0 0 auto;
-    color: #69f08a;
+    color: #7CFF9A;
     margin-top: 1px;
   }
 

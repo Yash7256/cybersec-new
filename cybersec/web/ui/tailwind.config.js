@@ -20,6 +20,11 @@ export default {
           light: '#9333ea',
           soft: '#a855f7',
           glow: 'rgba(124,58,237,0.25)',
+        },
+        severity: {
+          red: '#FF4D4D',
+          green: '#7CFF9A',
+          orange: '#F97316',
         }
       },
       fontFamily: {

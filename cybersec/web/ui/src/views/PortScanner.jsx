@@ -25,12 +25,13 @@ import {
   bannerPreview,
   riskBadgeProps,
 } from '../utils/portScan';
+import { downloadFile, exportBrandedPdf, shareOrCopy, rowsToCsv } from '../utils/exportUtils';
 
 const RISK_COLORS = {
-  critical: { bg: 'rgba(239,68,68,0.12)', text: '#f87171', border: 'rgba(239,68,68,0.25)' },
-  high:     { bg: 'rgba(249,115,22,0.12)', text: '#fb923c', border: 'rgba(249,115,22,0.25)' },
-  medium:   { bg: 'rgba(234,179,8,0.12)',  text: '#facc15', border: 'rgba(234,179,8,0.25)' },
-  low:      { bg: 'rgba(34,197,94,0.12)',  text: '#4ade80', border: 'rgba(34,197,94,0.25)' },
+  critical: { bg: 'rgba(255,77,77,0.12)', text: '#FF4D4D', border: 'rgba(255,77,77,0.25)' },
+  high:     { bg: 'rgba(249,115,22,0.12)', text: '#F97316', border: 'rgba(249,115,22,0.25)' },
+  medium:   { bg: 'rgba(249,115,22,0.12)',  text: '#F97316', border: 'rgba(249,115,22,0.25)' },
+  low:      { bg: 'rgba(124,255,154,0.12)',  text: '#7CFF9A', border: 'rgba(124,255,154,0.25)' },
   open:     { bg: 'rgba(124,58,237,0.12)', text: '#a78bfa', border: 'rgba(124,58,237,0.3)' },
 };
 
@@ -150,18 +151,18 @@ function TechChip({ name }) {
 }
 
 function scoreColor(score) {
-  if (score >= 85) return '#4ade80';
-  if (score >= 70) return '#facc15';
-  if (score >= 50) return '#fb923c';
-  return '#f87171';
+  if (score >= 85) return '#7CFF9A';
+  if (score >= 70) return '#F97316';
+  if (score >= 50) return '#F97316';
+  return '#FF4D4D';
 }
 
 function surfaceColor(level) {
   const normalized = (level || '').toUpperCase();
-  if (normalized === 'LOW') return '#4ade80';
-  if (normalized === 'MEDIUM') return '#facc15';
-  if (normalized === 'HIGH') return '#fb923c';
-  if (normalized === 'CRITICAL') return '#f87171';
+  if (normalized === 'LOW') return '#7CFF9A';
+  if (normalized === 'MEDIUM') return '#F97316';
+  if (normalized === 'HIGH') return '#F97316';
+  if (normalized === 'CRITICAL') return '#FF4D4D';
   return '#a78bfa';
 }
 
@@ -190,11 +191,11 @@ function combineAttackSurface(current, incoming) {
 
 function reputationColor(reputation) {
   const value = (reputation || '').toLowerCase();
-  if (value === 'malicious') return '#f87171';
-  if (value === 'suspicious') return '#fb923c';
-  if (value === 'clean') return '#4ade80';
+  if (value === 'malicious') return '#FF4D4D';
+  if (value === 'suspicious') return '#F97316';
+  if (value === 'clean') return '#7CFF9A';
   if (value === 'private/local') return '#a78bfa';
-  return '#facc15';
+  return '#F97316';
 }
 
 function combineThreatIntelligence(current, incoming) {
@@ -231,21 +232,21 @@ function ExposureSeverityFocusPanel({ rows, stats, riskCounts }) {
             <CircleDot className="h-4 w-4" />
             <span>Exposure Severity Engine</span>
           </div>
-          <div className="text-[18px] font-semibold text-[#ff4f5f]">{score == null ? '—' : `${score}/100`}</div>
+          <div className="text-[18px] font-semibold text-[#FF4D4D]">{score == null ? '—' : `${score}/100`}</div>
         </div>
         <RiskBadge label={severity || 'pending'} color={severity || 'medium'} />
       </div>
       <p className="min-h-[42px] text-[12px] leading-relaxed text-[#b7abc5]">{finding || '—'}</p>
       <div className="mt-5 flex items-center justify-between border-t border-[#554365]/70 pt-4 text-[12px] text-[#d8cce6]">
         <span>Public exposure</span>
-        <span className={publicExposure ? 'text-[#69f08a]' : 'text-[#92859d]'}>{publicExposure ? 'Yes' : 'No'}</span>
+        <span className={publicExposure ? 'text-[#7CFF9A]' : 'text-[#92859d]'}>{publicExposure ? 'Yes' : 'No'}</span>
       </div>
       <div className="mt-20 grid grid-cols-4 gap-4 text-center">
         {[
-          ['critical', critical, '#ff4f7b'],
-          ['high', high, '#fb923c'],
-          ['medium', medium, '#facc15'],
-          ['low', low, '#69f08a'],
+          ['critical', critical, '#FF4D4D'],
+          ['high', high, '#F97316'],
+          ['medium', medium, '#F97316'],
+          ['low', low, '#7CFF9A'],
         ].map(([label, value, color]) => (
           <div key={label}>
             <div className="mb-2 text-[11px]" style={{ color }}>{label}</div>
@@ -278,12 +279,12 @@ function RecommendedActionsFocusPanel({ rows }) {
           const priority = row.recommendation_priority;
           return (
             <div key={`focus-rec-${row.port}`} className="grid grid-cols-[44px_minmax(0,1fr)] gap-4 rounded-lg border border-[#743248]/80 bg-[#351222]/72 p-5">
-              <div className="grid h-10 w-10 place-items-center rounded-lg bg-[#4a1730] text-[#ff4f5f]">
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-[#4a1730] text-[#FF4D4D]">
                 <Bug className="h-5 w-5" />
               </div>
               <div className="min-w-0">
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <div className="text-[13px] font-semibold text-[#ff4f5f]">
+                  <div className="text-[13px] font-semibold text-[#FF4D4D]">
                     Port {row.port} ({row.service || 'Unknown'})
                   </div>
                   {priority ? <RiskBadge label={priority} color={priority} /> : <span className="text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-full border border-[#7c3aed]/30 bg-[#7c3aed]/10 text-[#a78bfa]">AI</span>}
@@ -371,7 +372,7 @@ function VisibilityFocusPanel({ rows, stats, riskCounts }) {
         ].map(([label, value]) => (
           <div key={label} className="flex items-center justify-between border-b border-[#554365]/70 py-3 text-[12px] text-[#d8cce6] last:border-b-0">
             <span>{label}</span>
-            <span className={value === 'Yes' || Number(value) > 0 ? 'text-[#ff4f5f]' : 'text-[#92859d]'}>{value}</span>
+            <span className={value === 'Yes' || Number(value) > 0 ? 'text-[#FF4D4D]' : 'text-[#92859d]'}>{value}</span>
           </div>
         ))}
         <div className="mt-7 rounded-lg border border-[#4f3b63] bg-[#2a1a3d] p-4">
@@ -437,10 +438,10 @@ function VisibilityFocusPanel({ rows, stats, riskCounts }) {
         </div>
         <div className="mb-6 grid grid-cols-4 gap-3 text-center">
           {[
-            ['critical', misconfig.critical || 0, '#ff4f7b'],
-            ['high', misconfig.high || 0, '#fb923c'],
-            ['medium', misconfig.medium || 0, '#facc15'],
-            ['low', misconfig.low || 0, '#69f08a'],
+            ['critical', misconfig.critical || 0, '#FF4D4D'],
+            ['high', misconfig.high || 0, '#F97316'],
+            ['medium', misconfig.medium || 0, '#F97316'],
+            ['low', misconfig.low || 0, '#7CFF9A'],
           ].map(([label, value, color]) => (
             <div key={label}>
               <div className="mb-1 text-[10px]" style={{ color }}>{label}</div>
@@ -562,22 +563,22 @@ function CVEModal({ row, onClose }) {
         <div className="banner-modal-body">
           <div className="flex gap-2 mb-4">
             {cve_result.critical_count > 0 && (
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}>
+              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,77,77,0.12)', color: '#FF4D4D', border: '1px solid rgba(255,77,77,0.25)' }}>
                 {cve_result.critical_count} CRITICAL
               </span>
             )}
             {cve_result.high_count > 0 && (
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(249,115,22,0.12)', color: '#fb923c', border: '1px solid rgba(249,115,22,0.25)' }}>
+              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(249,115,22,0.12)', color: '#F97316', border: '1px solid rgba(249,115,22,0.25)' }}>
                 {cve_result.high_count} HIGH
               </span>
             )}
             {cve_result.medium_count > 0 && (
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(234,179,8,0.12)', color: '#facc15', border: '1px solid rgba(234,179,8,0.25)' }}>
+              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(249,115,22,0.12)', color: '#F97316', border: '1px solid rgba(249,115,22,0.25)' }}>
                 {cve_result.medium_count} MEDIUM
               </span>
             )}
             {cve_result.low_count > 0 && (
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(34,197,94,0.12)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.25)' }}>
+              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(124,255,154,0.12)', color: '#7CFF9A', border: '1px solid rgba(124,255,154,0.25)' }}>
                 {cve_result.low_count} LOW
               </span>
             )}
@@ -631,7 +632,7 @@ function CVECell({ row, onViewCVE }) {
       className="cve-cell-btn"
       title={`${row.cve_count} CVEs detected`}
     >
-      <span className="text-[10px] font-mono font-semibold" style={{ color: hasCritical ? '#f87171' : hasHigh ? '#fb923c' : '#facc15' }}>
+      <span className="text-[10px] font-mono font-semibold" style={{ color: hasCritical ? '#FF4D4D' : hasHigh ? '#F97316' : '#F97316' }}>
         {row.cve_count}
       </span>
       <span className="text-[9px] font-mono" style={{ color: '#8b7ec8' }}>
@@ -655,10 +656,10 @@ function PortTechnologies({ technologies }) {
 }
 
 function fingerprintColor(confidence) {
-  if (confidence >= 85) return '#4ade80';
-  if (confidence >= 70) return '#facc15';
-  if (confidence >= 50) return '#fb923c';
-  return '#f87171';
+  if (confidence >= 85) return '#7CFF9A';
+  if (confidence >= 70) return '#F97316';
+  if (confidence >= 50) return '#F97316';
+  return '#FF4D4D';
 }
 
 function VersionCell({ version, technologies, fingerprint }) {
@@ -1066,15 +1067,7 @@ export default function PortScanner() {
     }
   };
 
-  const downloadText = (filename, content, type = 'text/plain') => {
-    const blob = new Blob([content], { type });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
+  const downloadText = (filename, content, type = 'text/plain') => downloadFile(filename, content, type);
 
   const renderMetricTile = (Icon, label, value, tone = '#f4eef7') => (
     <div className="min-h-[78px] rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-4">
@@ -1130,7 +1123,7 @@ export default function PortScanner() {
                 <div key={`exploit-focus-${row.port}`} className="rounded-lg border border-[#4f3b63] bg-[#24183b]/70 p-4">
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <span>Port {row.port} ({row.service || '—'})</span>
-                    <span className={row.exploit_availability.publicExploitAvailable ? 'text-[#ff4f5f]' : 'text-[#69f08a]'}>
+                    <span className={row.exploit_availability.publicExploitAvailable ? 'text-[#FF4D4D]' : 'text-[#7CFF9A]'}>
                       {row.exploit_availability.publicExploitAvailable ? 'Yes' : 'No'}
                     </span>
                   </div>
@@ -1175,7 +1168,7 @@ export default function PortScanner() {
     });
     const scanDuration = scanStats ? formatScanDuration(scanStats.scanDurationSeconds) : isScanning ? 'Streaming' : '0.0s';
     const exposureTotal = Math.max(1, rows.length || 1);
-    const exposureGradient = `conic-gradient(#f87171 0deg ${(riskCounts.critical / exposureTotal) * 360}deg, #fb923c ${(riskCounts.critical / exposureTotal) * 360}deg ${((riskCounts.critical + riskCounts.high) / exposureTotal) * 360}deg, #d9f94f ${((riskCounts.critical + riskCounts.high) / exposureTotal) * 360}deg ${((riskCounts.critical + riskCounts.high + riskCounts.medium) / exposureTotal) * 360}deg, #69f08a ${((riskCounts.critical + riskCounts.high + riskCounts.medium) / exposureTotal) * 360}deg 360deg)`;
+    const exposureGradient = `conic-gradient(#FF4D4D 0deg ${(riskCounts.critical / exposureTotal) * 360}deg, #F97316 ${(riskCounts.critical / exposureTotal) * 360}deg ${((riskCounts.critical + riskCounts.high) / exposureTotal) * 360}deg, #d9f94f ${((riskCounts.critical + riskCounts.high) / exposureTotal) * 360}deg ${((riskCounts.critical + riskCounts.high + riskCounts.medium) / exposureTotal) * 360}deg, #7CFF9A ${((riskCounts.critical + riskCounts.high + riskCounts.medium) / exposureTotal) * 360}deg 360deg)`;
     const csv = [
       ['Port', 'State', 'Service', 'Version', 'CVEs', 'Risk'].join(','),
       ...rows.map((row) => [row.port, row.state, row.service, row.version, row.cve_count, row.risk_level].map((value) => `"${String(value ?? '').replaceAll('"', '""')}"`).join(',')),
@@ -1186,7 +1179,7 @@ export default function PortScanner() {
         <div className="space-y-8">
           <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8">
             <div className="flex flex-wrap items-center gap-3">
-              {isScanning ? <Activity className="h-7 w-7 animate-pulse text-[#b79aff]" /> : <CheckCircle2 className="h-7 w-7 text-[#5add56]" />}
+              {isScanning ? <Activity className="h-7 w-7 animate-pulse text-[#b79aff]" /> : <CheckCircle2 className="h-7 w-7 text-[#7CFF9A]" />}
               <h2 className="text-[26px] font-medium text-[#f4eef7]">{isScanning ? 'Port Scan Running' : 'Port Scan Completed'}</h2>
             </div>
             <div className="mt-5 flex flex-wrap gap-3">
@@ -1206,7 +1199,7 @@ export default function PortScanner() {
             <div className="mt-6 grid grid-cols-1 gap-1.5 md:grid-cols-2 xl:grid-cols-6">
               {renderMetricTile(Server, 'Open Ports', rows.length)}
               {renderMetricTile(Bug, 'CVEs', cveTotal)}
-              {renderMetricTile(Radio, 'Risk Level', dominantRisk, dominantRisk === 'Critical' ? '#ff4f5f' : dominantRisk === 'High' ? '#fb923c' : '#69f08a')}
+              {renderMetricTile(Radio, 'Risk Level', dominantRisk, dominantRisk === 'Critical' ? '#FF4D4D' : dominantRisk === 'High' ? '#F97316' : '#7CFF9A')}
               {renderMetricTile(ShieldCheck, 'Security Score', score == null ? '—' : `${score}/100`)}
               {renderMetricTile(Tags, 'Attack Surface', attackLevel, surfaceColor(attackLevel))}
               {renderMetricTile(Globe2, 'IP Reputation', reputation, reputationColor(reputation))}
@@ -1233,10 +1226,10 @@ export default function PortScanner() {
                   <div className="h-28 w-28 rounded-full" style={{ background: exposureGradient }} />
                   <div className="space-y-3 text-sm">
                     {[
-                      ['High', riskCounts.high, '#fb923c'],
-                      ['Critical', riskCounts.critical, '#f87171'],
+                      ['High', riskCounts.high, '#F97316'],
+                      ['Critical', riskCounts.critical, '#FF4D4D'],
                       ['Medium', riskCounts.medium, '#d9f94f'],
-                      ['Low', riskCounts.low, '#69f08a'],
+                      ['Low', riskCounts.low, '#7CFF9A'],
                     ].map(([label, value, color]) => (
                       <div key={label} className="flex items-center justify-between gap-3 text-[#d8cce6]">
                         <span className="inline-flex items-center gap-2"><i className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />{label}</span>
@@ -1246,7 +1239,7 @@ export default function PortScanner() {
                   </div>
                 </div>
                 <div className="mt-5 space-y-3 border-t border-[#554365]/70 pt-4 text-xs text-[#b7abc5]">
-                  <p><span className="text-[#fb923c]">Critical Exposure</span><br />{rows.find((row) => row.risk_level === 'critical')?.service || 'No critical service'} publicly reachable.</p>
+                  <p><span className="text-[#F97316]">Critical Exposure</span><br />{rows.find((row) => row.risk_level === 'critical')?.service || 'No critical service'} publicly reachable.</p>
                   <p><span className="text-[#d9f94f]">Medium Exposure</span><br />{rows.find((row) => row.risk_level === 'medium')?.service || 'No medium-risk service'} publicly reachable.</p>
                 </div>
               </div>
@@ -1267,7 +1260,7 @@ export default function PortScanner() {
                         {tech.bestConfidence > 0 && (
                           <>
                             <div className="text-[10px] text-[#92859d]">Fingerprint confidence: {Math.round(tech.bestConfidence)}%</div>
-                            <div className="mt-2 h-1.5 rounded-full bg-[#43364b]"><div className="h-full rounded-full bg-[#69f08a]" style={{ width: `${Math.round(tech.bestConfidence)}%` }} /></div>
+                            <div className="mt-2 h-1.5 rounded-full bg-[#43364b]"><div className="h-full rounded-full bg-[#7CFF9A]" style={{ width: `${Math.round(tech.bestConfidence)}%` }} /></div>
                           </>
                         )}
                       </div>
@@ -1343,10 +1336,10 @@ export default function PortScanner() {
             <div className="mb-2 text-[18px] font-medium uppercase text-[#b79aff]">Export & Share</div>
             <p className="text-sm text-[#d2c5dc]">Download or share your scan report.</p>
             <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-4">
-              <button type="button" onClick={() => window.print()} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:border-[#9f7aea]"><FileText className="h-4 w-4" /> Export PDF</button>
+              <button type="button" onClick={() => exportBrandedPdf({ tool: 'Port Scanner', target })} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:border-[#9f7aea]"><FileText className="h-4 w-4" /> Export PDF</button>
               <button type="button" onClick={() => downloadText(`${target || 'port-scan'}-ports.json`, JSON.stringify({ target, results: rows, stats: scanStats }, null, 2), 'application/json')} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:border-[#9f7aea]"><FileText className="h-4 w-4" /> Export JSON</button>
               <button type="button" onClick={() => downloadText(`${target || 'port-scan'}-ports.csv`, csv, 'text/csv')} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:border-[#9f7aea]"><FileText className="h-4 w-4" /> Export CSV</button>
-              <button type="button" onClick={() => navigator.clipboard?.writeText(`${target}: ${rows.length} open port(s), ${dominantRisk} risk`)} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:border-[#9f7aea]"><Share2 className="h-4 w-4" /> Share report</button>
+              <button type="button" onClick={() => shareOrCopy({ title: 'Port Scan Report', text: `${target}: ${rows.length} open port(s), ${dominantRisk} risk` })} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:border-[#9f7aea]"><Share2 className="h-4 w-4" /> Share report</button>
             </div>
           </section>
         </div>
@@ -1462,10 +1455,10 @@ export default function PortScanner() {
         
         {errorMsg && (
           <div className="flex flex-col items-center justify-center flex-1 gap-3 p-6 text-center">
-            <div className="w-12 h-12 flex items-center justify-center rounded-full" style={{ background: 'rgba(239,68,68,0.1)' }}>
-              <X className="w-6 h-6 text-red-500" />
+            <div className="w-12 h-12 flex items-center justify-center rounded-full" style={{ background: 'rgba(255,77,77,0.1)' }}>
+              <X className="w-6 h-6 text-[#FF4D4D]" />
             </div>
-            <span className="text-sm font-medium text-red-400">Scan Error</span>
+            <span className="text-sm font-medium text-[#FF4D4D]">Scan Error</span>
             <span className="text-xs" style={{ color: '#9ca3af' }}>{errorMsg}</span>
           </div>
         )}

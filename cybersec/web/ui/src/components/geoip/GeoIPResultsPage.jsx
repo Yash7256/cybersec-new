@@ -124,7 +124,7 @@ const normalizeGeoIPResult = (raw = {}) => {
 };
 
 const SectionCard = ({ children, className = '' }) => (
-  <section className={`rounded-xl border border-white/[0.14] bg-[#201330]/82 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.18)] ${className}`}>
+  <section className={`rounded-xl border border-white/[0.14] bg-[#201330]/82 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)] ${className}`}>
     {children}
   </section>
 );
@@ -146,7 +146,7 @@ const InfoRow = ({ label, value }) => {
 const Pill = ({ children, tone = 'neutral' }) => {
   const tones = {
     neutral: 'border-white/[0.14] bg-[#190f23]/85 text-[#d8cfea]',
-    success: 'border-[#57c254]/45 bg-[#132718] text-[#57c254]',
+    success: 'border-[#7CFF9A]/45 bg-[#132718] text-[#7CFF9A]',
     warning: 'border-[#76552a]/45 bg-[#46351e] text-[#ffd38a]',
     info: 'border-[#49668f]/45 bg-[#24324a] text-[#a9c7ff]',
   };
@@ -154,7 +154,7 @@ const Pill = ({ children, tone = 'neutral' }) => {
 };
 
 const StatCard = ({ icon: Icon, label, value, subtext, children }) => (
-  <div className="rounded-[10px] border border-white/[0.18] bg-[#190f23]/78 p-4">
+  <div className="rounded-[10px] border border-white/[0.18] bg-[#190f23]/78 p-4 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
     <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#ba9cff]">
       <Icon className="h-3 w-3 shrink-0" />
       <span>{label}</span>
@@ -227,7 +227,7 @@ export function ScanSummaryHero({ result }) {
         <StatCard icon={MapPin} label="IP Type" value={result.proxyOrCdn ? 'Proxy/CDN' : result.ipType} subtext={result.security.cdnProvider} />
         <StatCard icon={ShieldCheck} label="Confidence Score" value={result.confidenceScore}>
           <div className="mt-2 h-1 rounded-full bg-white/[0.18]">
-            <div className="h-full rounded-full bg-[#57c254]" style={{ width: `${confidence}%` }} />
+            <div className="h-full rounded-full bg-[#7CFF9A]" style={{ width: `${confidence}%` }} />
           </div>
         </StatCard>
       </div>
@@ -239,9 +239,13 @@ export function LocationSection({ result }) {
   const { location, network, security, dns } = result;
   const hasCoordinates = Number.isFinite(Number(location.latitude)) && Number.isFinite(Number(location.longitude));
   const coordinates = hasCoordinates ? `${location.latitude},${location.longitude}` : '';
-  const mapEmbedUrl = hasCoordinates ? `https://maps.google.com/maps?q=${encodeURIComponent(coordinates)}&z=10&output=embed` : '';
+
+  const mapEmbedUrl = hasCoordinates
+    ? `https://maps.google.com/maps?q=${encodeURIComponent(coordinates)}&z=13&output=embed`
+    : '';
   const mapUrl = result.mapUrl || (hasCoordinates ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates)}` : null);
   const earthUrl = hasCoordinates ? `https://earth.google.com/web/search/${encodeURIComponent(coordinates)}` : null;
+
   return (
     <SectionCard>
       <SectionHeading>Location</SectionHeading>
@@ -261,19 +265,31 @@ export function LocationSection({ result }) {
           </div>
         </div>
 
+        {/* Map preview */}
         <div className="relative min-h-[260px] overflow-hidden rounded-xl border border-white/[0.14] bg-[#190f23]">
           {hasCoordinates ? (
             <>
-              <iframe title={`Google map for ${[location.city, location.region, location.country].filter(Boolean).join(', ') || coordinates}`} src={mapEmbedUrl} className="absolute inset-0 h-full w-full grayscale invert-[0.86] hue-rotate-[226deg] saturate-[2.1] brightness-[0.66] contrast-[1.18]" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
+              <iframe
+                title={`Google Maps — ${[location.city, location.region, location.country].filter(Boolean).join(', ') || coordinates}`}
+                src={mapEmbedUrl}
+                className="absolute inset-0 h-full w-full grayscale invert-[0.86] hue-rotate-[226deg] saturate-[2.1] brightness-[0.66] contrast-[1.18]"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
               <div className="pointer-events-none absolute inset-0 bg-[#301052]/30 mix-blend-screen" />
-              <div className="pointer-events-none absolute left-[54%] top-[53%] h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#ba9cff]/45 bg-[#8b5cf6]/20 shadow-[0_0_32px_rgba(186,156,255,0.72)]">
-                <div className="absolute inset-3.5 rounded-full border border-[#d6c5ff]/55 bg-[#8b5cf6]/30" />
-                <MapPin className="absolute left-1/2 top-1/2 h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 text-white" />
+              {/* Pin centered above the focal point */}
+              <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full">
+                <div className="relative flex h-14 w-14 items-center justify-center rounded-full border border-[#ba9cff]/45 bg-[#8b5cf6]/20 shadow-[0_0_28px_rgba(186,156,255,0.65)]">
+                  <div className="absolute inset-3 rounded-full border border-[#d6c5ff]/55 bg-[#8b5cf6]/30" />
+                  <MapPin className="h-[18px] w-[18px] text-white drop-shadow" />
+                </div>
+                <div className="mx-auto h-3 w-0.5 bg-[#ba9cff]/60" />
               </div>
-              <div className="pointer-events-none absolute right-4 top-4 max-w-[190px] rounded-xl border border-white/[0.14] bg-[#201330]/90 p-3 shadow-[0_14px_34px_rgba(0,0,0,0.35)] backdrop-blur">
+              <div className="pointer-events-none absolute right-3 top-3 max-w-[190px] rounded-xl border border-white/[0.14] bg-[#201330]/90 p-3 shadow-[0_14px_34px_rgba(0,0,0,0.35)] backdrop-blur">
                 <div className="text-[11px] font-semibold leading-4 text-white">{fallback(location.city, location.region || location.country || 'Location')}</div>
                 <div className="mt-0.5 text-[10px] leading-4 text-[#d8cfea]">{[location.region, location.country].filter(Boolean).join(', ')}</div>
-                <div className="mt-0.5 text-[10px] leading-4 text-[#d8cfea]">{coordinates}</div>
+                <div className="mt-0.5 font-mono text-[9px] leading-4 text-[#ba9cff]">{coordinates}</div>
               </div>
             </>
           ) : (
@@ -312,7 +328,7 @@ export function LocationSection({ result }) {
 
 function InfoCard({ title, children }) {
   return (
-    <div className="rounded-[10px] border border-white/[0.14] bg-[#190f23]/78 p-4">
+    <div className="rounded-[10px] border border-white/[0.14] bg-[#190f23]/78 p-4 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
       <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-[#ba9cff]">
         <CircleDot className="h-3.5 w-3.5" />
         <span>{title}</span>
@@ -331,14 +347,14 @@ export function ResolvedIpsSection({ result }) {
           <div key={`${item.ip}-${index}`} className="grid grid-cols-1 items-start gap-4 rounded-xl border border-white/[0.08] bg-[#190f23]/72 p-4 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)] md:grid-cols-[minmax(180px,0.9fr)_minmax(220px,1.2fr)] xl:grid-cols-[minmax(190px,0.95fr)_minmax(240px,1.15fr)_repeat(4,minmax(82px,0.55fr))]">
             <div className="min-w-0 space-y-1.5">
               <div className="flex items-center gap-2 text-[17px] font-semibold leading-tight text-white">
-                <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#57c254] shadow-[0_0_12px_rgba(87,194,84,0.55)]" />
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#7CFF9A] shadow-[0_0_12px_rgba(87,194,84,0.55)]" />
                 <span className="truncate">{fallback(item.ip)}</span>
               </div>
               <div className="flex items-baseline gap-1.5 text-[11px] font-medium leading-5 text-[#d8cfea]">
                 <span>{[item.country, item.countryCode && `(${item.countryCode})`].filter(Boolean).join(' ')}</span>
                 <span>{item.flagEmoji}</span>
               </div>
-              {item.edgeCdn && <span className="inline-flex h-5 items-center rounded-full border border-[#57c254]/45 bg-[rgba(87,194,84,0.29)] px-2.5 text-[9px] font-semibold uppercase tracking-wide text-[#bfffc6]">Edge/CDN</span>}
+              {item.edgeCdn && <span className="inline-flex h-5 items-center rounded-full border border-[#7CFF9A]/45 bg-[rgba(87,194,84,0.29)] px-2.5 text-[9px] font-semibold uppercase tracking-wide text-[#7CFF9A]">Edge/CDN</span>}
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">

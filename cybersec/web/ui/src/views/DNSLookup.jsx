@@ -54,7 +54,7 @@ export default function DNSLookup() {
             <span className="text-xs font-medium uppercase" style={{ color: '#6d579b' }}>Your DNS results will appear here</span>
           </div>
         ) : results.error ? (
-          <div className="p-6 text-red-400 font-mono text-sm">{results.error}</div>
+          <div className="p-6 text-[#FF4D4D] font-mono text-sm">{results.error}</div>
         ) : (
           <div className="p-6 space-y-2">
             {Object.entries(results).map(([key, val]) => (

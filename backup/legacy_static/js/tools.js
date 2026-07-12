@@ -309,13 +309,13 @@ const toolsModule = {
         .ws-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #6B7280; margin-bottom: 6px; }
         .ws-stat-value { font-size: 28px; font-weight: 600; font-family: monospace; color: white; }
         .ws-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
-        .ws-badge-critical { background: #EAB308; color: #0E1016; }
-        .ws-badge-high { background: #EAB308; color: #0E1016; }
+        .ws-badge-critical { background: #F97316; color: #0E1016; }
+        .ws-badge-high { background: #F97316; color: #0E1016; }
         .ws-badge-medium { background: #8B5CF6; color: white; }
         .ws-badge-low { background: #1A1F2E; color: #6B7280; border: 1px solid #232736; }
         .ws-badge-info { background: #1A1F2E; color: #6B7280; border: 1px solid #232736; }
-        .ws-crawler-warning { background: #2a2010; border: 0.5px solid #5a4010; border-radius: 8px; padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px; font-size: 13px; color: #f0b860; }
-        .ws-crawler-warning i { color: #f0b860; font-size: 14px; margin-top: 2px; }
+        .ws-crawler-warning { background: #2a2010; border: 0.5px solid #5a4010; border-radius: 8px; padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px; font-size: 13px; color: #F97316; }
+        .ws-crawler-warning i { color: #F97316; font-size: 14px; margin-top: 2px; }
         .ws-table-wrapper { overflow-x: auto; margin-top: 16px; animation: ws-fadeIn 0.3s ease-out 0.1s both; }
         .ws-vuln-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .ws-vuln-table th { text-align: left; padding: 10px 16px; background: #0E1016; border-bottom: 1px solid #232736; color: #6B7280; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
@@ -334,7 +334,7 @@ const toolsModule = {
         .ws-detail-row { display: none; }
         .ws-detail-row.show { display: table-row; }
         .ws-detail-content { background: #0A0D12; border-left: 3px solid #232736; padding: 10px 20px; font-size: 13px; color: #9CA3AF; font-family: monospace; line-height: 1.6; }
-        .ws-no-vulns { background: rgba(106,207,128,0.1); border: 0.5px solid rgba(106,207,128,0.3); border-radius: 8px; padding: 16px 20px; color: #6acf80; text-align: center; margin-top: 16px; }
+        .ws-no-vulns { background: rgba(106,207,128,0.1); border: 0.5px solid rgba(106,207,128,0.3); border-radius: 8px; padding: 16px 20px; color: #7CFF9A; text-align: center; margin-top: 16px; }
         .ws-actions-bar { display: flex; align-items: center; gap: 12px; padding: 12px 0 0; border-top: 1px solid #232736; margin-top: 16px; animation: ws-fadeIn 0.3s ease-out 0.2s both; }
         .ws-rescan-btn { background: transparent; border: 1px solid #232736; color: #9CA3AF; padding: 6px 16px; border-radius: 999px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
         .ws-rescan-btn:hover { background: #1A1F2E; }
@@ -343,15 +343,15 @@ const toolsModule = {
         .ws-log-section { margin-top: 16px; animation: ws-fadeIn 0.3s ease-out 0.3s both; }
         .ws-log-header { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; color: white; }
         .ws-log-header:hover { background: #1A1F2E; }
-        .ws-log-header i:first-child { color: #EAB308; }
+        .ws-log-header i:first-child { color: #F97316; }
         .ws-log-arrow { margin-left: auto; color: #6B7280; transition: transform 0.2s; }
         .ws-log-header.open .ws-log-arrow { transform: rotate(180deg); }
         .ws-log-content { background: #0d0f14; border: 0.5px solid #2a2d35; border-top: none; border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto; display: none; }
         .ws-log-content.open { display: block; }
         .ws-ai-insight { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px 20px; margin-top: 16px; animation: ws-fadeIn 0.3s ease-out 0.4s both; }
         .ws-ai-inner { background: transparent; }
-        .ws-ai-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; font-weight: 600; color: #EAB308; }
-        .ws-pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #EAB308; animation: ws-pulse 2s infinite; }
+        .ws-ai-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; font-weight: 600; color: #F97316; }
+        .ws-pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #F97316; animation: ws-pulse 2s infinite; }
         .ws-ai-content { font-size: 13px; line-height: 1.7; color: #9CA3AF; font-family: monospace; }
         .ws-ai-content a { color: #8B5CF6; font-family: monospace; font-size: 12px; text-decoration: none; }
         .ws-progress-item { padding: 4px 0; border-bottom: 1px solid #1e2028; display: flex; gap: 12px; animation: ws-fadeIn 0.2s ease-out; }
@@ -360,15 +360,15 @@ const toolsModule = {
         .ws-progress-stage { color: #8B5CF6; font-size: 11px; min-width: 80px; }
         .ws-progress-msg { color: #b0b2ba; font-size: 12px; flex: 1; }
         .ws-progress-dot { width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
-        .ws-dot-success { background: #6acf80; }
+        .ws-dot-success { background: #7CFF9A; }
         .ws-dot-running { background: #8B5CF6; animation: ws-pulse 1s infinite; }
-        .ws-dot-error { background: #f07070; }
+        .ws-dot-error { background: #FF4D4D; }
       </style>
 
       <div class="ws-summary-bar">
         <div class="ws-stat-card">
           <div class="ws-stat-label">Total Vulnerabilities</div>
-          <div class="ws-stat-value" style="color: ${totalVulns > 0 ? '#EAB308' : '#6acf80'}">${totalVulns}</div>
+          <div class="ws-stat-value" style="color: ${totalVulns > 0 ? '#F97316' : '#7CFF9A'}">${totalVulns}</div>
         </div>
         <div class="ws-stat-card">
           <div class="ws-stat-label">Pages Crawled</div>
@@ -423,7 +423,7 @@ const toolsModule = {
         logSection.className = 'ws-log-section';
         logSection.innerHTML = `
           <div class="ws-log-header" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open')">
-            <span style="color: #EAB308; font-family: monospace;">&gt;_</span>
+            <span style="color: #F97316; font-family: monospace;">&gt;_</span>
             <span>Technical Log</span>
             <i class="fa-solid fa-chevron-down ws-log-arrow"></i>
           </div>
@@ -765,14 +765,14 @@ const toolsModule = {
           .whois-hero-icon { font-size: 20px; color: #8B5CF6; }
           .whois-hero-domain { font-size: 22px; font-weight: 700; color: white; margin-left: 10px; }
           .whois-hero-registrar { font-size: 13px; color: #6B7280; margin-left: 40px; margin-top: 2px; }
-          .whois-trust-badge { background: #151823; border: 1px solid #EAB308; border-radius: 8px; padding: 8px 14px; text-align: center; }
+          .whois-trust-badge { background: #151823; border: 1px solid #F97316; border-radius: 8px; padding: 8px 14px; text-align: center; }
           .whois-trust-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; }
-          .whois-trust-value { font-size: 15px; font-weight: 600; color: #EAB308; }
+          .whois-trust-value { font-size: 15px; font-weight: 600; color: #F97316; }
           .whois-reg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
           .whois-reg-card { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 14px 16px; }
           .whois-reg-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; margin-bottom: 4px; }
           .whois-reg-value { font-size: 15px; color: white; font-family: monospace; }
-          .whois-status-pill { background: #0A0D12; border: 1px solid #232736; border-radius: 6px; padding: 10px; color: #EAB308; font-family: monospace; font-size: 13px; display: inline-block; }
+          .whois-status-pill { background: #0A0D12; border: 1px solid #232736; border-radius: 6px; padding: 10px; color: #F97316; font-family: monospace; font-size: 13px; display: inline-block; }
           .whois-icann-link { color: #8B5CF6; font-size: 15px; font-family: monospace; text-decoration: none; }
           .whois-icann-link:hover { text-decoration: underline; }
           .whois-health-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
@@ -782,8 +782,8 @@ const toolsModule = {
           .whois-health-sub { font-size: 10px; color: #6B7280; margin-top: 2px; }
           .whois-age-card { border-left: 3px solid #8B5CF6; }
           .whois-age-card .whois-health-value { color: #8B5CF6; }
-          .whois-exp-card { border-left: 3px solid #EAB308; }
-          .whois-exp-card .whois-health-value { color: #EAB308; }
+          .whois-exp-card { border-left: 3px solid #F97316; }
+          .whois-exp-card .whois-health-value { color: #F97316; }
           .whois-timeline-bar { height: 4px; background: #1e2028; border-radius: 2px; margin-top: 10px; overflow: hidden; }
           .whois-timeline-fill { height: 100%; background: #8B5CF6; border-radius: 2px; }
           .whois-timeline-note { font-size: 10px; color: #6b6e78; margin-top: 4px; text-align: right; }
@@ -797,8 +797,8 @@ const toolsModule = {
           .whois-abuse-value { font-size: 12px; font-family: monospace; color: #8B5CF6; display: flex; align-items: center; gap: 8px; }
           .whois-abuse-value i { color: #8B5CF6; }
           .whois-osint-box { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 14px 20px; margin-top: 14px; }
-          .whois-osint-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #EAB308; margin-bottom: 10px; }
-          .whois-osint-dot { width: 8px; height: 8px; border-radius: 50%; background: #EAB308; animation: whois-pulse 2s infinite; }
+          .whois-osint-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #F97316; margin-bottom: 10px; }
+          .whois-osint-dot { width: 8px; height: 8px; border-radius: 50%; background: #F97316; animation: whois-pulse 2s infinite; }
           .whois-osint-content { font-size: 12px; line-height: 1.7; color: #9CA3AF; font-family: monospace; }
           .whois-osint-highlight { color: #8B5CF6; font-family: monospace; font-size: 12px; }
           .whois-raw-header { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; cursor: pointer; margin-top: 14px; gap: 10px; font-size: 13px; color: white; }
@@ -1003,17 +1003,17 @@ const toolsModule = {
     const packetsLost = packetsSent - packetsReceived;
 
     const getQuality = (ms) => {
-      if (ms < 50) return { label: 'EXCELLENT', color: '#6acf80' };
-      if (ms < 100) return { label: 'GOOD', color: '#f0b860' };
-      if (ms < 200) return { label: 'FAIR', color: '#f07040' };
-      return { label: 'POOR', color: '#f07070' };
+      if (ms < 50) return { label: 'EXCELLENT', color: '#7CFF9A' };
+      if (ms < 100) return { label: 'GOOD', color: '#F97316' };
+      if (ms < 200) return { label: 'FAIR', color: '#F97316' };
+      return { label: 'POOR', color: '#FF4D4D' };
     };
 
     const quality = getQuality(avgVal);
     const minQuality = getQuality(minVal);
     const maxQuality = getQuality(maxVal);
-    const lossColor = lossPct > 0 ? '#f07070' : '#6acf80';
-    const jitterColor = jitter < 5 ? '#6acf80' : jitter < 20 ? '#f0b860' : '#f07070';
+    const lossColor = lossPct > 0 ? '#FF4D4D' : '#7CFF9A';
+    const jitterColor = jitter < 5 ? '#7CFF9A' : jitter < 20 ? '#F97316' : '#FF4D4D';
 
     const chartData = responseTimes.length > 0 ? responseTimes : [minVal, minVal + jitter * 0.3, minVal + jitter * 0.6, maxVal];
     const chartMax = Math.max(...chartData, 100) * 1.1;
@@ -1047,26 +1047,26 @@ const toolsModule = {
           .ping-zone-4 { animation-delay: 180ms; }
           .ping-zone-5 { animation-delay: 240ms; }
           .ping-zone-6 { animation-delay: 300ms; }
-          .ping-hero { background: #151823; border-left: 3px solid #EAB308; border: 1px solid #232736; border-radius: 8px; padding: 20px; display: flex; align-items: center; justify-content: space-between; }
+          .ping-hero { background: #151823; border-left: 3px solid #F97316; border: 1px solid #232736; border-radius: 8px; padding: 20px; display: flex; align-items: center; justify-content: space-between; }
           .ping-hero-left {}
-          .ping-quality-badge { background: #EAB308; color: #0E1016; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; border-radius: 999px; padding: 2px 10px; display: inline-block; }
+          .ping-quality-badge { background: #F97316; color: #0E1016; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; border-radius: 999px; padding: 2px 10px; display: inline-block; }
           .ping-hero-title { font-size: 20px; font-weight: 700; color: white; font-family: monospace; margin-top: 6px; }
           .ping-hero-target { font-size: 13px; color: #6B7280; margin-top: 4px; }
-          .ping-latency-box { background: #0E1016; border: 1px solid #EAB308; border-radius: 8px; padding: 10px 16px; text-align: center; }
+          .ping-latency-box { background: #0E1016; border: 1px solid #F97316; border-radius: 8px; padding: 10px 16px; text-align: center; }
           .ping-latency-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; }
-          .ping-latency-value { font-size: 24px; font-weight: 700; color: #EAB308; font-family: monospace; margin-top: 2px; }
+          .ping-latency-value { font-size: 24px; font-weight: 700; color: #F97316; font-family: monospace; margin-top: 2px; }
           .ping-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
           .ping-stat-card { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px; }
           .ping-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; margin-bottom: 4px; }
-          .ping-stat-value { font-size: 20px; font-weight: 600; font-family: monospace; color: #EAB308; }
+          .ping-stat-value { font-size: 20px; font-weight: 600; font-family: monospace; color: #F97316; }
           .ping-stat-sub { font-size: 12px; color: #6B7280; margin-top: 2px; }
           .ping-health-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
           .ping-health-card { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px; }
           .ping-health-label { font-size: 10px; text-transform: uppercase; color: #6B7280; margin-bottom: 4px; }
           .ping-health-value { font-size: 20px; font-weight: 600; font-family: monospace; }
           .ping-health-sub { font-size: 12px; color: #6B7280; margin-top: 2px; }
-          .ping-jitter-card { border-left: 3px solid #EAB308; }
-          .ping-jitter-card .ping-health-value { color: #EAB308; }
+          .ping-jitter-card { border-left: 3px solid #F97316; }
+          .ping-jitter-card .ping-health-value { color: #F97316; }
           .ping-packets-card { border-left: 3px solid #8B5CF6; }
           .ping-packets-row { display: flex; gap: 16px; }
           .ping-packets-sent { font-size: 14px; color: white; font-family: monospace; }
@@ -1075,16 +1075,16 @@ const toolsModule = {
           .ping-chart-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #6B7280; }
           .ping-chart-container { background: #0A0D12; border: 1px solid #232736; border-radius: 8px; padding: 16px; height: 160px; position: relative; }
           .ping-chart-bars { display: flex; align-items: flex-end; height: 100px; gap: 8px; }
-          .ping-chart-bar { cursor: pointer; background: linear-gradient(to top, #EAB308 60%, transparent); stroke: #EAB308; stroke-width: 2px; }
+          .ping-chart-bar { cursor: pointer; background: linear-gradient(to top, #F97316 60%, transparent); stroke: #F97316; stroke-width: 2px; }
           .ping-chart-bar:hover { opacity: 1 !important; }
-          .ping-avg-line { position: absolute; left: 16px; right: 16px; height: 1px; border-top: 1px dashed #EAB308; opacity: 0.4; }
-          .ping-avg-label { position: absolute; right: 20px; font-size: 10px; color: #EAB308; transform: translateY(-150%); }
+          .ping-avg-line { position: absolute; left: 16px; right: 16px; height: 1px; border-top: 1px dashed #F97316; opacity: 0.4; }
+          .ping-avg-label { position: absolute; right: 20px; font-size: 10px; color: #F97316; transform: translateY(-150%); }
           .ping-chart-yaxis { position: absolute; left: 0; top: 0; bottom: 0; width: 30px; display: flex; flex-direction: column; justify-content: space-between; padding: 4px 0; font-size: 11px; color: #6B7280; font-family: monospace; }
           .ping-chart-grid { position: absolute; left: 40px; right: 16px; top: 16px; bottom: 30px; }
           .ping-grid-line { position: absolute; left: 0; right: 0; height: 1px; background: #1A1F2E; border-style: dashed; border-width: 1px 0 0 0; }
           .ping-osint-box { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px 20px; margin-top: 14px; }
-          .ping-osint-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #EAB308; margin-bottom: 10px; }
-          .ping-osint-dot { width: 8px; height: 8px; border-radius: 50%; background: #EAB308; animation: ping-pulse 2s infinite; }
+          .ping-osint-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #F97316; margin-bottom: 10px; }
+          .ping-osint-dot { width: 8px; height: 8px; border-radius: 50%; background: #F97316; animation: ping-pulse 2s infinite; }
           .ping-osint-content { font-size: 12px; line-height: 1.7; color: #9CA3AF; font-family: monospace; }
           .ping-fallback-box { background: #111318; border: 0.5px solid #2a2d35; border-radius: 10px; padding: 16px 20px; margin-top: 14px; }
           .ping-fallback-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: #6b6e78; margin-bottom: 10px; }
@@ -1141,7 +1141,7 @@ const toolsModule = {
             </div>
             <div class="ping-stat-card">
               <div class="ping-stat-label">Packet Loss</div>
-              <div class="ping-stat-value" style="color:${lossPct === 0 ? '#8B5CF6' : '#EAB308'}">${lossPct}%</div>
+              <div class="ping-stat-value" style="color:${lossPct === 0 ? '#8B5CF6' : '#F97316'}">${lossPct}%</div>
               <div class="ping-stat-sub">${packetsReceived}/${packetsSent} packets received</div>
             </div>
           </div>
@@ -1160,7 +1160,7 @@ const toolsModule = {
                 <span class="ping-packets-sent">Sent: ${packetsSent}</span>
                 <span class="ping-packets-recv">Received: ${packetsReceived}</span>
               </div>
-              <div class="ping-health-sub" style="color:${packetsLost === 0 ? '#6acf80' : '#f07070'}">${packetsLost} lost</div>
+              <div class="ping-health-sub" style="color:${packetsLost === 0 ? '#7CFF9A' : '#FF4D4D'}">${packetsLost} lost</div>
             </div>
           </div>
         </div>
@@ -1178,7 +1178,7 @@ const toolsModule = {
                 <div class="ping-grid-line" style="top: 100%"></div>
               </div>
               <div style="position:absolute;left:40px;right:16px;top:16px;bottom:30px;display:flex;align-items:flex-end">
-                ${chartData.map((t, i) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end"><div class="ping-chart-bar" style="width:100%;background:linear-gradient(to top, #EAB308 60%, transparent);border:2px solid #EAB308;border-radius:3px 3px 0 0;height:0%;transition:height 0.5s ease-out ${i * 100}ms" data-target="${(t / chartMax) * 100}"></div></div>`).join('')}
+                ${chartData.map((t, i) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end"><div class="ping-chart-bar" style="width:100%;background:linear-gradient(to top, #F97316 60%, transparent);border:2px solid #F97316;border-radius:3px 3px 0 0;height:0%;transition:height 0.5s ease-out ${i * 100}ms" data-target="${(t / chartMax) * 100}"></div></div>`).join('')}
               </div>
               <div class="ping-avg-line" style="bottom:${16 + (avgVal / chartMax) * (160 - 46)}px">
                 <span class="ping-avg-label" style="font-family: monospace;">avg ${avgVal.toFixed(1)}ms</span>
@@ -1293,26 +1293,26 @@ const toolsModule = {
     const targetReached = hops.length > 0 && hops[hops.length - 1].ip && hops[hops.length - 1].ip !== '*';
     const totalHops = hops.length;
     const reachedLabel = targetReached ? 'Yes' : 'No (timed out)';
-    const reachedColor = targetReached ? '#6acf80' : '#f07070';
+    const reachedColor = targetReached ? '#7CFF9A' : '#FF4D4D';
     
     const responsiveHops = hops.filter(h => h.rtt_ms != null && h.rtt_ms !== '*');
     const maxRTT = responsiveHops.length > 0 ? Math.max(...responsiveHops.map(h => parseFloat(h.rtt_ms))) : 0;
     const totalRTT = responsiveHops.length > 0 ? responsiveHops.reduce((a, b) => a + parseFloat(b.rtt_ms), 0).toFixed(1) : '0';
-    const rttColor = maxRTT < 10 ? '#6acf80' : maxRTT < 50 ? '#f0b860' : maxRTT < 100 ? '#f07040' : '#f07070';
+    const rttColor = maxRTT < 10 ? '#7CFF9A' : maxRTT < 50 ? '#F97316' : maxRTT < 100 ? '#F97316' : '#FF4D4D';
 
     const getHopColor = (hop, ip) => {
       if (!ip || ip === '*') return '#2a2d35';
       if (ip.startsWith('10.') || ip.startsWith('192.168.') || ip.startsWith('172.')) return '#8B5CF6';
-      if (hop <= 7) return '#EAB308';
-      return '#4ADE80';
+      if (hop <= 7) return '#F97316';
+      return '#7CFF9A';
     };
 
     const getRttColor = (rtt) => {
       if (rtt === '*' || rtt == null) return '#4a4d58';
       const r = parseFloat(rtt);
       if (r < 30) return '#8B5CF6';
-      if (r < 60) return '#EAB308';
-      return '#F59E0B';
+      if (r < 60) return '#F97316';
+      return '#F97316';
     };
 
     const timeoutHops = hops.filter(h => !h.ip || h.ip === '*');
@@ -1362,13 +1362,13 @@ const toolsModule = {
         return `${x},${y}`;
       });
       
-      svgPath = `<polyline points="${points.join(' ')}" fill="none" stroke="#EAB308" stroke-width="2" class="trace-line"/>`;
+      svgPath = `<polyline points="${points.join(' ')}" fill="none" stroke="#F97316" stroke-width="2" class="trace-line"/>`;
       svgArea = `<polygon points="${padding},${height - padding} ${points.join(' ')} ${width - padding},${height - padding}" fill="url(#goldGradient)"/>`;
       
       chartPoints.forEach((p, i) => {
         const x = padding + (i / (chartPoints.length - 1 || 1)) * (width - padding * 2);
         const y = height - padding - (p.y / maxY) * (height - padding * 2);
-        svgPath += `<circle cx="${x}" cy="${y}" r="3" fill="#EAB308" class="trace-point" data-info="Hop ${p.x} · ${p.ip} · ${p.y.toFixed(2)}ms"/>`;
+        svgPath += `<circle cx="${x}" cy="${y}" r="3" fill="#F97316" class="trace-point" data-info="Hop ${p.x} · ${p.ip} · ${p.y.toFixed(2)}ms"/>`;
       });
     }
 
@@ -1430,8 +1430,8 @@ const toolsModule = {
           .trace-chart-grid { position: absolute; left: 40px; right: 8px; top: 16px; bottom: 30px; }
           .trace-grid-line { position: absolute; left: 0; right: 0; height: 1px; background: #1A1F2E; border-style: dashed; border-width: 1px 0 0 0; }
           .trace-osint-box { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px 20px; margin-top: 14px; }
-          .trace-osint-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #EAB308; margin-bottom: 10px; }
-          .trace-osint-dot { width: 8px; height: 8px; border-radius: 50%; background: #EAB308; animation: trace-pulse 2s infinite; }
+          .trace-osint-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #F97316; margin-bottom: 10px; }
+          .trace-osint-dot { width: 8px; height: 8px; border-radius: 50%; background: #F97316; animation: trace-pulse 2s infinite; }
           .trace-osint-content { font-size: 12px; line-height: 1.7; color: #9CA3AF; font-family: monospace; }
           .trace-fallback-box { background: #111318; border: 0.5px solid #2a2d35; border-radius: 10px; padding: 16px 20px; margin-top: 14px; }
           .trace-fallback-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: #6b6e78; margin-bottom: 10px; }
@@ -1473,7 +1473,7 @@ const toolsModule = {
               </div>
               <div class="trace-stat-pill">
                 <div class="trace-stat-label">Reached Target</div>
-                <div class="trace-stat-value" style="color:${targetReached ? '#8B5CF6' : '#EAB308'}">${reachedLabel}</div>
+                <div class="trace-stat-value" style="color:${targetReached ? '#8B5CF6' : '#F97316'}">${reachedLabel}</div>
               </div>
               <div class="trace-stat-pill">
                 <div class="trace-stat-label">Total RTT</div>
@@ -1495,8 +1495,8 @@ const toolsModule = {
           </div>
           <div class="trace-legend">
             <div class="trace-legend-item"><div class="trace-legend-dot" style="background:#8B5CF6"></div>Local Network</div>
-            <div class="trace-legend-item"><div class="trace-legend-dot" style="background:#EAB308"></div>ISP Routing</div>
-            <div class="trace-legend-item"><div class="trace-legend-dot" style="background:#4ADE80"></div>Internet</div>
+            <div class="trace-legend-item"><div class="trace-legend-dot" style="background:#F97316"></div>ISP Routing</div>
+            <div class="trace-legend-item"><div class="trace-legend-dot" style="background:#7CFF9A"></div>Internet</div>
           </div>
         </div>
 
@@ -1515,8 +1515,8 @@ const toolsModule = {
               <svg class="trace-chart-svg" viewBox="0 0 100 80" preserveAspectRatio="none">
                 <defs>
                   <linearGradient id="goldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#EAB308;stop-opacity:0.5" />
-                    <stop offset="100%" style="stop-color:#EAB308;stop-opacity:0" />
+                    <stop offset="0%" style="stop-color:#F97316;stop-opacity:0.5" />
+                    <stop offset="100%" style="stop-color:#F97316;stop-opacity:0" />
                   </linearGradient>
                 </defs>
                 ${svgArea}
@@ -1724,11 +1724,11 @@ const toolsModule = {
         if (days < 7) score -= 30;
       }
       
-      if (score >= 90) return { grade: 'A+', color: '#6acf80' };
-      if (score >= 80) return { grade: 'A', color: '#6acf80' };
-      if (score >= 70) return { grade: 'B', color: '#f0b860' };
-      if (score >= 60) return { grade: 'C', color: '#f07040' };
-      return { grade: 'F', color: '#f07070' };
+      if (score >= 90) return { grade: 'A+', color: '#7CFF9A' };
+      if (score >= 80) return { grade: 'A', color: '#7CFF9A' };
+      if (score >= 70) return { grade: 'B', color: '#F97316' };
+      if (score >= 60) return { grade: 'C', color: '#F97316' };
+      return { grade: 'F', color: '#FF4D4D' };
     };
 
     const ssl = extractSSLData(data);
@@ -1742,7 +1742,7 @@ const toolsModule = {
             .ssl-zone { animation: ssl-fade 0.3s ease-out forwards; opacity: 0; }
             .ssl-zone-1 { animation-delay: 0ms; }
             .ssl-error-card { background: #111318; border: 0.5px solid #2a2d35; border-radius: 10px; padding: 20px 24px; text-align: center; }
-            .ssl-error-icon { font-size: 48px; color: #f07070; margin-bottom: 12px; }
+            .ssl-error-icon { font-size: 48px; color: #FF4D4D; margin-bottom: 12px; }
             .ssl-error-title { font-size: 18px; font-weight: 600; color: #e2e3e7; }
             .ssl-error-msg { font-size: 13px; color: #6b6e78; margin-top: 8px; }
           </style>
@@ -1766,20 +1766,20 @@ const toolsModule = {
     }
 
     let statusType = 'valid';
-    let statusColor = '#6acf80';
+    let statusColor = '#7CFF9A';
     let statusBg = '#102a18';
     let statusBorder = '#1a5a28';
     let statusLabel = 'VALID';
     
     if (daysLeft !== null && daysLeft < 0) {
       statusType = 'expired';
-      statusColor = '#f07070';
+      statusColor = '#FF4D4D';
       statusBg = '#2a1414';
       statusBorder = '#5a2020';
       statusLabel = 'EXPIRED';
     } else if (daysLeft !== null && daysLeft < 30) {
       statusType = 'expiring';
-      statusColor = '#f0b860';
+      statusColor = '#F97316';
       statusBg = '#2a2010';
       statusBorder = '#5a4010';
       statusLabel = 'EXPIRING SOON';
@@ -1787,8 +1787,8 @@ const toolsModule = {
 
     const grade = ssl.hasData ? calculateSSLGrade(ssl) : null;
 
-    const protoColor = ssl.protocol === '—' ? '#6b6e78' : ssl.protocol.includes('1.3') ? '#6acf80' : ssl.protocol.includes('1.2') ? '#f0b860' : '#f07070';
-    const keyColor = !ssl.keyBits || ssl.keyBits === '—' ? '#6b6e78' : ssl.keyBits >= 2048 ? '#6acf80' : '#f07070';
+    const protoColor = ssl.protocol === '—' ? '#6b6e78' : ssl.protocol.includes('1.3') ? '#7CFF9A' : ssl.protocol.includes('1.2') ? '#F97316' : '#FF4D4D';
+    const keyColor = !ssl.keyBits || ssl.keyBits === '—' ? '#6b6e78' : ssl.keyBits >= 2048 ? '#7CFF9A' : '#FF4D4D';
 
     const fmtDate = (d) => {
       if (!d) return '—';
@@ -1810,9 +1810,9 @@ const toolsModule = {
         timelineHasData = true;
         
         if (daysLeft !== null) {
-          if (daysLeft > 60) timelineColor = '#6acf80';
-          else if (daysLeft > 30) timelineColor = '#f0b860';
-          else timelineColor = '#f07070';
+          if (daysLeft > 60) timelineColor = '#7CFF9A';
+          else if (daysLeft > 30) timelineColor = '#F97316';
+          else timelineColor = '#FF4D4D';
         }
       }
     }
@@ -1840,9 +1840,9 @@ const toolsModule = {
           .ssl-hero-icon { font-size: 24px; color: #8B5CF6; }
           .ssl-hero-domain { font-size: 22px; font-weight: 700; color: white; font-family: monospace; margin-left: 12px; }
           .ssl-hero-issuer { font-size: 13px; color: #6B7280; margin-left: 12px; margin-top: 4px; }
-          .ssl-status-badge { background: #0E1016; border: 1px solid #EAB308; border-radius: 8px; padding: 10px 16px; text-align: center; }
+          .ssl-status-badge { background: #0E1016; border: 1px solid #F97316; border-radius: 8px; padding: 10px 16px; text-align: center; }
           .ssl-status-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; }
-          .ssl-status-value { font-size: 16px; font-weight: 600; color: #EAB308; margin-top: 2px; }
+          .ssl-status-value { font-size: 16px; font-weight: 600; color: #F97316; margin-top: 2px; }
           .ssl-details-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
           .ssl-detail-card { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 14px 16px; }
           .ssl-detail-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; margin-bottom: 4px; }
@@ -1852,7 +1852,7 @@ const toolsModule = {
           .ssl-timeline-label { font-size: 10px; text-transform: uppercase; color: #6B7280; letter-spacing: 0.1em; margin-bottom: 8px; }
           .ssl-timeline-container { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 14px 16px; }
           .ssl-timeline-bar { height: 6px; background: #1A1F2E; border-radius: 999px; overflow: hidden; }
-          .ssl-timeline-fill { height: 100%; background: linear-gradient(90deg, #EAB308, #EAB308); border-radius: 999px; width: 0; animation: ssl-bar-fill 0.5s ease-out forwards; }
+          .ssl-timeline-fill { height: 100%; background: linear-gradient(90deg, #F97316, #F97316); border-radius: 999px; width: 0; animation: ssl-bar-fill 0.5s ease-out forwards; }
           .ssl-timeline-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: #4B5563; font-family: monospace; }
           .ssl-timeline-labels .center { color: #4B5563; }
           .ssl-grade-card { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 20px; margin-top: 12px; display: flex; align-items: center; gap: 24px; }
@@ -1934,7 +1934,7 @@ const toolsModule = {
             <div class="ssl-timeline-label">Validity Period</div>
             <div class="ssl-timeline-container">
               <div class="ssl-timeline-bar">
-                <div class="ssl-timeline-fill" style="width:0%;background:linear-gradient(90deg, #EAB308, #EAB308);animation-delay:0.3s"></div>
+                <div class="ssl-timeline-fill" style="width:0%;background:linear-gradient(90deg, #F97316, #F97316);animation-delay:0.3s"></div>
               </div>
               <div class="ssl-timeline-labels">
                 <span>Issued: &#8212;</span>
@@ -2015,7 +2015,7 @@ const toolsModule = {
             .hdr-zone { animation: hdr-fade 0.3s ease-out forwards; opacity: 0; }
             .hdr-zone-1 { animation-delay: 0ms; }
             .hdr-error-card { background: #111318; border: 0.5px solid #2a2d35; border-radius: 10px; padding: 20px 24px; text-align: center; }
-            .hdr-error-icon { font-size: 48px; color: #f07070; margin-bottom: 12px; }
+            .hdr-error-icon { font-size: 48px; color: #FF4D4D; margin-bottom: 12px; }
             .hdr-error-title { font-size: 18px; font-weight: 600; color: #e2e3e7; }
             .hdr-error-msg { font-size: 13px; color: #6b6e78; margin-top: 8px; }
           </style>
@@ -2037,10 +2037,10 @@ const toolsModule = {
     const url = data.url || 'Unknown';
 
     const getStatusColor = (code) => {
-      if (code >= 200 && code < 300) return { bg: '#102a18', border: '#1a5a28', color: '#6acf80', text: 'OK' };
-      if (code >= 300 && code < 400) return { bg: '#2a2010', border: '#5a4010', color: '#f0b860', text: 'Redirect' };
-      if (code >= 400 && code < 500) return { bg: '#2a1414', border: '#5a2020', color: '#f07070', text: 'Client Error' };
-      if (code >= 500) return { bg: '#2a1414', border: '#5a2020', color: '#f07070', text: 'Server Error' };
+      if (code >= 200 && code < 300) return { bg: '#102a18', border: '#1a5a28', color: '#7CFF9A', text: 'OK' };
+      if (code >= 300 && code < 400) return { bg: '#2a2010', border: '#5a4010', color: '#F97316', text: 'Redirect' };
+      if (code >= 400 && code < 500) return { bg: '#2a1414', border: '#5a2020', color: '#FF4D4D', text: 'Client Error' };
+      if (code >= 500) return { bg: '#2a1414', border: '#5a2020', color: '#FF4D4D', text: 'Server Error' };
       return { bg: '#111318', border: '#2a2d35', color: '#6b6e78', text: 'Unknown' };
     };
 
@@ -2058,7 +2058,7 @@ const toolsModule = {
     };
 
     const riskColors = {
-      'HIGH': '#EAB308',
+      'HIGH': '#F97316',
       'MEDIUM': '#8B5CF6',
       'LOW': '#1A1F2E',
       'INFO': '#0E1016'
@@ -2095,7 +2095,7 @@ const toolsModule = {
       .filter(([k]) => !Object.keys(securityHeadersMap).includes(k.toLowerCase()))
       .map(([k, v]) => {
         const isInteresting = interestingHeaders.includes(k);
-        const borderColor = k.toLowerCase() === 'server' || k.toLowerCase() === 'x-powered-by' ? '#f0b860' 
+        const borderColor = k.toLowerCase() === 'server' || k.toLowerCase() === 'x-powered-by' ? '#F97316' 
           : k.toLowerCase() === 'cache-control' ? '#a78bfa' 
           : k.toLowerCase() === 'etag' ? '#4a4d58' : 'transparent';
         return { key: k, value: v, borderColor, isInteresting };
@@ -2122,11 +2122,11 @@ const toolsModule = {
           .hdr-hero-tags { display: flex; gap: 6px; flex-wrap: wrap; }
           .hdr-tech-pill { background: #1A1F2E; border: 1px solid #232736; color: #C4B5FD; border-radius: 999px; padding: 2px 10px; font-size: 12px; font-family: monospace; }
           .hdr-tech-pill.purple { color: #C4B5FD; border-color: #232736; }
-          .hdr-status-badge { background: #0E1016; border: 1px solid #EAB308; border-radius: 8px; padding: 10px 16px; text-align: center; }
-          .hdr-status-code { font-size: 24px; font-weight: 700; color: #EAB308; font-family: monospace; animation: hdr-code-pop 0.4s ease-out forwards; }
+          .hdr-status-badge { background: #0E1016; border: 1px solid #F97316; border-radius: 8px; padding: 10px 16px; text-align: center; }
+          .hdr-status-code { font-size: 24px; font-weight: 700; color: #F97316; font-family: monospace; animation: hdr-code-pop 0.4s ease-out forwards; }
           .hdr-status-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; margin-top: 2px; }
           .hdr-checklist-section { margin-top: 12px; }
-          .hdr-checklist-summary { font-size: 13px; color: #EAB308; font-family: monospace; font-weight: 600; margin-bottom: 8px; }
+          .hdr-checklist-summary { font-size: 13px; color: #F97316; font-family: monospace; font-weight: 600; margin-bottom: 8px; }
           .hdr-checklist-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
           .hdr-check-item { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; animation: hdr-fade 0.3s ease-out forwards; opacity: 0; }
           .hdr-check-left { display: flex; align-items: center; gap: 8px; }
@@ -2136,8 +2136,8 @@ const toolsModule = {
           .hdr-status-pill.present { background: #1A1F2E; color: #9CA3AF; border: 1px solid #232736; }
           .hdr-status-pill.missing { background: #1A1F2E; color: #9CA3AF; border: 1px solid #232736; }
           .hdr-osint-box { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 14px 20px; margin-top: 14px; }
-          .hdr-osint-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #EAB308; margin-bottom: 10px; }
-          .hdr-osint-dot { width: 8px; height: 8px; border-radius: 50%; background: #EAB308; animation: hdr-pulse 2s infinite; }
+          .hdr-osint-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #F97316; margin-bottom: 10px; }
+          .hdr-osint-dot { width: 8px; height: 8px; border-radius: 50%; background: #F97316; animation: hdr-pulse 2s infinite; }
           .hdr-osint-content { font-size: 12px; line-height: 1.7; color: #9CA3AF; font-family: monospace; }
           .hdr-fallback-box { background: #111318; border: 0.5px solid #2a2d35; border-radius: 10px; padding: 16px 20px; margin-top: 14px; }
           .hdr-fallback-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: #6b6e78; margin-bottom: 10px; }
@@ -2151,10 +2151,10 @@ const toolsModule = {
           .hdr-table-row:nth-child(odd) { background: #0E1016; }
           .hdr-table-row:hover { background: #1A1F2E; }
           .hdr-table-row:last-child { border-bottom: none; }
-          .hdr-table-row.interesting { border-left-color: #EAB308; background: #111318; }
+          .hdr-table-row.interesting { border-left-color: #F97316; background: #111318; }
           .hdr-table-key { font-size: 13px; font-family: monospace; color: #C4B5FD; }
           .hdr-table-val { font-size: 13px; font-family: monospace; color: #E5E7EB; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-          .hdr-warning { font-size: 13px; color: #EAB308; padding: 12px 16px; background: #1A1200; border: 1px solid #EAB308; border-left: 3px solid #EAB308; border-radius: 8px; margin-top: 8px; display: flex; align-items: center; gap: 8px; font-family: monospace; }
+          .hdr-warning { font-size: 13px; color: #F97316; padding: 12px 16px; background: #1A1200; border: 1px solid #F97316; border-left: 3px solid #F97316; border-radius: 8px; margin-top: 8px; display: flex; align-items: center; gap: 8px; font-family: monospace; }
           .hdr-suggest-box { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px 20px; margin-top: 14px; }
           .hdr-suggest-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; margin-bottom: 8px; }
           .hdr-suggest-content { display: flex; align-items: center; justify-content: space-between; }
@@ -2203,7 +2203,7 @@ const toolsModule = {
                   <div class="hdr-check-item" style="animation-delay:${i * 30}ms">
                     <div class="hdr-check-left">
                       <span class="hdr-check-name">${info.name}</span>
-                      <span class="hdr-risk-pill" style="background:${info.risk === 'HIGH' ? '#EAB308' : info.risk === 'MEDIUM' ? '#8B5CF6' : info.risk === 'LOW' ? '#1A1F2E' : '#0E1016'};color:${info.risk === 'HIGH' ? '#0E1016' : info.risk === 'MEDIUM' ? 'white' : info.risk === 'LOW' ? '#9CA3AF' : '#6B7280'};${info.risk === 'LOW' || info.risk === 'INFO' ? 'border:1px solid #232736' : ''}">${info.risk}</span>
+                      <span class="hdr-risk-pill" style="background:${info.risk === 'HIGH' ? '#F97316' : info.risk === 'MEDIUM' ? '#8B5CF6' : info.risk === 'LOW' ? '#1A1F2E' : '#0E1016'};color:${info.risk === 'HIGH' ? '#0E1016' : info.risk === 'MEDIUM' ? 'white' : info.risk === 'LOW' ? '#9CA3AF' : '#6B7280'};${info.risk === 'LOW' || info.risk === 'INFO' ? 'border:1px solid #232736' : ''}">${info.risk}</span>
                     </div>
                     <span class="hdr-status-pill ${isPresent ? 'present' : 'missing'}">
                       ${isPresent ? '✓ Present' : '✗ Missing'}
@@ -2236,7 +2236,7 @@ const toolsModule = {
             </div>
             ${(serverHeader || poweredByHeader) ? `
               <div class="hdr-warning">
-                <i class="fa-solid fa-triangle-exclamation" style="color: #EAB308;"></i>
+                <i class="fa-solid fa-triangle-exclamation" style="color: #F97316;"></i>
                 server and x-powered-by headers are exposing your tech stack. Consider removing or masking these.
               </div>
             ` : ''}
@@ -2349,17 +2349,17 @@ const toolsModule = {
     };
 
     const getInterestColor = (level) => {
-      if (level === 'HIGH') return '#EAB308';
+      if (level === 'HIGH') return '#F97316';
       if (level === 'MEDIUM') return '#8B5CF6';
       return '#1A1F2E';
     };
 
     const getStatusBadge = (status) => {
-      if (status >= 200 && status < 300) return { text: '200 OK', color: '#4ADE80', bg: '#14532D', border: '#14532D' };
-      if (status >= 300 && status < 400) return { text: `${status} Redirect`, color: '#f0b860', bg: '#2a2010', border: '#5a4010' };
-      if (status === 403) return { text: '403 Forbidden', color: '#f0b860', bg: '#2a2010', border: '#5a4010' };
+      if (status >= 200 && status < 300) return { text: '200 OK', color: '#7CFF9A', bg: '#14532D', border: '#14532D' };
+      if (status >= 300 && status < 400) return { text: `${status} Redirect`, color: '#F97316', bg: '#2a2010', border: '#5a4010' };
+      if (status === 403) return { text: '403 Forbidden', color: '#F97316', bg: '#2a2010', border: '#5a4010' };
       if (status === 404) return { text: '404 Not Found', color: '#6b6e78', bg: '#111318', border: '#2a2d35' };
-      if (status >= 500) return { text: `${status} Error`, color: '#f07070', bg: '#2a1414', border: '#5a2020' };
+      if (status >= 500) return { text: `${status} Error`, color: '#FF4D4D', bg: '#2a1414', border: '#5a2020' };
       return { text: '—', color: '#4a4d58', bg: '#111318', border: '#2a2d35' };
     };
 
@@ -2372,14 +2372,14 @@ const toolsModule = {
       const status = sub.status || sub.http_status || 200;
       const statusBadge = getStatusBadge(status);
       const ip = sub.ip || sub.address || '—';
-      const borderColor = interestLevel === 'HIGH' ? '#f07070' : interestLevel === 'MEDIUM' ? '#f0b860' : '#6acf80';
+      const borderColor = interestLevel === 'HIGH' ? '#FF4D4D' : interestLevel === 'MEDIUM' ? '#F97316' : '#7CFF9A';
       
       return `
         <div class="sub-row" style="border-left: 3px solid ${borderColor}; animation-delay:${i * 30}ms">
           <div class="sub-name">${sub.name || sub.subdomain || sub}</div>
           <div class="sub-ip">${ip}</div>
           <div class="sub-status"><span class="sub-status-pill" style="background:${statusBadge.bg};border:0.5px solid ${statusBadge.border};color:${statusBadge.color}">${statusBadge.text}</span></div>
-          <div class="sub-interest"><span class="sub-interest-pill" style="background:${interestLevel === 'HIGH' ? '#EAB308' : interestLevel === 'MEDIUM' ? '#8B5CF6' : '#1A1F2E'};color:${interestLevel === 'HIGH' ? '#0E1016' : interestLevel === 'MEDIUM' ? 'white' : '#6B7280'};${interestLevel === 'LOW' ? 'border:1px solid #232736' : ''}">${interestLevel}</span></div>
+          <div class="sub-interest"><span class="sub-interest-pill" style="background:${interestLevel === 'HIGH' ? '#F97316' : interestLevel === 'MEDIUM' ? '#8B5CF6' : '#1A1F2E'};color:${interestLevel === 'HIGH' ? '#0E1016' : interestLevel === 'MEDIUM' ? 'white' : '#6B7280'};${interestLevel === 'LOW' ? 'border:1px solid #232736' : ''}">${interestLevel}</span></div>
         </div>
       `;
     }).join('');
@@ -2443,15 +2443,15 @@ const toolsModule = {
           .sub-empty-btn { background: transparent; border: 0.5px solid #4a3a8e; border-radius: 6px; padding: 6px 14px; font-size: 12px; color: #a78bfa; cursor: pointer; }
           .sub-empty-btn.muted { border-color: #2e3140; color: #6b6e78; }
           .sub-high-section { margin-top: 12px; }
-          .sub-high-label { font-size: 11px; text-transform: uppercase; color: #f07070; letter-spacing: 0.08em; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-          .sub-high-label::before { content: ''; width: 3px; height: 16px; background: #f07070; border-radius: 2px; }
-          .sub-high-card { background: #111318; border: 0.5px solid #2a2d35; border-left: 3px solid #f07070; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; }
+          .sub-high-label { font-size: 11px; text-transform: uppercase; color: #FF4D4D; letter-spacing: 0.08em; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+          .sub-high-label::before { content: ''; width: 3px; height: 16px; background: #FF4D4D; border-radius: 2px; }
+          .sub-high-card { background: #111318; border: 0.5px solid #2a2d35; border-left: 3px solid #FF4D4D; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; }
           .sub-high-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
           .sub-high-name { font-size: 14px; font-family: monospace; font-weight: 600; color: #e2e3e7; }
-          .sub-high-reason { font-size: 11px; color: #f07070; background: rgba(240,112,112,0.1); padding: 2px 8px; border-radius: 10px; }
+          .sub-high-reason { font-size: 11px; color: #FF4D4D; background: rgba(240,112,112,0.1); padding: 2px 8px; border-radius: 10px; }
           .sub-high-btn { background: #1e2130; border: 0.5px solid #4a3a8e; border-radius: 6px; padding: 6px 14px; font-size: 12px; color: #a78bfa; cursor: pointer; }
           .sub-high-btn:hover { background: #252640; }
-          .sub-wildcard-warning { background: #1a1408; border: 0.5px solid #5a4010; border-radius: 8px; padding: 12px 16px; margin-top: 12px; display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: #f0b860; }
+          .sub-wildcard-warning { background: #1a1408; border: 0.5px solid #5a4010; border-radius: 8px; padding: 12px 16px; margin-top: 12px; display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: #F97316; }
           .sub-wildcard-warning i { margin-top: 2px; }
           .sub-suggest-box { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px 20px; margin-top: 14px; }
           .sub-suggest-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; margin-bottom: 8px; }
@@ -2489,7 +2489,7 @@ const toolsModule = {
               </div>
               <div class="sub-stat-pill">
                 <div class="sub-stat-label">High Interest</div>
-                <div class="sub-stat-value" style="color:${highInterestCount > 0 ? '#f07070' : '#6b6e78'}">${highInterestCount}</div>
+                <div class="sub-stat-value" style="color:${highInterestCount > 0 ? '#FF4D4D' : '#6b6e78'}">${highInterestCount}</div>
               </div>
               <div class="sub-stat-pill">
                 <div class="sub-stat-label">Scan Size</div>
@@ -2583,7 +2583,7 @@ const toolsModule = {
             .geo-zone { animation: geo-fade 0.3s ease-out forwards; opacity: 0; }
             .geo-zone-1 { animation-delay: 0ms; }
             .geo-error-card { background: #111318; border: 0.5px solid #2a2d35; border-radius: 10px; padding: 20px 24px; text-align: center; }
-            .geo-error-icon { font-size: 48px; color: #f07070; margin-bottom: 12px; }
+            .geo-error-icon { font-size: 48px; color: #FF4D4D; margin-bottom: 12px; }
             .geo-error-title { font-size: 18px; font-weight: 600; color: #e2e3e7; }
             .geo-error-msg { font-size: 13px; color: #6b6e78; margin-top: 8px; }
           </style>
@@ -2658,8 +2658,8 @@ const toolsModule = {
           .geo-detail-card { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 14px 16px; }
           .geo-detail-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; margin-bottom: 4px; }
           .geo-detail-value { font-size: 14px; font-weight: 600; color: white; font-family: monospace; }
-          .geo-detail-card.hosting { border-left: 3px solid #f0b860; }
-          .geo-hosting-note { font-size: 11px; color: #f0b860; margin-top: 4px; }
+          .geo-detail-card.hosting { border-left: 3px solid #F97316; }
+          .geo-hosting-note { font-size: 11px; color: #F97316; margin-top: 4px; }
           .geo-region-sub { font-size: 12px; color: #4B5563; margin-top: 2px; }
           .geo-asn-card { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
           .geo-asn-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; margin-bottom: 6px; }
@@ -2674,13 +2674,13 @@ const toolsModule = {
           .geo-map-grid { position: absolute; inset: 0; background-image: linear-gradient(#1A1F2E 1px, transparent 1px), linear-gradient(90deg, #1A1F2E 1px, transparent 1px); background-size: 20px 20px; }
           .geo-map-dot { position: absolute; top: 45%; left: 65%; }
           .geo-map-dot-outer { width: 32px; height: 32px; border-radius: 50%; background: rgba(234,179,8,0.3); animation: geo-pulse 2s infinite; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-          .geo-map-dot-inner { width: 10px; height: 10px; border-radius: 50%; background: #EAB308; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 8px #EAB308; }
-          .geo-map-ip { font-size: 11px; color: #EAB308; font-family: monospace; position: absolute; top: calc(45% + 24px); left: calc(65% - 20px); white-space: nowrap; }
+          .geo-map-dot-inner { width: 10px; height: 10px; border-radius: 50%; background: #F97316; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 8px #F97316; }
+          .geo-map-ip { font-size: 11px; color: #F97316; font-family: monospace; position: absolute; top: calc(45% + 24px); left: calc(65% - 20px); white-space: nowrap; }
           .geo-map-location { position: absolute; bottom: 8px; right: 12px; font-size: 11px; color: #6B7280; }
           .geo-map-compass { position: absolute; top: 8px; right: 12px; font-size: 10px; color: #4B5563; }
           .geo-osint-box { background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px 20px; margin-top: 14px; }
-          .geo-osint-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #EAB308; margin-bottom: 10px; }
-          .geo-osint-dot { width: 8px; height: 8px; border-radius: 50%; background: #EAB308; animation: geo-pulse 2s infinite; }
+          .geo-osint-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #F97316; margin-bottom: 10px; }
+          .geo-osint-dot { width: 8px; height: 8px; border-radius: 50%; background: #F97316; animation: geo-pulse 2s infinite; }
           .geo-osint-content { font-size: 12px; line-height: 1.7; color: #9CA3AF; font-family: monospace; }
           .geo-fallback-box { background: #111318; border: 0.5px solid #2a2d35; border-radius: 10px; padding: 16px 20px; margin-top: 14px; }
           .geo-fallback-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: #6b6e78; margin-bottom: 10px; }
@@ -2786,7 +2786,7 @@ const toolsModule = {
           <div class="geo-flags-row">
             <div class="geo-flag-card">
               <div class="geo-flag-label">IP Type</div>
-              <div class="geo-flag-value" style="color:${isHosting ? '#f0b860' : '#e2e3e7'}">${isHosting ? 'Hosting Provider' : 'Residential'}</div>
+              <div class="geo-flag-value" style="color:${isHosting ? '#F97316' : '#e2e3e7'}">${isHosting ? 'Hosting Provider' : 'Residential'}</div>
               <div class="geo-flag-sub">${isHosting ? 'May mask true origin' : 'Direct connection'}</div>
             </div>
             <div class="geo-flag-card">

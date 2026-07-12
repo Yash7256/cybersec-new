@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { apiPost } from '../utils/apiClient';
 import { useGetToken } from '../utils/useGetToken';
+import { downloadFile, exportBrandedPdf, shareOrCopy, rowsToCsv } from '../utils/exportUtils';
 
 const VULN_LABELS = {
   MISSING_HEADER: 'Missing Security Header',
@@ -68,11 +69,11 @@ const CATEGORY_LABELS = {
 };
 
 const SEVERITY_STYLES = {
-  critical: { label: 'Critical', text: 'text-[#ff4f5f]', bg: 'bg-[#ff4f5f]', badge: 'bg-[#5d1b2a] text-[#ff6673]' },
-  high: { label: 'High', text: 'text-[#ff7b39]', bg: 'bg-[#ff7b39]', badge: 'bg-[#5d2c1b] text-[#ff8d4f]' },
-  medium: { label: 'Medium', text: 'text-[#f0ad2e]', bg: 'bg-[#f0ad2e]', badge: 'bg-[#5a3c14] text-[#ffbf54]' },
-  low: { label: 'Low', text: 'text-[#57c254]', bg: 'bg-[#57c254]', badge: 'bg-[#173f27] text-[#62d676]' },
-  info: { label: 'Low', text: 'text-[#57c254]', bg: 'bg-[#57c254]', badge: 'bg-[#173f27] text-[#62d676]' },
+  critical: { label: 'Critical', text: 'text-[#FF4D4D]', bg: 'bg-[#FF4D4D]', badge: 'bg-[#5d1b2a] text-[#FF4D4D]' },
+  high: { label: 'High', text: 'text-[#F97316]', bg: 'bg-[#F97316]', badge: 'bg-[#5d2c1b] text-[#F97316]' },
+  medium: { label: 'Medium', text: 'text-[#F97316]', bg: 'bg-[#F97316]', badge: 'bg-[#5a3c14] text-[#ffbf54]' },
+  low: { label: 'Low', text: 'text-[#7CFF9A]', bg: 'bg-[#7CFF9A]', badge: 'bg-[#173f27] text-[#7CFF9A]' },
+  info: { label: 'Low', text: 'text-[#7CFF9A]', bg: 'bg-[#7CFF9A]', badge: 'bg-[#173f27] text-[#7CFF9A]' },
 };
 
 const fmt = (value, fallback = 'Unknown') => (
@@ -115,15 +116,15 @@ function RiskGauge({ score }) {
       <div
         className="relative h-[100px] w-[180px] overflow-hidden"
         style={{
-          background: `conic-gradient(from 270deg at 50% 100%, #ff7b39 0deg, #ff7b39 ${angle}deg, rgba(255,255,255,0.32) ${angle}deg, rgba(255,255,255,0.32) 180deg, transparent 180deg)`,
+          background: `conic-gradient(from 270deg at 50% 100%, #F97316 0deg, #F97316 ${angle}deg, rgba(255,255,255,0.32) ${angle}deg, rgba(255,255,255,0.32) 180deg, transparent 180deg)`,
           borderRadius: '180px 180px 0 0',
         }}
       >
         <div className="absolute bottom-0 left-1/2 h-[70px] w-[130px] -translate-x-1/2 rounded-t-full bg-[#13091f]" />
       </div>
       <div className="-mt-8 text-center">
-        <div className="text-[20px] font-semibold text-[#ff7b39]">{score}/100</div>
-        <div className="mt-1 text-[10px] text-[#ff7b39]">Needs Attention</div>
+        <div className="text-[20px] font-semibold text-[#F97316]">{score}/100</div>
+        <div className="mt-1 text-[10px] text-[#F97316]">Needs Attention</div>
       </div>
     </div>
   );
@@ -141,17 +142,17 @@ function SeverityDonut({ counts, total }) {
       <div
         className="h-[112px] w-[112px] rounded-full"
         style={{
-          background: `conic-gradient(#ff4f5f 0deg ${c1}deg, #ff7b39 ${c1}deg ${c2}deg, #f5f064 ${c2}deg ${c3}deg, #57c254 ${c3}deg 360deg)`,
+          background: `conic-gradient(#FF4D4D 0deg ${c1}deg, #F97316 ${c1}deg ${c2}deg, #f5f064 ${c2}deg ${c3}deg, #7CFF9A ${c3}deg 360deg)`,
         }}
       >
         <div className="m-[18px] h-[76px] w-[76px] rounded-full bg-[#13091f]" />
       </div>
       <div className="space-y-3 text-[13px]">
         {[
-          ['High', counts.high, '#ff4f5f'],
-          ['Critical', counts.critical, '#ff7b39'],
+          ['High', counts.high, '#FF4D4D'],
+          ['Critical', counts.critical, '#F97316'],
           ['Medium', counts.medium, '#f5f064'],
-          ['Low', counts.low + counts.info, '#57c254'],
+          ['Low', counts.low + counts.info, '#7CFF9A'],
         ].map(([label, value, color]) => (
           <div key={label} className="grid grid-cols-[12px_76px_40px] items-center gap-2 text-white">
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
@@ -184,9 +185,9 @@ function TechFingerprint({ fingerprint }) {
 
 function CategoryBars({ countsByCategory, max }) {
   const rows = [
-    ['HTTP Header & Cookies', countsByCategory.headers || 0, '#ff7b39'],
-    ['DNS/Email Security', countsByCategory.dns || 0, '#ff4f5f'],
-    ['Information Disclosure', countsByCategory.infoDisclosure || 0, '#ff9f2c'],
+    ['HTTP Header & Cookies', countsByCategory.headers || 0, '#F97316'],
+    ['DNS/Email Security', countsByCategory.dns || 0, '#FF4D4D'],
+    ['Information Disclosure', countsByCategory.infoDisclosure || 0, '#F97316'],
   ];
   return (
     <div className="space-y-7 py-4">
@@ -209,9 +210,9 @@ function CategoryBars({ countsByCategory, max }) {
 
 function SecurityCategorySummary({ countsByCategory, max }) {
   const rows = [
-    ['HTTP Security', countsByCategory.headers || 0, '#ff4f5f'],
-    ['DNS/Email Security', countsByCategory.dns || 0, '#ff7b39'],
-    ['Information Disclosure', countsByCategory.infoDisclosure || 0, '#57c254'],
+    ['HTTP Security', countsByCategory.headers || 0, '#FF4D4D'],
+    ['DNS/Email Security', countsByCategory.dns || 0, '#F97316'],
+    ['Information Disclosure', countsByCategory.infoDisclosure || 0, '#7CFF9A'],
   ];
   return (
     <div className="space-y-5">
@@ -247,7 +248,7 @@ function FindingsTable({ findings }) {
             <span>{vulnLabel(finding)}</span>
             <span>{categoryLabel(finding.category)}</span>
             <span>{hostFromUrl(finding.url)}</span>
-            <span className="w-fit rounded-full bg-[#5d1b2a] px-3 py-1 text-[#ff6673]">Open</span>
+            <span className="w-fit rounded-full bg-[#5d1b2a] px-3 py-1 text-[#FF4D4D]">Open</span>
           </div>
         );
       })}
@@ -301,8 +302,8 @@ function RiskSection({ title, findings }) {
 
 function SecurityCategories() {
   const groups = [
-    ['Critical', '#ff4f5f', ['Enable HTTPS', 'Configure HSTS', 'Configure CSP']],
-    ['Important', '#ff7b39', ['Add X-Frame-Options', 'Add X-Content-Type-Options', 'Add SPF Record', 'Add DMARC Record']],
+    ['Critical', '#FF4D4D', ['Enable HTTPS', 'Configure HSTS', 'Configure CSP']],
+    ['Important', '#F97316', ['Add X-Frame-Options', 'Add X-Content-Type-Options', 'Add SPF Record', 'Add DMARC Record']],
     ['Hardening', '#f5f064', ['Add Referrer-Policy', 'Add Permissions-Policy', 'Hide Server Banner']],
   ];
   return (
@@ -332,13 +333,13 @@ function SecurityCategories() {
   );
 }
 
-function ExportPanel({ onJson, onCsv, onShare, copied }) {
+function ExportPanel({ onPdf, onJson, onCsv, onShare, copied }) {
   return (
     <section className="rounded-xl border border-white/[0.14] bg-[#201330]/82 p-10">
       <h3 className="text-[18px] font-semibold uppercase text-[#ba9cff]">Export &amp; Share</h3>
       <p className="mt-4 text-[14px] text-[#ded4e9]">Download or share your scan report.</p>
       <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <button type="button" onClick={() => window.print()} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><FileText className="h-5 w-5" />Export PDF</button>
+        <button type="button" onClick={onPdf} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><FileText className="h-5 w-5" />Export PDF</button>
         <button type="button" onClick={onJson} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><FileText className="h-5 w-5" />Export JSON</button>
         <button type="button" onClick={onCsv} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><FileText className="h-5 w-5" />Export CSV</button>
         <button type="button" onClick={onShare} className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]"><Share2 className="h-5 w-5" />{copied ? 'Copied' : 'Share report'}</button>
@@ -394,7 +395,7 @@ function WebAppResults({ scan, onExportJson, onExportCsv, onShare, copied }) {
           <ExternalLink className="h-4 w-4 text-[#b895ff]" />
         </h2>
         <div className="mt-3 flex flex-wrap gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#57c254]/35 bg-[#132718] px-4 py-1 text-[10px] text-[#57c254]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#7CFF9A]/35 bg-[#132718] px-4 py-1 text-[10px] text-[#7CFF9A]">
             <CheckCircle className="h-3 w-3" />
             Certificate Valid
           </span>
@@ -467,7 +468,13 @@ function WebAppResults({ scan, onExportJson, onExportCsv, onShare, copied }) {
         )}
       </section>
 
-      <ExportPanel onJson={onExportJson} onCsv={onExportCsv} onShare={onShare} copied={copied} />
+      <ExportPanel
+            onPdf={() => exportBrandedPdf({ tool: 'Web App Scanner', target: hostFromUrl(scan?.base_url || scan?.target) })}
+            onJson={onExportJson}
+            onCsv={onExportCsv}
+            onShare={onShare}
+            copied={copied}
+          />
     </div>
   );
 }
@@ -497,19 +504,9 @@ export default function WebAppScanner() {
 
   const scan = results?.result;
 
-  const downloadText = (filename, content, type = 'text/plain') => {
-    const blob = new Blob([content], { type });
-    const blobUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(blobUrl);
-  };
-
   const exportJson = () => {
     if (!scan) return;
-    downloadText(`webapp-${hostFromUrl(scan.target)}.json`, JSON.stringify(scan, null, 2), 'application/json');
+    downloadFile(`webapp-${hostFromUrl(scan.target)}.json`, JSON.stringify(scan, null, 2), 'application/json');
   };
 
   const exportCsv = () => {
@@ -524,14 +521,13 @@ export default function WebAppScanner() {
         finding.recommendation || '',
       ]),
     ];
-    const csv = rows.map((row) => row.map((cell) => `"${String(cell ?? '').replaceAll('"', '""')}"`).join(',')).join('\n');
-    downloadText(`webapp-${hostFromUrl(scan.target)}.csv`, csv, 'text/csv');
+    downloadFile(`webapp-${hostFromUrl(scan.target)}.csv`, rowsToCsv(rows), 'text/csv');
   };
 
   const shareReport = async () => {
     if (!scan) return;
     const text = `Web App Scanner: ${hostFromUrl(scan.target)}\nVulnerabilities: ${scan.total_vulns ?? 0}\nPages crawled: ${scan.pages_crawled ?? 0}`;
-    await navigator.clipboard.writeText(text).catch(() => {});
+    await shareOrCopy({ title: 'Web App Scan Report', text });
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1400);
   };
@@ -575,7 +571,7 @@ export default function WebAppScanner() {
             <div className="text-primary-400 font-mono text-sm animate-pulse">Running all checks...</div>
           </div>
         ) : results?.error ? (
-          <div className="p-6 text-red-400 font-mono text-sm">{results.error}</div>
+          <div className="p-6 text-[#FF4D4D] font-mono text-sm">{results.error}</div>
         ) : scan ? (
           <WebAppResults
             scan={scan}
@@ -585,7 +581,7 @@ export default function WebAppScanner() {
             copied={copied}
           />
         ) : (
-          <div className="p-6 text-red-400 font-mono text-sm">No scan result returned.</div>
+          <div className="p-6 text-[#FF4D4D] font-mono text-sm">No scan result returned.</div>
         )}
       </div>
     </div>

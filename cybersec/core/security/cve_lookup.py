@@ -17,9 +17,20 @@ from typing import Optional, List
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from dataclasses import dataclass
+
 from cybersec.core.security.nvd_client import EnhancedCVELookup
-from cybersec.core.scanner.analysis.service_detect import ServiceDetectionResult
 from cybersec.core.redis_client import get_shared_breaker, RedisKeys
+
+# Minimal stub — the original module path no longer exists.
+try:
+    from cybersec.core.scanner.analysis.service_detect import ServiceDetectionResult  # type: ignore[assignment]
+except ImportError:
+    @dataclass
+    class ServiceDetectionResult:  # type: ignore[no-redef]
+        service_name: str = ""
+        port: int = 0
+        service_version: str = ""
 
 logger = logging.getLogger(__name__)
 

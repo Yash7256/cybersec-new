@@ -428,10 +428,10 @@
   font-weight: 600;
 }
 
-.risk-badge.critical { background: rgba(239,68,68,0.15); color: #EF4444; border: 1px solid rgba(239,68,68,0.3); }
-.risk-badge.high { background: rgba(245,158,11,0.15); color: #F59E0B; border: 1px solid rgba(245,158,11,0.3); }
-.risk-badge.medium { background: rgba(234,179,8,0.15); color: #EAB308; border: 1px solid rgba(234,179,8,0.3); }
-.risk-badge.low { background: rgba(16,185,129,0.15); color: #10B981; border: 1px solid rgba(16,185,129,0.3); }
+.risk-badge.critical { background: rgba(255,77,77,0.15); color: #FF4D4D; border: 1px solid rgba(255,77,77,0.3); }
+.risk-badge.high { background: rgba(249,115,22,0.15); color: #F97316; border: 1px solid rgba(249,115,22,0.3); }
+.risk-badge.medium { background: rgba(249,115,22,0.15); color: #F97316; border: 1px solid rgba(249,115,22,0.3); }
+.risk-badge.low { background: rgba(124,255,154,0.15); color: #7CFF9A; border: 1px solid rgba(124,255,154,0.3); }
 .risk-badge.info { background: rgba(167,173,189,0.15); color: #A7ADBD; border: 1px solid rgba(167,173,189,0.3); }
 
 .service-icon {
@@ -470,7 +470,7 @@
   content: '';
   position: absolute;
   top: 0; left: 0; width: 100%; height: 3px;
-  background: linear-gradient(90deg, #8B5CF6, #10B981); /* Match cybersec theme */
+  background: linear-gradient(90deg, #8B5CF6, #7CFF9A); /* Match cybersec theme */
 }
 
 .ai-insight-header {
@@ -559,14 +559,14 @@
   transition: width 0.5s ease-in-out;
 }
 
-.os-progress-fill.high { background: #10B981; box-shadow: 0 0 10px rgba(16,185,129,0.5); }
-.os-progress-fill.medium { background: #EAB308; box-shadow: 0 0 10px rgba(234,179,8,0.5); }
-.os-progress-fill.low { background: #EF4444; box-shadow: 0 0 10px rgba(239,68,68,0.5); }
+.os-progress-fill.high { background: #7CFF9A; box-shadow: 0 0 10px rgba(124,255,154,0.5); }
+.os-progress-fill.medium { background: #F97316; box-shadow: 0 0 10px rgba(249,115,22,0.5); }
+.os-progress-fill.low { background: #FF4D4D; box-shadow: 0 0 10px rgba(255,77,77,0.5); }
 
 .os-warning-box {
   background: rgba(248,81,73,0.1);
   border: 1px solid rgba(248,81,73,0.4);
-  color: #ff7b72;
+  color: #FF4D4D;
   padding: 12px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -1168,8 +1168,8 @@
   color: #e2e3e7;
 }
 
-.ws-stat-value.vuln-high { color: #f07070; }
-.ws-stat-value.vuln-low { color: #6acf80; }
+.ws-stat-value.vuln-high { color: #FF4D4D; }
+.ws-stat-value.vuln-low { color: #7CFF9A; }
 
 .ws-badge {
   display: inline-block;
@@ -1180,10 +1180,10 @@
   text-transform: uppercase;
 }
 
-.ws-badge-critical { background: rgba(240,112,112,0.15); color: #f07070; border: 1px solid rgba(240,112,112,0.3); }
-.ws-badge-high { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
-.ws-badge-medium { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
-.ws-badge-low { background: rgba(106,207,128,0.15); color: #6acf80; border: 1px solid rgba(106,207,128,0.3); }
+.ws-badge-critical { background: rgba(255,77,77,0.15); color: #FF4D4D; border: 1px solid rgba(255,77,77,0.3); }
+.ws-badge-high { background: rgba(255,77,77,0.15); color: #FF4D4D; border: 1px solid rgba(255,77,77,0.3); }
+.ws-badge-medium { background: rgba(249,115,22,0.15); color: #F97316; border: 1px solid rgba(249,115,22,0.3); }
+.ws-badge-low { background: rgba(124,255,154,0.15); color: #7CFF9A; border: 1px solid rgba(124,255,154,0.3); }
 .ws-badge-info { background: rgba(78,205,196,0.15); color: #4ecdc4; border: 1px solid rgba(78,205,196,0.3); }
 
 .ws-crawler-warning {
@@ -1196,11 +1196,11 @@
   align-items: flex-start;
   margin-bottom: 16px;
   font-size: 13px;
-  color: #f0b860;
+  color: #F97316;
 }
 
 .ws-crawler-warning i {
-  color: #f0b860;
+  color: #F97316;
   font-size: 14px;
   margin-top: 2px;
 }
@@ -1315,11 +1315,11 @@
 }
 
 .ws-no-vulns {
-  background: rgba(106,207,128,0.1);
-  border: 0.5px solid rgba(106,207,128,0.3);
+  background: rgba(124,255,154,0.1);
+  border: 0.5px solid rgba(124,255,154,0.3);
   border-radius: 8px;
   padding: 16px 20px;
-  color: #6acf80;
+  color: #7CFF9A;
   text-align: center;
   margin-top: 16px;
 }

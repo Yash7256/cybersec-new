@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   Calendar,
@@ -84,11 +84,11 @@ const computeHealth = (data) => {
   score -= data.riskIndicators.filter((risk) => risk.severity === 'high').length * 18;
   score -= data.riskIndicators.filter((risk) => ['medium', 'warning'].includes(risk.severity)).length * 10;
   score = Math.max(0, Math.min(100, Math.round(score)));
-  const label = score >= 85 ? 'Excellent' : score >= 70 ? 'Good' : score >= 50 ? 'Fair' : 'Poor';
+  const label = score >= 75 ? 'Good' : score >= 30 ? 'Fair' : 'Poor';
   return {
     score,
     label,
-    summary: score >= 70 ? 'Registration posture looks stable from available WHOIS/RDAP signals.' : 'Review registration signals before trusting this domain.',
+    summary: score >= 75 ? 'Registration posture looks stable from available WHOIS/RDAP signals.' : 'Review registration signals before trusting this domain.',
     checks: [
       { label: 'Valid registration', passed: data.registration.available === false },
       { label: 'Domain is active', passed: data.registration.available === false },
@@ -204,7 +204,7 @@ const normalizeWhoisResult = (raw = {}) => {
 };
 
 function SectionCard({ children, className = '' }) {
-  return <section className={`rounded-xl border border-white/[0.14] bg-[#201330]/82 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.18)] ${className}`}>{children}</section>;
+  return <section className={`rounded-xl border border-white/[0.14] bg-[#201330]/82 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)] ${className}`}>{children}</section>;
 }
 
 function SectionHeading({ children }) {
@@ -213,7 +213,7 @@ function SectionHeading({ children }) {
 
 function DataRow({ label, value, tone = 'neutral', href, badge }) {
   const text = valueText(value);
-  const toneClass = tone === 'danger' ? 'text-[#ff927c]' : tone === 'success' ? 'text-[#7cff9a]' : 'text-white';
+  const toneClass = tone === 'danger' ? 'text-[#FF4D4D]' : tone === 'success' ? 'text-[#7CFF9A]' : 'text-white';
   return (
     <div className="grid grid-cols-[128px_minmax(0,1fr)] gap-3 border-b border-white/[0.08] py-2 last:border-b-0">
       <span className="text-[11px] font-medium text-[#aaaaaa]">{label}</span>
@@ -228,13 +228,13 @@ function DataRow({ label, value, tone = 'neutral', href, badge }) {
 }
 
 function PrivacyBadge() {
-  return <span className="ml-2 inline-flex h-5 items-center gap-1 rounded-full bg-[rgba(253,192,120,0.2)] px-2 text-[9px] font-semibold uppercase tracking-wide text-[#fdc078]"><Lock className="h-3 w-3" />Privacy Prohibited</span>;
+  return <span className="ml-2 inline-flex h-5 items-center gap-1 rounded-full bg-[rgba(253,192,120,0.2)] px-2 text-[9px] font-semibold uppercase tracking-wide text-[#F97316]"><Lock className="h-3 w-3" />Privacy Prohibited</span>;
 }
 
 function TimelinePoint({ icon: Icon, label, value, sub }) {
   return (
     <div className="relative z-10 flex min-w-0 flex-1 flex-col items-center text-center">
-      <span className="grid h-10 w-10 place-items-center rounded-full border border-[#ba9cff]/45 bg-[#190f23] text-[#ba9cff]"><Icon className="h-4 w-4" /></span>
+      <span className="grid h-10 w-10 place-items-center rounded-full border border-[#ba9cff]/45 bg-[#190f23] text-[#ba9cff] transition hover:shadow-[0_0_18px_rgba(186,156,255,0.55)]"><Icon className="h-4 w-4" /></span>
       <span className="mt-2 text-[11px] font-medium text-[#aaaaaa]">{label}</span>
       <strong className="mt-0.5 text-[15px] font-semibold text-white">{valueText(value)}</strong>
       {sub && <small className="mt-0.5 text-[10px] text-[#8f839b]">{sub}</small>}
@@ -267,9 +267,9 @@ export function DomainTimeline({ result }) {
 
 function StatusCard({ icon: Icon, label, value, note, tone }) {
   return (
-    <article className="rounded-[10px] border border-white/[0.14] bg-[#190f23]/78 p-4">
+    <article className="rounded-[10px] border border-white/[0.14] bg-[#190f23]/78 p-4 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
       <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-[#ba9cff]"><Icon className="h-3.5 w-3.5" />{label}</div>
-      <strong className={`text-[18px] font-semibold ${tone === 'success' ? 'text-[#7cff9a]' : tone === 'danger' ? 'text-[#ff927c]' : 'text-white'}`}>{valueText(value)}</strong>
+      <strong className={`text-[18px] font-semibold ${tone === 'success' ? 'text-[#7CFF9A]' : tone === 'danger' ? 'text-[#FF4D4D]' : 'text-white'}`}>{valueText(value)}</strong>
       <p className="mt-1 text-[11px] leading-4 text-[#aaaaaa]">{valueText(note)}</p>
     </article>
   );
@@ -307,7 +307,7 @@ export function RegistrationInfoCard({ result }) {
 
 function InfoCard({ title, children }) {
   return (
-    <article className="rounded-xl border border-white/[0.14] bg-[#190f23]/78 p-4">
+    <article className="rounded-xl border border-white/[0.14] bg-[#190f23]/78 p-4 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
       <SectionHeading>{title}</SectionHeading>
       {children}
     </article>
@@ -316,21 +316,41 @@ function InfoCard({ title, children }) {
 
 export function DomainHealthScoreCard({ result }) {
   const { score, label, summary, checks } = result.healthScore;
+  const [displayScore, setDisplayScore] = useState(result.scanning ? 0 : score);
+  const prevScanning = useRef(result.scanning);
+
+  useEffect(() => {
+    if (!result.scanning && prevScanning.current) {
+      setDisplayScore(0);
+      const start = performance.now();
+      const duration = 800;
+      const animate = (now) => {
+        const t = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        setDisplayScore(Math.round(eased * score));
+        if (t < 1) requestAnimationFrame(animate);
+      };
+      requestAnimationFrame(animate);
+    }
+    prevScanning.current = result.scanning;
+  }, [result.scanning, score]);
+
   const radius = 48;
   const circumference = 2 * Math.PI * radius;
-  const dash = (score / 100) * circumference;
+  const dash = (displayScore / 100) * circumference;
+  const barColor = score >= 75 ? '#7CFF9A' : score >= 30 ? '#F97316' : '#FF4D4D';
   return (
     <SectionCard>
       <SectionHeading>Domain Health Score</SectionHeading>
-      <div className="flex flex-col items-center">
-        <svg width="132" height="132" viewBox="0 0 132 132" role="img" aria-label={`Health score ${score} out of 100`}>
+      <div className="flex flex-col items-start">
+        <svg width="132" height="132" viewBox="0 0 132 132" role="img" aria-label={`Health score ${displayScore} out of 100`} className="self-center">
           <circle cx="66" cy="66" r={radius} fill="none" stroke="rgba(255,255,255,.12)" strokeWidth="12" />
-          <circle cx="66" cy="66" r={radius} fill="none" stroke="#7cee79" strokeWidth="12" strokeLinecap="round" strokeDasharray={`${dash} ${circumference - dash}`} transform="rotate(-90 66 66)" />
-          <text x="66" y="65" textAnchor="middle" fill="#fff" fontSize="27" fontWeight="700">{score}</text>
+          <circle cx="66" cy="66" r={radius} fill="none" stroke={barColor} strokeWidth="12" strokeLinecap="round" strokeDasharray={`${dash} ${circumference - dash}`} transform="rotate(-90 66 66)" />
+          <text x="66" y="65" textAnchor="middle" fill="#fff" fontSize="27" fontWeight="700">{displayScore}</text>
           <text x="66" y="83" textAnchor="middle" fill="#aaa" fontSize="13">/100</text>
         </svg>
-        <strong className="mt-2 text-[28px] font-bold text-[#7cff9a]">{label}</strong>
-        <p className="mt-1 text-center text-[12px] leading-5 text-[#aaaaaa]">{summary}</p>
+        <strong className="mt-2 text-[28px] font-bold" style={{ color: barColor }}>{label}</strong>
+        <p className="mt-1 text-left text-[12px] leading-5 text-[#aaaaaa]">{summary}</p>
       </div>
       <Checklist items={checks} />
     </SectionCard>
@@ -339,17 +359,15 @@ export function DomainHealthScoreCard({ result }) {
 
 export function RiskOverviewCard({ result }) {
   const { level, summary, checks } = result.riskOverview;
-  const tone = level === 'High Risk' ? 'text-[#ff927c]' : level === 'Medium Risk' ? 'text-[#fdc078]' : 'text-[#7cff9a]';
+  const tone = level === 'High Risk' ? 'text-[#FF4D4D]' : level === 'Medium Risk' ? 'text-[#F97316]' : 'text-[#7CFF9A]';
+  const icon = level === 'High Risk' ? '/assets/risk score whois red.png' : level === 'Medium Risk' ? '/assets/risk score whois orange.png' : '/assets/risk score whois.png';
   return (
     <SectionCard>
       <SectionHeading>Risk Overview</SectionHeading>
-      <div className="flex flex-col items-center">
-        <div className="relative grid h-[132px] w-[132px] place-items-center rounded-full border border-white/[0.14] bg-[#190f23]">
-          <Radar className="h-16 w-16 text-[#ba9cff]" />
-          {level !== 'Low Risk' && <AlertTriangle className="absolute right-6 top-6 h-5 w-5 text-[#fdc078]" />}
-        </div>
+      <div className="flex flex-col items-start">
+        <img src={icon} alt={`${level} icon`} className="h-[132px] w-[132px] self-center" />
         <strong className={`mt-2 text-[28px] font-bold ${tone}`}>{level}</strong>
-        <p className="mt-1 text-center text-[12px] leading-5 text-[#aaaaaa]">{summary}</p>
+        <p className="mt-1 text-left text-[12px] leading-5 text-[#aaaaaa]">{summary}</p>
       </div>
       <Checklist items={checks} />
     </SectionCard>
@@ -361,7 +379,7 @@ function Checklist({ items }) {
     <div className="mt-4 space-y-2">
       {items.map((item) => (
         <div key={item.label} className="flex items-center gap-2 text-[12px] text-[#ded4e9]">
-          {item.passed ? <Check className="h-4 w-4 shrink-0 text-[#7cff9a]" /> : <X className="h-4 w-4 shrink-0 text-[#ff927c]" />}
+          {item.passed ? <Check className="h-4 w-4 shrink-0 text-[#7CFF9A]" /> : <X className="h-4 w-4 shrink-0 text-[#FF4D4D]" />}
           <span>{item.label}</span>
         </div>
       ))}
@@ -398,7 +416,7 @@ export function ServerNamesCard({ result }) {
     <InfoCard title="Server Names">
       {(servers.length ? servers : [EMPTY]).map((server) => (
         <div key={server} className="flex items-center gap-2 border-b border-white/[0.08] py-2 text-[12px] font-semibold text-white last:border-b-0">
-          {server !== EMPTY && <CheckCircle2 className="h-4 w-4 shrink-0 text-[#7cff9a]" />}
+          {server !== EMPTY && <CheckCircle2 className="h-4 w-4 shrink-0 text-[#7CFF9A]" />}
           <span className="break-all">{server}</span>
         </div>
       ))}
@@ -469,7 +487,7 @@ export function RawWhoisRecordPanel({ result, copied, onCopy }) {
           <div className="space-y-1">
             {rows.map(([label, value]) => (
               <div key={label} className="grid grid-cols-[190px_minmax(0,1fr)] gap-3">
-                <span className="font-bold text-[#ffca75]">{label}:</span>
+                <span className="font-bold text-[#F97316]">{label}:</span>
                 <span className="break-words text-[#aaaaaa]">{valueText(value)}</span>
               </div>
             ))}
@@ -514,14 +532,14 @@ export function WhoisSummaryHero({ result }) {
 }
 
 function Pill({ children, tone = 'neutral' }) {
-  const toneClass = tone === 'success' ? 'border-[#57c254]/45 bg-[#132718] text-[#7cff9a]' : 'border-white/[0.14] bg-[#190f23]/85 text-[#d8cfea]';
+  const toneClass = tone === 'success' ? 'border-[#7CFF9A]/45 bg-[#132718] text-[#7CFF9A]' : 'border-white/[0.14] bg-[#190f23]/85 text-[#d8cfea]';
   return <span className={`inline-flex h-[26px] items-center gap-1.5 rounded-full border px-2.5 text-[10px] font-medium ${toneClass}`}>{children}</span>;
 }
 
 export default function WhoisResultsPage({ result: rawResult, copied, onCopy }) {
   const result = useMemo(() => normalizeWhoisResult(rawResult), [rawResult]);
   if (!rawResult) {
-    return <div className="rounded-xl border border-white/[0.14] bg-[#201330]/82 p-8 text-center text-sm text-[#aaaaaa]">Run a WHOIS lookup to see the result dashboard.</div>;
+    return         <div className="rounded-xl border border-white/[0.14] bg-[#201330]/82 p-8 text-center text-sm text-[#aaaaaa] transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">Run a WHOIS lookup to see the result dashboard.</div>;
   }
   return (
     <div className="space-y-4 p-1 md:p-2">

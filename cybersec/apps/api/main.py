@@ -95,10 +95,11 @@ async def lifespan(app: FastAPI):
     logger.info("Scan workers started")
     
     # Register GeoIP providers
-    from cybersec.core.tools.geoip import IPWhoIsProvider, IPApiProvider, register_geoip_provider, start_geoip_cache_sweep
+    from cybersec.core.tools.geoip import IPWhoIsProvider, IPApiProvider, IPInfoProvider, register_geoip_provider, start_geoip_cache_sweep
+    register_geoip_provider(IPInfoProvider())
     register_geoip_provider(IPWhoIsProvider())
     register_geoip_provider(IPApiProvider())
-    logger.info("GeoIP providers registered: ipwhois, ipapi")
+    logger.info("GeoIP providers registered: ipinfo (primary), ipwhois, ipapi")
     
     # Start GeoIP cache sweep task
     await start_geoip_cache_sweep()

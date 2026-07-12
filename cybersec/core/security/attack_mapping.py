@@ -4,10 +4,29 @@ MITRE ATT&CK Framework Mapping for CyberSec Scanner.
 This module provides real MITRE ATT&CK technique mappings without external API calls.
 All technique data is stored locally for speed and reliability.
 """
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
+from typing import TYPE_CHECKING, List, Dict, Any, Optional
 from cybersec.core.security.nvd_client import CVEResult
-from cybersec.core.scanner.analysis.service_detect import ServiceDetectionResult
+
+if TYPE_CHECKING:
+    # This module path no longer exists; only needed for type hints.
+    try:
+        from cybersec.core.scanner.analysis.service_detect import ServiceDetectionResult
+    except ImportError:
+        pass
+
+
+# Minimal stub so runtime isinstance / annotation checks don't crash.
+try:
+    from cybersec.core.scanner.analysis.service_detect import ServiceDetectionResult  # type: ignore[assignment]
+except ImportError:
+    @dataclass
+    class ServiceDetectionResult:  # type: ignore[no-redef]
+        service_name: str = ""
+        port: int = 0
+        service_version: str = ""
 
 
 @dataclass

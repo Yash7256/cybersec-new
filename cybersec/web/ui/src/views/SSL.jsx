@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { apiPost } from '../utils/apiClient';
 import { useGetToken } from '../utils/useGetToken';
+import { downloadFile, exportBrandedPdf, shareOrCopy, rowsToCsv } from '../utils/exportUtils';
 import {
   ArrowRight,
   Building2,
@@ -34,9 +35,9 @@ const fmtDate = (iso) => {
 /* ─── small atoms ────────────────────────────────────────────────── */
 function Chip({ label, tone = 'neutral' }) {
   const map = {
-    good:    'bg-[rgba(52,211,153,0.12)] text-[#34d399] border-[rgba(52,211,153,0.3)]',
-    warn:    'bg-[rgba(251,191,36,0.12)] text-[#fbbf24] border-[rgba(251,191,36,0.3)]',
-    bad:     'bg-[rgba(248,113,113,0.12)] text-[#f87171] border-[rgba(248,113,113,0.3)]',
+    good:    'bg-[rgba(124,255,154,0.12)] text-[#7CFF9A] border-[rgba(124,255,154,0.3)]',
+    warn:    'bg-[rgba(249,115,22,0.12)] text-[#F97316] border-[rgba(249,115,22,0.3)]',
+    bad:     'bg-[rgba(255,77,77,0.12)] text-[#FF4D4D] border-[rgba(255,77,77,0.3)]',
     info:    'bg-[rgba(34,211,238,0.12)] text-[#22d3ee] border-[rgba(34,211,238,0.3)]',
     neutral: 'bg-[rgba(167,139,250,0.1)] text-[#c4b5fd] border-[rgba(167,139,250,0.26)]',
   };
@@ -48,7 +49,7 @@ function Chip({ label, tone = 'neutral' }) {
 }
 
 function SSLRow({ label, value, tone = 'neutral' }) {
-  const toneClass = tone === 'good' ? 'text-[#57c254]' : tone === 'bad' ? 'text-[#ff4f5f]' : tone === 'warn' ? 'text-[#ff7b39]' : 'text-[#ded4e9]';
+  const toneClass = tone === 'good' ? 'text-[#7CFF9A]' : tone === 'bad' ? 'text-[#FF4D4D]' : tone === 'warn' ? 'text-[#F97316]' : 'text-[#ded4e9]';
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-white/[0.1] py-2 last:border-b-0">
       <span className="text-[10px] text-[#8e819b]">{label}</span>
@@ -84,7 +85,7 @@ function SSLMetric({ icon: Icon, label, value, subtext }) {
 
 function SSLProtocolCard({ label, status, tone, note }) {
   const Icon = tone === 'good' ? CheckCircle2 : tone === 'bad' ? XCircle : ShieldAlert;
-  const color = tone === 'good' ? '#57c254' : tone === 'bad' ? '#ff4f5f' : '#aaaaaa';
+  const color = tone === 'good' ? '#7CFF9A' : tone === 'bad' ? '#FF4D4D' : '#aaaaaa';
   return (
     <div className="rounded-[10px] border border-white/[0.2] bg-[#160d24]/80 p-6">
       <div className="flex items-center gap-2">
@@ -146,11 +147,7 @@ function SSLResults({ data }) {
 
   /* export */
   const exportJson = () => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url;
-    a.download = `ssl-${data.host || 'result'}.json`; a.click();
-    URL.revokeObjectURL(url);
+    downloadFile(`ssl-${data.host || 'result'}.json`, JSON.stringify(data, null, 2), 'application/json');
   };
   const exportCsv = () => {
     const rows = [
@@ -163,16 +160,11 @@ function SSLResults({ data }) {
       ['Common Name', cn], ['Issuer Org', org],
       ['SANs', san.join('; ')],
     ];
-    const csv  = rows.map((r) => r.map((c) => `"${String(c ?? '').replaceAll('"','""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url;
-    a.download = `ssl-${data.host || 'result'}.csv`; a.click();
-    URL.revokeObjectURL(url);
+    downloadFile(`ssl-${data.host || 'result'}.csv`, rowsToCsv(rows), 'text/csv');
   };
   const copyShare = async () => {
     const text = `SSL Check: ${data.host}\nValid: ${overallValid}\nTLS: ${data.tls_version}\nCipher: ${data.cipher_suite}\nExpires: ${fmtDate(validTo)} (${days ?? '?'} days)`;
-    await navigator.clipboard.writeText(text).catch(() => {});
+    await shareOrCopy({ title: 'SSL Check Report', text });
     setCopied(true); setTimeout(() => setCopied(false), 1400);
   };
 
@@ -309,7 +301,7 @@ function SSLResults({ data }) {
         <h3 className="text-[18px] font-semibold uppercase text-[#ba9cff]">Export &amp; Share</h3>
         <p className="mt-4 text-[14px] text-[#ded4e9]">Download or share your scan report.</p>
         <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <button type="button" className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]" onClick={() => window.print()}>
+          <button type="button" className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]" onClick={() => exportBrandedPdf({ tool: 'SSL Check', target: data.host || cn })}>
             <FileText className="w-5 h-5" /> Export PDF
           </button>
           <button type="button" className="flex h-16 items-center justify-center gap-2 rounded-[10px] border border-white/[0.18] bg-[#13091f]/78 text-[13px] text-white transition hover:border-[#b895ff]" onClick={exportJson}>
@@ -392,7 +384,7 @@ export default function SSL() {
             </span>
           </div>
         ) : results.error ? (
-          <div className="p-6 text-red-400 font-mono text-sm">{results.error}</div>
+          <div className="p-6 text-[#FF4D4D] font-mono text-sm">{results.error}</div>
         ) : (
           <SSLResults data={results} />
         )}

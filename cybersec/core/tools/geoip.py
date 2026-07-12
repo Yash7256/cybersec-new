@@ -360,8 +360,120 @@ class IPApiProvider:
         )
 
 
+class IPInfoProvider:
+    """
+    ipinfo.io provider — highest coordinate accuracy (~1 km radius in most regions).
+    Works without a token (50 k req/month free tier); set IPINFO_API_TOKEN for
+    higher limits.  Returns an accuracy_radius in km when available.
+    """
+    name = "ipinfo"
+
+    async def lookup(self, target: str) -> GeoIPResult:
+        await _geoip_rate_limiter.acquire()
+        token = settings.IPINFO_API_TOKEN
+        url = f"https://ipinfo.io/{target}/json"
+        params: dict = {}
+        if token:
+            params["token"] = token
+
+        client = _get_http_client()
+        resp = await client.get(url, params=params)
+
+        if resp.status_code == 429:
+            raise GeoIPError("GeoIP provider rate limit reached. Try again later.")
+        resp.raise_for_status()
+        data = resp.json()
+
+        if "bogon" in data and data["bogon"]:
+            raise GeoIPError("Private/bogon IP address — not in GeoIP database.")
+
+        # ipinfo returns "lat,lon" as a single "loc" string
+        lat: float | None = None
+        lon: float | None = None
+        loc = data.get("loc", "")
+        if loc and "," in loc:
+            try:
+                lat_s, lon_s = loc.split(",", 1)
+                lat = float(lat_s)
+                lon = float(lon_s)
+            except ValueError:
+                pass
+
+        # ipinfo.io does not return accuracy_radius on the free /json endpoint,
+        # but the Privacy Detection add-on does.  We expose None here so the UI
+        # gracefully shows it only when present.
+        asn_raw = data.get("org", "")  # e.g. "AS15169 Google LLC"
+        asn: str | None = None
+        org: str | None = None
+        if asn_raw:
+            parts = asn_raw.split(" ", 1)
+            asn = parts[0] if parts else None
+            org = parts[1] if len(parts) > 1 else None
+
+        timezone = data.get("timezone")
+        country_code = data.get("country")
+
+        return GeoIPResult(
+            target=target,
+            ip=data.get("ip"),
+            resolved_ips=[],
+            reverse_dns=data.get("hostname") or None,
+            country=data.get("country_name") or None,
+            country_code=country_code,
+            continent=None,
+            continent_code=None,
+            region=data.get("region"),
+            city=data.get("city"),
+            postal=data.get("postal"),
+            lat=lat,
+            lon=lon,
+            accuracy_radius=None,  # not on free /json endpoint
+            map_url=f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat is not None and lon is not None else None,
+            isp=data.get("org"),
+            org=org,
+            asn=asn,
+            asn_route=data.get("network"),
+            asn_domain=None,
+            asn_type=None,
+            timezone=timezone,
+            local_time=None,
+            timezone_utc=None,
+            currency=None,
+            calling_code=None,
+            flag_emoji=None,
+            flag_image=None,
+            is_proxy=None,
+            is_vpn=None,
+            is_tor=None,
+            is_hosting=None,
+            is_mobile=None,
+            threat_score=None,
+            abuse_contact=None,
+            cdn_provider=None,
+            is_cdn=False,
+            infrastructure_note=None,
+            confidence="high",
+            location_accuracy="city" if data.get("city") else "country",
+            rdap_name=None,
+            rdap_handle=None,
+            rdap_registry=None,
+            rdap_cidr=None,
+            rdap_country=None,
+            rdap_start_address=None,
+            rdap_end_address=None,
+            rdap_abuse_email=None,
+            rdap_abuse_phone=None,
+            rdap_events=[],
+            ip_results=[],
+            raw=data,
+            provider=self.name,
+            cached=False,
+            error=None,
+        )
+
+
 _PROVIDERS: dict[str, GeoIPProvider] = {}
-_PROVIDER_FALLBACK_ORDER: list[str] = ["ipwhois", "ipapi"]
+_PROVIDER_FALLBACK_ORDER: list[str] = ["ipinfo", "ipwhois", "ipapi"]
 _CACHE: _LRUCache = _LRUCache(max_size=settings.GEOIP_CACHE_MAX_ENTRIES)
 _GEOIP_SEMAPHORE: asyncio.Semaphore = asyncio.Semaphore(settings.GEOIP_MAX_CONCURRENT_LOOKUPS)
 _http_client: Optional[httpx.AsyncClient] = None

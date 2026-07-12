@@ -6,6 +6,7 @@ import { ScanInputBar } from '../components/geoip/GeoIPResultsPage';
 import TracerouteResultsPage from '../components/traceroute/TracerouteResultsPage';
 import MonitoringPanel from '../components/traceroute/MonitoringPanel';
 import HopTimeline from '../components/traceroute/HopTimeline';
+import { downloadFile, exportBrandedPdf, shareOrCopy, rowsToCsv } from '../utils/exportUtils';
 
 function ratingFromLatency(ms) {
   if (ms == null) return 'filtered';
@@ -214,7 +215,7 @@ export default function Traceroute() {
             </span>
           </div>
         ) : results.error ? (
-          <div className="p-6 text-red-400 font-mono text-sm">{results.error}</div>
+          <div className="p-6 text-[#FF4D4D] font-mono text-sm">{results.error}</div>
         ) : (
           <div className="p-1 md:p-2">
             <TracerouteResultsPage

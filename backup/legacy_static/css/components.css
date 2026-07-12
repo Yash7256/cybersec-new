@@ -64,7 +64,7 @@
 }
 
 .btn-danger:hover {
-  background: #d73a3a;
+  background: #FF4D4D;
 }
 
 .btn-success {
@@ -203,7 +203,7 @@
   padding: 16px;
   font-family: var(--font-mono);
   font-size: 0.85rem;
-  color: #00ff00;
+  color: #7CFF9A;
   min-height: 200px;
   max-height: 400px;
   overflow-y: auto;

@@ -60,7 +60,7 @@ export default function ScanSummaryHero({ data }) {
   ];
 
   return (
-    <section className="rounded-xl border border-white/[0.14] bg-[#201330]/82 p-8 shadow-[0_18px_60px_rgba(0,0,0,0.18)]">
+    <section className="rounded-xl border border-white/[0.14] bg-[#201330]/82 p-8 shadow-[0_18px_60px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
       <div className="mb-[12px] flex items-center justify-between">
         <h1 className="m-0 flex items-center gap-2 text-[28px] font-semibold break-all">
           {data.target}
@@ -69,7 +69,7 @@ export default function ScanSummaryHero({ data }) {
       </div>
 
       <div className="mb-[22px] flex flex-wrap gap-2">
-        <span className={`inline-flex items-center gap-1.5 rounded-full border border-white/[0.28] bg-[#190f23] px-4 py-1 text-[10px] ${data.status === 'online' ? 'text-[#57c254]' : 'text-white'}`}>
+        <span className={`inline-flex items-center gap-1.5 rounded-full border border-white/[0.28] bg-[#190f23] px-4 py-1 text-[10px] ${data.status === 'online' ? 'text-[#7CFF9A]' : 'text-white'}`}>
           <CheckCircle2 size={12} />
           {data.status === 'online' ? 'Online: Target is reachable' : 'Target unreachable'}
         </span>
@@ -77,16 +77,16 @@ export default function ScanSummaryHero({ data }) {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((c) => (
-          <div key={c.label} className="min-h-[116px] rounded-[10px] border border-white/[0.22] bg-[#160d24]/80 p-4">
+          <div key={c.label} className="min-h-[116px] rounded-[10px] border border-white/[0.22] bg-[#160d24]/80 p-4 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
             <div className="mb-5 flex items-center gap-2 text-[10px] font-bold text-white">
               <c.icon size={16} className="shrink-0 text-white" />
               {c.label}
             </div>
-            <div className={`mb-1.5 text-[17px] font-semibold leading-tight ${c.valueTone === 'danger' ? 'text-[#ff4d4d]' : c.valueTone === 'success' ? 'text-[#57c254]' : 'text-white'}`}>
+            <div className={`mb-1.5 text-[17px] font-semibold leading-tight ${c.valueTone === 'danger' ? 'text-[#FF4D4D]' : c.valueTone === 'success' ? 'text-[#7CFF9A]' : 'text-white'}`}>
               {c.value}
             </div>
             {c.sub ? (
-              <div className={`text-[9px] font-medium text-[#8e819b] ${c.subTone === 'danger' ? 'text-[#ff4d4d]' : ''}`}>
+              <div className={`text-[9px] font-medium text-[#8e819b] ${c.subTone === 'danger' ? 'text-[#FF4D4D]' : ''}`}>
                 {c.sub}
               </div>
             ) : null}

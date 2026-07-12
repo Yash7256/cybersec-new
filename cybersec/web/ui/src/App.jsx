@@ -26,13 +26,13 @@ function AuthenticatedApp() {
   return (
     <TierProvider>
       <BrowserRouter>
-        <div className="min-h-screen flex flex-col app-shell">
+        <div className="app-shell">
           <Navbar />
 
-          <div className="app-main-layout flex flex-1">
+          <div className="app-main-layout flex">
             <Sidebar />
 
-            <main className="flex-1 flex flex-col app-content-panel">
+            <main className="flex-1 flex flex-col app-content-panel min-w-0">
               <Routes>
                 <Route path="/" element={<Navigate to="/tools/portscanner" replace />} />
                 <Route path="/tools/portscanner" element={<PortScanner />} />

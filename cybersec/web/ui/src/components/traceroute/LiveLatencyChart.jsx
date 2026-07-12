@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 
 const RATING_COLOR = {
-  good: '#7cff9a',
+  good: '#7CFF9A',
   moderate: '#ffd166',
-  poor: '#ff4d4d',
+  poor: '#FF4D4D',
   filtered: '#8b8b8b',
 };
 
@@ -43,7 +43,7 @@ export default function LiveLatencyChart({ points }) {
 
   if (!points || points.length === 0) {
     return (
-      <div className="rounded-[10px] border border-white/[0.18] bg-[#190f23]/78 p-6">
+      <div className="rounded-[10px] border border-white/[0.18] bg-[#190f23]/78 p-6 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
         <p className="m-0 text-center text-sm text-[#aaaaaa]">No latency data yet \u2014 run a scan to see the graph.</p>
       </div>
     );
@@ -53,7 +53,7 @@ export default function LiveLatencyChart({ points }) {
   const yFor = (v) => PADDING.top + chartH - (v / maxY) * chartH;
 
   return (
-    <div className="rounded-[10px] border border-white/[0.18] bg-[#190f23]/78 p-6">
+    <div className="rounded-[10px] border border-white/[0.18] bg-[#190f23]/78 p-6 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
       <div className="mb-3.5 flex flex-wrap justify-end gap-5 text-[13px] text-[#aaaaaa]">
         <span><span className="mr-1.5 inline-block h-[10px] w-[10px] rounded-full" style={{ background: RATING_COLOR.good }} />Good (&lt;50ms)</span>
         <span><span className="mr-1.5 inline-block h-[10px] w-[10px] rounded-full" style={{ background: RATING_COLOR.moderate }} />Moderate (50-150ms)</span>

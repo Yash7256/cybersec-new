@@ -20,7 +20,7 @@ export default function InteractiveNetworkMap({ hops }) {
   }, [hops]);
 
   return (
-    <div className="rounded-[10px] border border-white/[0.18] bg-[#190f23]/78 p-6">
+    <div className="rounded-[10px] border border-white/[0.18] bg-[#190f23]/78 p-6 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
       <div className="mb-3 flex items-center gap-2.5 text-[13px] font-semibold uppercase tracking-wider text-[#ba9cff]">
         <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-[#ba9cff]">
           <span className="h-[7px] w-[7px] rounded-full bg-[#ba9cff]" />

@@ -196,7 +196,7 @@
                     // Update scan button to show scanning state
                     const scanBtn = document.getElementById('portscanner-run-btn');
                     if (scanBtn) {
-                        scanBtn.style.background = '#DC2626';
+                        scanBtn.style.background = '#FF4D4D';
                         scanBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color: white; margin-right: 6px;"></i> Scanning...';
                         scanBtn.disabled = true;
                     }
@@ -357,7 +357,7 @@
             
             // Metric Cards Row
             const totalOpen = rows.filter(r => r.state === 'open').length;
-            const highCriticalCardStyle = highCount > 0 ? 'border-color: #EAB308; box-shadow: inset 0 0 20px rgba(234,179,8,0.05);' : '';
+            const highCriticalCardStyle = highCount > 0 ? 'border-color: #F97316; box-shadow: inset 0 0 20px rgba(249,115,22,0.05);' : '';
             
             html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">';
             html += '<div style="background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px 20px;">';
@@ -367,7 +367,7 @@
             
             html += '<div style="background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px 20px; ' + highCriticalCardStyle + '">';
             html += '<div style="font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #6B7280; font-family: monospace; margin-bottom: 6px;">High / Critical</div>';
-            html += '<div style="font-size: 28px; font-weight: 700; font-family: monospace; color: #EAB308;">' + highCount + '</div>';
+            html += '<div style="font-size: 28px; font-weight: 700; font-family: monospace; color: #F97316;">' + highCount + '</div>';
             html += '</div>';
             
             html += '<div style="background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px 20px;">';
@@ -423,7 +423,7 @@
                 // Determine row background and accent color
                 const rowBg = index % 2 === 0 ? '#0E1016' : '#111318';
                 const accentColors = {
-                    'CRITICAL': '#EAB308',
+                    'CRITICAL': '#F97316',
                     'HIGH': '#8B5CF6', 
                     'MEDIUM': '#534AB7',
                     'LOW': '#232736',
@@ -433,7 +433,7 @@
                 
                 // Risk badge styling
                 const riskBadgeStyles = {
-                    'CRITICAL': 'background: #EAB308; color: #0E1016;',
+                    'CRITICAL': 'background: #F97316; color: #0E1016;',
                     'HIGH': 'background: #8B5CF6; color: white;',
                     'MEDIUM': 'background: #4C1D95; color: #C4B5FD;',
                     'LOW': 'background: #1A1F2E; color: #6B7280; border: 1px solid #232736;',
@@ -444,7 +444,7 @@
                 // CVE badge
                 let cveBadge = '';
                 if (port.cves && port.cves.length > 0) {
-                    cveBadge = '<div style="margin-top: 4px;"><span style="background: #1A0A00; border: 1px solid #EAB308; color: #EAB308; font-size: 10px; border-radius: 4px; padding: 1px 8px; font-family: monospace; font-weight: 700;">' + port.cves[0].id + '</span></div>';
+                    cveBadge = '<div style="margin-top: 4px;"><span style="background: #1A0A00; border: 1px solid #F97316; color: #F97316; font-size: 10px; border-radius: 4px; padding: 1px 8px; font-family: monospace; font-weight: 700;">' + port.cves[0].id + '</span></div>';
                 }
                 
                 // Banner snippet
@@ -490,10 +490,10 @@
             html += '</div>';
 
             // AI Executive Summary Section
-            html += '<div style="margin-top: 20px; background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px 20px; border-top: 2px solid transparent; border-image: linear-gradient(to right, #EAB308, #8B5CF6) 1;">';
+            html += '<div style="margin-top: 20px; background: #151823; border: 1px solid #232736; border-radius: 8px; padding: 16px 20px; border-top: 2px solid transparent; border-image: linear-gradient(to right, #F97316, #8B5CF6) 1;">';
             html += '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">';
-            html += '<div style="width: 8px; height: 8px; border-radius: 50%; background: #EAB308; animation: pulse 2s infinite;"></div>';
-            html += '<div style="color: #EAB308; font-weight: 600; font-size: 13px; font-family: monospace;"><i class="fa-solid fa-brain" style="color: #8B5CF6; margin-right: 8px; font-size: 16px;"></i> AI Executive Summary</div>';
+            html += '<div style="width: 8px; height: 8px; border-radius: 50%; background: #F97316; animation: pulse 2s infinite;"></div>';
+            html += '<div style="color: #F97316; font-weight: 600; font-size: 13px; font-family: monospace;"><i class="fa-solid fa-brain" style="color: #8B5CF6; margin-right: 8px; font-size: 16px;"></i> AI Executive Summary</div>';
             html += '</div>';
             html += '<div style="color: #9CA3AF; font-size: 13px; font-family: monospace; line-height: 1.7;">';
             html += 'Scan completed on ' + target + '. ' + totalOpen + ' open ports detected. ';
@@ -619,12 +619,12 @@ async function finalizePortScan(scanId, target, rows, actions, output) {
                 // Reset scan button to original state
                 const scanBtn = document.getElementById('portscanner-run-btn');
                 if (scanBtn) {
-                    scanBtn.style.background = '#EAB308';
+                    scanBtn.style.background = '#F97316';
                     scanBtn.innerHTML = '<i class="fa-solid fa-play" style="color: #0E1016; margin-right: 6px;"></i> Run';
                     scanBtn.disabled = false;
                     // Re-attach hover events
-                    scanBtn.onmouseover = function() { this.style.background='#F59E0B'; };
-                    scanBtn.onmouseout = function() { this.style.background='#EAB308'; };
+                    scanBtn.onmouseover = function() { this.style.background='#F97316'; };
+                    scanBtn.onmouseout = function() { this.style.background='#F97316'; };
                 }
             } catch (error) {
                 console.error('Error finalizing port scan:', error);
@@ -976,12 +976,12 @@ async function finalizePortScan(scanId, target, rows, actions, output) {
                 // Reset scan button on error
                 const scanBtn = document.getElementById('portscanner-run-btn');
                 if (scanBtn) {
-                    scanBtn.style.background = '#EAB308';
+                    scanBtn.style.background = '#F97316';
                     scanBtn.innerHTML = '<i class="fa-solid fa-play" style="color: #0E1016; margin-right: 6px;"></i> Run';
                     scanBtn.disabled = false;
                     // Re-attach hover events
-                    scanBtn.onmouseover = function() { this.style.background='#F59E0B'; };
-                    scanBtn.onmouseout = function() { this.style.background='#EAB308'; };
+                    scanBtn.onmouseover = function() { this.style.background='#F97316'; };
+                    scanBtn.onmouseout = function() { this.style.background='#F97316'; };
                 }
             }
         }
@@ -1119,7 +1119,7 @@ async function finalizePortScan(scanId, target, rows, actions, output) {
         function displayScanResults(scan) {
             const container = document.getElementById('allPorts');
             if (!scan.results || scan.results.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h3 style="color:#10B981">No open ports found</h3><p style="color:var(--text-secondary)">The target appears to have all scanned ports closed</p></div>';
+                container.innerHTML = '<div class="empty-state"><h3 style="color:#7CFF9A">No open ports found</h3><p style="color:var(--text-secondary)">The target appears to have all scanned ports closed</p></div>';
                 return;
             }
 
@@ -1138,28 +1138,28 @@ async function finalizePortScan(scanId, target, rows, actions, output) {
             const portDataCache = {};
 
             if (critical.length > 0) {
-                html += '<div class="results-section critical"><div class="results-title" style="color:#DC2626"><i class="fa-solid fa-triangle-exclamation"></i> Critical Risk Ports</div>';
+                html += '<div class="results-section critical"><div class="results-title" style="color:#FF4D4D"><i class="fa-solid fa-triangle-exclamation"></i> Critical Risk Ports</div>';
                 critical.forEach(p => { html += createPortElement(p, 'critical', portIndex); portDataCache[portIndex] = p; portIndex++; });
                 html += '</div>';
                 scanResults.critical = critical;
             }
 
             if (high.length > 0) {
-                html += '<div class="results-section high"><div class="results-title" style="color:#EF4444"><i class="fa-solid fa-exclamation-circle"></i> High Risk Ports</div>';
+                html += '<div class="results-section high"><div class="results-title" style="color:#FF4D4D"><i class="fa-solid fa-exclamation-circle"></i> High Risk Ports</div>';
                 high.forEach(p => { html += createPortElement(p, 'high', portIndex); portDataCache[portIndex] = p; portIndex++; });
                 html += '</div>';
                 scanResults.high = high;
             }
 
             if (medium.length > 0) {
-                html += '<div class="results-section medium"><div class="results-title" style="color:#F59E0B"><i class="fa-solid fa-exclamation-triangle"></i> Medium Risk Ports</div>';
+                html += '<div class="results-section medium"><div class="results-title" style="color:#F97316"><i class="fa-solid fa-exclamation-triangle"></i> Medium Risk Ports</div>';
                 medium.forEach(p => { html += createPortElement(p, 'medium', portIndex); portDataCache[portIndex] = p; portIndex++; });
                 html += '</div>';
                 scanResults.medium = medium;
             }
 
             if (low.length > 0) {
-                html += '<div class="results-section low"><div class="results-title" style="color:#10B981"><i class="fa-solid fa-info-circle"></i> Low Risk Ports</div>';
+                html += '<div class="results-section low"><div class="results-title" style="color:#7CFF9A"><i class="fa-solid fa-info-circle"></i> Low Risk Ports</div>';
                 low.forEach(p => { html += createPortElement(p, 'low', portIndex); portDataCache[portIndex] = p; portIndex++; });
                 html += '</div>';
                 scanResults.low = low;
@@ -1216,7 +1216,7 @@ async function finalizePortScan(scanId, target, rows, actions, output) {
             document.getElementById('portModalRiskScore').textContent = `${Math.round(riskScore * 100)}%`;
             const riskBar = document.getElementById('portModalRiskBar');
             riskBar.style.width = `${riskScore * 100}%`;
-            riskBar.style.background = 'linear-gradient(to right, #EAB308, #F59E0B)';
+            riskBar.style.background = 'linear-gradient(to right, #F97316, #F97316)';
 
             const mitreSection = document.getElementById('portModalMitreSection');
             const mitreContainer = document.getElementById('portModalMitre');
@@ -1243,17 +1243,17 @@ async function finalizePortScan(scanId, target, rows, actions, output) {
             if (cves.length > 0) {
                 cveSection.style.display = 'block';
                 const severityBadgeColors = {
-                    'CRITICAL': '#DC2626',
-                    'HIGH': '#EAB308',
-                    'MEDIUM': '#F59E0B',
-                    'LOW': '#10B981',
+                    'CRITICAL': '#FF4D4D',
+                    'HIGH': '#F97316',
+                    'MEDIUM': '#F97316',
+                    'LOW': '#7CFF9A',
                     'INFO': '#9CA3AF'
                 };
                 cveContainer.innerHTML = cves.map(c => `
                     <div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
                         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
                             <span style="color:#fff;font-weight:600;">${c.id}</span>
-                            <span style="font-size:0.8rem;padding:2px 8px;border-radius:4px;background:#EAB308;color:#0E1016;font-weight:700;">${c.severity}</span>
+                            <span style="font-size:0.8rem;padding:2px 8px;border-radius:4px;background:#F97316;color:#0E1016;font-weight:700;">${c.severity}</span>
                             ${c.cvss_score ? `<span style="font-size:0.8rem;color:#9CA3AF;">CVSS: ${c.cvss_score}</span>` : ''}
                         </div>
                         <div style="font-size:0.85rem;color:var(--text-secondary);">${c.description || 'No description available'}</div>
@@ -1271,11 +1271,11 @@ async function finalizePortScan(scanId, target, rows, actions, output) {
                 let html = '';
                 lines.forEach((line, idx) => {
                     if (idx === 0) {
-                        html += `<span style="color:#EAB308;">${line}</span>\n`;
+                        html += `<span style="color:#F97316;">${line}</span>\n`;
                     } else {
                         const keyMatch = line.match(/^([^:]+):(.*)$/);
                         if (keyMatch) {
-                            html += `<span style="color:#4ADE80;">${keyMatch[1]}:</span><span style="color:#9CA3AF;">${keyMatch[2]}</span>\n`;
+                            html += `<span style="color:#7CFF9A;">${keyMatch[1]}:</span><span style="color:#9CA3AF;">${keyMatch[2]}</span>\n`;
                         } else {
                             html += `<span style="color:#9CA3AF;">${line}</span>\n`;
                         }
@@ -1558,7 +1558,7 @@ async function finalizePortScan(scanId, target, rows, actions, output) {
 
             } catch (err) {
                 document.getElementById('osResultsContainer').innerHTML = `
-                    <div style="padding:20px; background:rgba(248,81,73,0.1); border:1px solid rgba(248,81,73,0.3); border-radius:8px; color:#ff7b72;">
+                    <div style="padding:20px; background:rgba(248,81,73,0.1); border:1px solid rgba(248,81,73,0.3); border-radius:8px; color:#FF4D4D;">
                         <i class="fa-solid fa-circle-exclamation"></i> Error: ${err.message}
                     </div>
                 `;
@@ -1678,7 +1678,7 @@ async function finalizePortScan(scanId, target, rows, actions, output) {
             const total = findings.length;
             
             const score = total === 0 ? 100 : Math.max(0, 100 - (critical * 20) - (high * 15) - (medium * 10) - (low * 5));
-            const scoreColor = score >= 80 ? '#34D399' : score >= 50 ? '#FBBF24' : score >= 20 ? '#FB923C' : '#F87171';
+            const scoreColor = score >= 80 ? '#7CFF9A' : score >= 50 ? '#F97316' : score >= 20 ? '#F97316' : '#FF4D4D';
 
             let html = '';
             
@@ -1708,14 +1708,14 @@ async function finalizePortScan(scanId, target, rows, actions, output) {
                 html += '<div class="webapp-section-title">Security Headers</div>';
                 const securityHeaders = ['Strict-Transport-Security', 'Content-Security-Policy', 'X-Frame-Options', 'X-Content-Type-Options', 'X-XSS-Protection'];
                 securityHeaders.forEach(h => {
-                    const status = headers[h] ? '<span style="color:#34D399">✓ Present</span>' : '<span style="color:#EF4444">✗ Missing</span>';
+                    const status = headers[h] ? '<span style="color:#7CFF9A">✓ Present</span>' : '<span style="color:#FF4D4D">✗ Missing</span>';
                     html += '<div style="display:flex;justify-content:space-between;padding:0.25rem 0;font-size:0.85rem"><span>' + h + '</span>' + status + '</div>';
                 });
             }
 
             // Findings
             if (findings.length === 0) {
-                html += '<div class="empty-state" style="padding:2rem;margin-top:1rem"><i class="fa-solid fa-shield-check" style="font-size:2.5rem;color:#34D399"></i><p style="margin-top:0.5rem;color:#34D399;font-size:1.1rem">No vulnerabilities found</p><p style="font-size:0.85rem;color:var(--text-secondary)">Your web application appears to be secure</p></div>';
+                html += '<div class="empty-state" style="padding:2rem;margin-top:1rem"><i class="fa-solid fa-shield-check" style="font-size:2.5rem;color:#7CFF9A"></i><p style="margin-top:0.5rem;color:#7CFF9A;font-size:1.1rem">No vulnerabilities found</p><p style="font-size:0.85rem;color:var(--text-secondary)">Your web application appears to be secure</p></div>';
             } else {
                 html += '<div class="webapp-section-title">Findings (' + findings.length + ')</div>';
                 findings.forEach((f, i) => {
@@ -1941,13 +1941,13 @@ async function finalizePortScan(scanId, target, rows, actions, output) {
                     .webscan-log-time { color: #4a4a58; min-width: 65px; }
                     .webscan-log-stage { color: #a78bfa; min-width: 70px; display: flex; align-items: center; gap: 6px; }
                     .webscan-log-msg { color: #b0b2ba; flex: 1; }
-                    .webscan-log-entry.success .webscan-log-msg { color: #6acf80; }
-                    .webscan-log-entry.error .webscan-log-msg { color: #f07070; }
-                    .webscan-log-entry.warning .webscan-log-msg { color: #f0b860; }
+                    .webscan-log-entry.success .webscan-log-msg { color: #7CFF9A; }
+                    .webscan-log-entry.error .webscan-log-msg { color: #FF4D4D; }
+                    .webscan-log-entry.warning .webscan-log-msg { color: #F97316; }
                     .ws-dot-running { background: #a78bfa; animation: pulse-dot 1s infinite; }
-                    .ws-dot-success { background: #6acf80; }
-                    .ws-dot-error { background: #f07070; }
-                    .ws-dot-warning { background: #f0b860; }
+                    .ws-dot-success { background: #7CFF9A; }
+                    .ws-dot-error { background: #FF4D4D; }
+                    .ws-dot-warning { background: #F97316; }
                     @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
                 </style>
                 <div class="webscan-log-body" id="webscan-log-body"></div>
@@ -1973,13 +1973,13 @@ async function finalizePortScan(scanId, target, rows, actions, output) {
                         .webscan-log-time { color: #4a4a58; min-width: 65px; }
                         .webscan-log-stage { color: #a78bfa; min-width: 70px; display: flex; align-items: center; gap: 6px; }
                         .webscan-log-msg { color: #b0b2ba; flex: 1; }
-                        .webscan-log-entry.success .webscan-log-msg { color: #6acf80; }
-                        .webscan-log-entry.error .webscan-log-msg { color: #f07070; }
-                        .webscan-log-entry.warning .webscan-log-msg { color: #f0b860; }
+                        .webscan-log-entry.success .webscan-log-msg { color: #7CFF9A; }
+                        .webscan-log-entry.error .webscan-log-msg { color: #FF4D4D; }
+                        .webscan-log-entry.warning .webscan-log-msg { color: #F97316; }
                         .ws-dot-running { background: #a78bfa; animation: pulse-dot 1s infinite; }
-                        .ws-dot-success { background: #6acf80; }
-                        .ws-dot-error { background: #f07070; }
-                        .ws-dot-warning { background: #f0b860; }
+                        .ws-dot-success { background: #7CFF9A; }
+                        .ws-dot-error { background: #FF4D4D; }
+                        .ws-dot-warning { background: #F97316; }
                         @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
                     </style>
                     <div class="webscan-log-body" id="webscan-log-body"></div>

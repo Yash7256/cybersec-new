@@ -74,6 +74,10 @@ class Settings(BaseSettings):
     GEOIP_ALLOW_PRIVATE_TARGETS: bool = False
     GEOIP_MAX_CONCURRENT_LOOKUPS: int = 5
     GEOIP_RATE_LIMIT_PER_MINUTE: int = 55
+    # Optional: ipinfo.io API token for highest-accuracy GeoIP lookups.
+    # Free tier (50k req/month) works without a token; a token removes the cap.
+    # Sign up at https://ipinfo.io/signup
+    IPINFO_API_TOKEN: str = ""
 
     # WHOIS configuration
     WHOIS_CACHE_TTL_SECONDS: int = 3600

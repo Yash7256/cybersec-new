@@ -48,7 +48,7 @@ function FeatureRow({ label, ok, muted = false }) {
   return (
     <div className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
       {ok ? (
-        <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: '#4ade80' }} />
+        <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: '#7CFF9A' }} />
       ) : (
         <X className="w-4 h-4 shrink-0" style={{ color: '#6b5fa0' }} />
       )}
@@ -131,17 +131,17 @@ export default function UpgradeModal({ open: controlledOpen, onClose: controlled
         {/* ── Header ───────────────────────────────────────────────── */}
         <div className="upgrade-modal-header">
           <div className="upgrade-modal-icon">
-            <Zap className="w-7 h-7" style={{ color: '#fbbf24' }} />
+            <Zap className="w-7 h-7" style={{ color: '#F97316' }} />
           </div>
           <h2 id="upgrade-modal-title" className="upgrade-modal-title">
             Daily limit reached
           </h2>
           <p className="upgrade-modal-subtitle">
             You've used{' '}
-            <strong style={{ color: '#f87171' }}>
+            <strong style={{ color: '#FF4D4D' }}>
               {dailyUsage}/{limit}
             </strong>{' '}
-            free uses of <strong style={{ color: '#f87171' }}>{limitedToolName}</strong> today.
+            free uses of <strong style={{ color: '#FF4D4D' }}>{limitedToolName}</strong> today.
             Each tool allows {limit} free uses per day. Upgrade to Paid for unlimited access.
           </p>
 
@@ -181,7 +181,7 @@ export default function UpgradeModal({ open: controlledOpen, onClose: controlled
           {/* Paid column */}
           <div className="upgrade-tier-card paid">
             <div className="upgrade-tier-card-header paid-header">
-              <Crown className="w-5 h-5" style={{ color: '#fbbf24' }} />
+              <Crown className="w-5 h-5" style={{ color: '#F97316' }} />
               <span>Paid</span>
               <span className="upgrade-tier-popular-badge">
                 <Sparkles className="w-3 h-3" />
@@ -211,7 +211,7 @@ export default function UpgradeModal({ open: controlledOpen, onClose: controlled
             className="upgrade-cta-btn"
             onClick={(e) => { e.preventDefault(); }}
           >
-            <Crown className="w-5 h-5" style={{ color: '#fbbf24' }} />
+            <Crown className="w-5 h-5" style={{ color: '#F97316' }} />
             Upgrade to Paid — $9/mo
           </a>
           <button type="button" className="upgrade-dismiss-btn" onClick={close}>

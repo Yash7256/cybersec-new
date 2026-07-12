@@ -180,6 +180,94 @@ const calculateLiveTracerouteResult = (previous, next) => {
   };
 };
 
+function AnimatedDonutChart({ passedPct, passedCount, failedCount }) {
+  const [animPct, setAnimPct] = useState(0);
+  const [animFailed, setAnimFailed] = useState(0);
+  const [animPassed, setAnimPassed] = useState(0);
+  const [hovered, setHovered] = useState(null);
+
+  const cx = 104, cy = 104, r = 80, sw = 8;
+  const C = 2 * Math.PI * r;
+  const total = passedCount + failedCount;
+  const failedPctVal = total ? Math.round((failedCount / total) * 100) : 0;
+  const passedPctVal = total ? Math.round((passedCount / total) * 100) : 0;
+
+  useEffect(() => {
+    setAnimPct(0);
+    setAnimFailed(0);
+    setAnimPassed(0);
+    const start = performance.now();
+    const duration = 1000;
+    const tick = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      const e = 1 - Math.pow(1 - t, 3);
+      setAnimPct(e * passedPct);
+      setAnimFailed(Math.round(e * failedCount));
+      setAnimPassed(Math.round(e * passedCount));
+      if (t < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [passedPct, passedCount, failedCount]);
+
+  const passedLen = Math.max((animPct / 100) * C, C * 0.03);
+
+  const showFailed = hovered === 'failed';
+  const showPassed = hovered === 'passed';
+
+  return (
+    <div className="relative grid h-52 w-52 place-items-center">
+      <svg width="208" height="208" viewBox="0 0 208 208" className="absolute inset-0">
+        <defs>
+          <filter id="dg-p">
+            <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#7CFF9A" floodOpacity={0.35} />
+          </filter>
+          <filter id="dg-f">
+            <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#FF4D4D" floodOpacity={0.35} />
+          </filter>
+        </defs>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#FF4D4D" strokeWidth={sw} opacity={0.88}
+          className="cursor-pointer transition-all duration-200"
+          style={{ transformOrigin: '104px 104px', transform: hovered === 'failed' ? 'scale(1.04)' : 'scale(1)' }}
+          onMouseEnter={() => setHovered('failed')}
+          onMouseLeave={() => setHovered(null)}
+          filter={hovered === 'failed' ? 'url(#dg-f)' : undefined}
+        />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#7CFF9A" strokeWidth={sw} strokeLinecap="round"
+          strokeDasharray={`${passedLen} ${C}`} strokeDashoffset={0}
+          className="cursor-pointer transition-all duration-200"
+          style={{ transformOrigin: '104px 104px', transform: `rotate(-90deg)${hovered === 'passed' ? ' scale(1.04)' : ''}` }}
+          onMouseEnter={() => setHovered('passed')}
+          onMouseLeave={() => setHovered(null)}
+          filter={hovered === 'passed' ? 'url(#dg-p)' : undefined}
+        />
+      </svg>
+      <div className="z-10 flex flex-col items-center justify-center text-center transition-all duration-200">
+        {showFailed ? (
+          <>
+            <span className="text-[52px] font-bold leading-none tracking-tighter text-[#FF4D4D]">{animFailed}</span>
+            <span className="mt-0.5 text-xl font-medium leading-none text-[#FF4D4D]">Failed</span>
+            <span className="mt-0.5 text-sm leading-none text-[#A69BBE]">{failedPctVal}% of total</span>
+          </>
+        ) : showPassed ? (
+          <>
+            <span className="text-[52px] font-bold leading-none tracking-tighter text-[#7CFF9A]">{animPassed}</span>
+            <span className="mt-0.5 text-xl font-medium leading-none text-[#7CFF9A]">Passed</span>
+            <span className="mt-0.5 text-sm leading-none text-[#A69BBE]">{passedPctVal}% of total</span>
+          </>
+        ) : (
+          <>
+            <span className="text-[52px] font-bold leading-none tracking-tighter text-[#F4F2FF]">{animFailed}</span>
+            <span className="mt-0.5 text-xl font-medium leading-none text-[#FF4D4D]">Failed</span>
+            <span className="mt-0.5 text-sm leading-none text-[#A69BBE]">{failedPctVal}% of total</span>
+            <div className="my-1 h-px w-8 bg-white/[0.08]" />
+            <span className="text-sm leading-none text-[#7CFF9A]">{animPassed} Passed</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function GenericTool({ toolId }) {
   const meta = TOOL_META[toolId];
   const [target, setTarget] = useState('');
@@ -624,7 +712,7 @@ export default function GenericTool({ toolId }) {
         {Array.isArray(value) ? (
           <span className="text-gray-200 text-sm font-mono break-all">{value.join(', ')}</span>
         ) : typeof value === 'boolean' ? (
-          <span className={`text-sm font-mono ${value ? 'text-amber-300' : 'text-emerald-300'}`}>{value ? 'Yes' : 'No'}</span>
+          <span className={`text-sm font-mono ${value ? 'text-[#F97316]' : 'text-[#7CFF9A]'}`}>{value ? 'Yes' : 'No'}</span>
         ) : String(value).startsWith('http') ? (
           <a className="text-sm font-mono text-purple-300 hover:text-purple-200 break-all" href={String(value)} target="_blank" rel="noreferrer">{String(value)}</a>
         ) : (
@@ -710,9 +798,9 @@ export default function GenericTool({ toolId }) {
   const chip = (text, tone = 'neutral') => {
     const colors = {
       neutral: 'border-dark-600 text-gray-300 bg-dark-800/60',
-      good: 'border-emerald-500/25 text-emerald-200 bg-emerald-500/10',
-      warn: 'border-amber-500/25 text-amber-200 bg-amber-500/10',
-      bad: 'border-red-500/25 text-red-200 bg-red-500/10',
+      good: 'border-[#7CFF9A]/25 text-[#7CFF9A] bg-[#7CFF9A]/10',
+      warn: 'border-[#F97316]/25 text-[#F97316] bg-[#F97316]/10',
+      bad: 'border-[#FF4D4D]/25 text-[#FF4D4D] bg-[#FF4D4D]/10',
       info: 'border-purple-400/25 text-purple-200 bg-purple-500/10',
     };
     return <span className={`text-xs font-mono px-2.5 py-1 rounded-lg border ${colors[tone] || colors.neutral}`}>{text}</span>;
@@ -772,7 +860,7 @@ export default function GenericTool({ toolId }) {
             const y = item.status === 'dropped' ? 91 : 91 - (latency / max) * 72;
             return (
               <g key={`${item.packet}-${index}`}>
-                <circle cx={x} cy={y} r={item.status === 'dropped' ? 1.2 : 0.9} fill={item.status === 'dropped' ? '#ff4f5f' : '#b895ff'} vectorEffect="non-scaling-stroke" />
+                <circle cx={x} cy={y} r={item.status === 'dropped' ? 1.2 : 0.9} fill={item.status === 'dropped' ? '#FF4D4D' : '#b895ff'} vectorEffect="non-scaling-stroke" />
               </g>
             );
           })}
@@ -873,7 +961,7 @@ export default function GenericTool({ toolId }) {
               <div key={`${item.packet}-${index}`} className="ping-flow-row">
                 <span className={`ping-flow-dot ${item.status === 'dropped' ? 'is-bad' : ''}`} />
                 <span>Packet {item.packet}</span>
-                <strong className={item.status === 'dropped' ? 'text-[#ff4f5f]' : Number(item.latency_ms) > 100 ? 'text-[#ff8b3d]' : 'text-[#69f08a]'}>
+                <strong className={item.status === 'dropped' ? 'text-[#FF4D4D]' : Number(item.latency_ms) > 100 ? 'text-[#F97316]' : 'text-[#7CFF9A]'}>
                   {item.status === 'dropped' ? 'Dropped' : `${item.latency_ms} ms`}
                 </strong>
               </div>
@@ -1081,10 +1169,10 @@ export default function GenericTool({ toolId }) {
     const routePolyline = routePoints.map((point) => `${point.x},${point.y}`).join(' ');
     const colorForHop = (hop) => {
       if (hop.is_hidden) return '#64748b';
-      if (hop.quality_color === 'green') return '#34d399';
+      if (hop.quality_color === 'green') return '#7CFF9A';
       if (hop.quality_color === 'cyan') return '#22d3ee';
-      if (hop.quality_color === 'yellow') return '#fbbf24';
-      if (hop.quality_color === 'red') return '#f87171';
+      if (hop.quality_color === 'yellow') return '#F97316';
+      if (hop.quality_color === 'red') return '#FF4D4D';
       return '#a78bfa';
     };
     const locationLabel = (hop) => [hop.city, hop.region, hop.country_code || hop.country].filter(Boolean).join(', ');
@@ -1152,7 +1240,7 @@ export default function GenericTool({ toolId }) {
                     <div className="text-xs text-gray-400 mt-2 break-words">
                       {[locationLabel(hop), hop.provider, hop.asn, hop.hostname].filter(Boolean).join(' · ') || hop.hidden_reason || 'Public router'}
                     </div>
-                    {hop.latency_added_ms >= 40 && <div className="text-xs text-amber-200 mt-2">Latency spike: +{hop.latency_added_ms}ms at this hop.</div>}
+                    {hop.latency_added_ms >= 40 && <div className="text-xs text-[#F97316] mt-2">Latency spike: +{hop.latency_added_ms}ms at this hop.</div>}
                   </div>
                 </div>
               ))}
@@ -1290,9 +1378,9 @@ export default function GenericTool({ toolId }) {
     const HeaderStat = ({ icon: IconCmp, title, value, subtext, tone = 'neutral' }) => {
       const tones = {
         neutral: 'text-white',
-        good: 'text-[#57c254]',
-        bad: 'text-[#ff4f5f]',
-        warn: 'text-[#f59e0b]',
+        good: 'text-[#7CFF9A]',
+        bad: 'text-[#FF4D4D]',
+        warn: 'text-[#F97316]',
       };
       return (
         <div className="min-h-[116px] rounded-[10px] border border-white/[0.22] bg-[#160d24]/80 p-4">
@@ -1317,7 +1405,7 @@ export default function GenericTool({ toolId }) {
     );
 
     const InfoRow = ({ label, value, tone = 'neutral' }) => {
-      const toneClass = tone === 'good' ? 'text-[#57c254]' : tone === 'bad' ? 'text-[#ff4f5f]' : 'text-[#ded4e9]';
+      const toneClass = tone === 'good' ? 'text-[#7CFF9A]' : tone === 'bad' ? 'text-[#FF4D4D]' : 'text-[#ded4e9]';
       return (
         <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-white/[0.1] py-2 last:border-b-0">
           <span className="text-[10px] text-[#8e819b]">{label}</span>
@@ -1369,7 +1457,7 @@ export default function GenericTool({ toolId }) {
             <div className="grid grid-cols-1 gap-5 p-6 lg:grid-cols-3">
               <InsightCard title="HTTP Header Intelligence" icon={CircleDot}>
                 <p className="text-[11px] leading-5 text-[#ded4e9]">The target appears to be a {infrastructure} host</p>
-                {confidence && <p className="text-[10px] leading-5 text-[#57c254]">Confidence: {confidence}%</p>}
+                {confidence && <p className="text-[10px] leading-5 text-[#7CFF9A]">Confidence: {confidence}%</p>}
                 <div className="mt-5 space-y-2">
                   <InfoRow label="Infrastructure Provider" value={provider} />
                   <InfoRow label="Exposed Services" value={data.exposed_services || data.open_services || 'SSH (TCP/22), HTTP (TCP/80)'} />
@@ -1401,7 +1489,7 @@ export default function GenericTool({ toolId }) {
                       {index > 0 && <div className="absolute left-[-50%] top-[19px] h-px w-full border-t border-dashed border-[#6b5b78]" />}
                       <div className="relative z-10 grid h-12 w-12 place-items-center rounded-full border border-white/[0.45] bg-[#201330] text-[18px] text-white">{String(index + 1).padStart(2, '0')}</div>
                       <div className="mt-3 text-[10px] text-[#ded4e9]">{step.label || step.step}</div>
-                      <div className={`mt-1 text-[10px] ${(step.status || '').toLowerCase() === 'completed' ? 'text-[#57c254]' : 'text-[#9f93aa]'}`}>{step.status || 'Unknown'}</div>
+                      <div className={`mt-1 text-[10px] ${(step.status || '').toLowerCase() === 'completed' ? 'text-[#7CFF9A]' : 'text-[#9f93aa]'}`}>{step.status || 'Unknown'}</div>
                     </div>
                   ))}
                 </div>
@@ -1436,7 +1524,7 @@ export default function GenericTool({ toolId }) {
                     </div>
                     <h3 className="text-[17px] font-semibold text-[#d8c8ff]">AI SUMMARY</h3>
                   </div>
-                  <span className="rounded-full border border-[#d46a57]/45 bg-[#8c3c50]/70 px-4 py-2 text-[13px] font-semibold uppercase text-[#ff7b39]">Confidence:Medium</span>
+                  <span className="rounded-full border border-[#d46a57]/45 bg-[#8c3c50]/70 px-4 py-2 text-[13px] font-semibold uppercase text-[#F97316]">Confidence:Medium</span>
                 </div>
                 <p className="max-w-5xl whitespace-pre-line text-[15px] leading-7 text-[#ded4e9]">{aiSummary}</p>
               </section>
@@ -1519,8 +1607,8 @@ export default function GenericTool({ toolId }) {
   const subToneClasses = (tone) => {
     const tones = {
       good: 'border-[#42cf70] bg-[#14301f] text-[#6df68a]',
-      warn: 'border-[#d7b449] bg-[#2d2515] text-[#ffd86f]',
-      bad: 'border-[#ff4f5f] bg-[#2a1119] text-[#ff6673]',
+      warn: 'border-[#d7b449] bg-[#2d2515] text-[#F97316]',
+      bad: 'border-[#FF4D4D] bg-[#2a1119] text-[#FF4D4D]',
       neutral: 'border-[#63516e] bg-[#13091f] text-[#d6cbe2]',
     };
     return tones[tone] || tones.neutral;
@@ -1607,9 +1695,9 @@ export default function GenericTool({ toolId }) {
 
     return (
       <div className="space-y-8 p-1 md:p-2">
-        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8">
+        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
           <div className="flex flex-wrap items-center gap-3">
-            {isScanning ? <Activity className="h-7 w-7 animate-pulse text-[#b79aff]" /> : <CheckCircle2 className="h-7 w-7 text-[#5add56]" />}
+            {isScanning ? <Activity className="h-7 w-7 animate-pulse text-[#b79aff]" /> : <CheckCircle2 className="h-7 w-7 text-[#7CFF9A]" />}
             <h2 className="text-[26px] font-medium text-[#f4eef7]">{isScanning ? 'Subdomain Enumeration Running' : 'Subdomain Enumeration Completed'}</h2>
           </div>
           <div className="mt-5 flex flex-wrap gap-3">
@@ -1622,7 +1710,7 @@ export default function GenericTool({ toolId }) {
           </div>
           <div className="mt-6 grid grid-cols-1 gap-1.5 md:grid-cols-2 xl:grid-cols-6">
             {metricItems.map(([IconCmp, label, value]) => (
-              <div key={label} className="min-h-[78px] rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-4">
+              <div key={label} className="min-h-[78px] rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-4 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
                 <div className="flex items-center gap-2 text-[10px] font-bold text-[#efe9f5]">
                   <IconCmp className="h-3.5 w-3.5" />
                   <span>{label}</span>
@@ -1633,29 +1721,44 @@ export default function GenericTool({ toolId }) {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-8 rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8 xl:grid-cols-2">
-          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-8">
-            {sectionTitle('Discovery Overview')}
+        <section className="grid grid-cols-1 gap-8 rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)] xl:grid-cols-2">
+          <div className="rounded-2xl border border-white/10 bg-[#1a0b30]/85 px-8 py-7 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/25 hover:shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+            <div className="mb-7 flex items-center gap-3 text-sm font-semibold uppercase text-[#b79aff]">
+              <CircleDot className="h-5 w-5" />
+              <span>Discovery Overview</span>
+            </div>
             <div className="flex flex-col items-center">
-              <div
-                className="grid h-32 w-32 place-items-center rounded-full"
-                style={{ background: `conic-gradient(#5add56 0deg ${foundPct * 3.6}deg, #ff4f5f ${foundPct * 3.6}deg 360deg)` }}
-              >
-                <div className="grid h-24 w-24 place-items-center rounded-full border border-[#4a3857] bg-[#13091f] text-center">
-                  <div>
-                    <div className="text-[13px] text-[#5add56]">{totalFound} Found</div>
-                    <div className="text-[18px] font-semibold text-[#ff4f5f]">{failedRows.length} Failed</div>
+              <AnimatedDonutChart passedPct={foundPct} passedCount={totalFound} failedCount={failedRows.length} />
+              <div className="mt-8 w-full border-t border-white/[0.08] pt-5">
+                <div className="flex items-stretch">
+                  <div className="flex flex-1 flex-col items-center gap-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-[#FF4D4D] shadow-[0_0_6px_rgba(255,77,77,0.5)]" />
+                      <span className="text-xs font-medium uppercase tracking-wider text-[#A69BBE]">Failed</span>
+                    </div>
+                    <span className="text-[34px] font-bold leading-none text-[#F4F2FF]">{failedRows.length}</span>
+                    <span className="text-xs leading-none text-[#A69BBE]">{failedPct}%</span>
+                  </div>
+                  <span className="w-px self-stretch bg-white/[0.08]" />
+                  <div className="flex flex-1 flex-col items-center gap-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-[#7CFF9A] shadow-[0_0_6px_rgba(124,255,154,0.5)]" />
+                      <span className="text-xs font-medium uppercase tracking-wider text-[#A69BBE]">Passed</span>
+                    </div>
+                    <span className="text-[34px] font-bold leading-none text-[#F4F2FF]">{totalFound}</span>
+                    <span className="text-xs leading-none text-[#A69BBE]">{foundPct}%</span>
+                  </div>
+                  <span className="w-px self-stretch bg-white/[0.08]" />
+                  <div className="flex flex-1 flex-col items-center gap-1">
+                    <span className="text-xs font-medium uppercase tracking-wider text-[#A69BBE]">Total</span>
+                    <span className="text-[34px] font-bold leading-none text-[#F4F2FF]">{totalFound + failedRows.length}</span>
                   </div>
                 </div>
-              </div>
-              <div className="mt-8 w-full max-w-md space-y-5 border-t border-[#63516e]/70 pt-5">
-                <div className="flex items-center justify-center gap-4 text-sm text-[#d6cbe2]"><span className="h-3 w-3 rounded-full bg-[#5add56]" /> {totalFound} Found</div>
-                <div className="flex items-center justify-center gap-4 text-sm text-[#d6cbe2]"><span className="h-3 w-3 rounded-full bg-[#ff4f5f]" /> {failedRows.length} Failed</div>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-8">
+          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-8 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
             {sectionTitle('Enumeration Summary')}
             <div>
               {[
@@ -1673,18 +1776,18 @@ export default function GenericTool({ toolId }) {
           </div>
         </section>
 
-        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8">
-          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-8">
+        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
+          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-8 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
             {sectionTitle('DNS Response (Lower is better)')}
             <div className="grid grid-cols-1 gap-x-12 gap-y-4 xl:grid-cols-2">
               {rows.length === 0 && (
-                <div className="col-span-full rounded-lg border border-[#4f3b63] bg-[#1a1029] px-5 py-6 text-sm text-[#92859d]">
+                <div className="col-span-full rounded-lg border border-[#4f3b63] bg-[#1a1029] px-5 py-6 text-sm text-[#92859d] transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
                   {isScanning ? 'Waiting for DNS responses...' : 'No DNS response samples available.'}
                 </div>
               )}
               {rows.slice(0, 14).map((row) => {
                 const dns = Number(row?.dns_ms) || 0;
-                const tone = row?.resolved ? '#69f08a' : '#ff4f5f';
+                const tone = row?.resolved ? '#7CFF9A' : '#FF4D4D';
                 return (
                   <div key={row.subdomain || row.name} className="grid grid-cols-[minmax(120px,1fr)_minmax(120px,260px)_58px] items-center gap-4">
                     <span className="truncate text-[11px] text-[#8f839b]">{row.subdomain || row.name}</span>
@@ -1699,8 +1802,8 @@ export default function GenericTool({ toolId }) {
           </div>
         </section>
 
-        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8">
-          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-8">
+        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
+          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-8 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
             {sectionTitle('Enumerated Subdomains')}
             <div className="overflow-x-auto">
               <table className="w-full min-w-[820px] border-collapse text-left">
@@ -1726,12 +1829,12 @@ export default function GenericTool({ toolId }) {
                       <td className="px-3 py-4">
                         <span className={`rounded-full border px-2 py-1 text-[9px] font-semibold uppercase ${subToneClasses(subTone(row))}`}>{subStatus(row)}</span>
                       </td>
-                      <td className="px-3 py-4">{row.resolved ? <CheckCircle2 className="h-4 w-4 text-[#5add56]" /> : <X className="h-4 w-4 text-[#ff4f5f]" />}</td>
-                      <td className="px-3 py-4 text-[#69f08a]">{formatMs(row.dns_ms)}</td>
-                      <td className="px-3 py-4 text-[#ff6673]">{row.error || '-'}</td>
+                      <td className="px-3 py-4">{row.resolved ? <CheckCircle2 className="h-4 w-4 text-[#7CFF9A]" /> : <X className="h-4 w-4 text-[#FF4D4D]" />}</td>
+                      <td className="px-3 py-4 text-[#7CFF9A]">{formatMs(row.dns_ms)}</td>
+                      <td className="px-3 py-4 text-[#FF4D4D]">{row.error || '-'}</td>
                       <td className="px-3 py-4">{Array.isArray(row.source) ? row.source.join(', ') : row.source || 'wordlist'}</td>
-                      <td className="px-3 py-4">{row.verified ? <CheckCircle2 className="h-4 w-4 text-[#5add56]" /> : <X className="h-4 w-4 text-[#ff4f5f]" />}</td>
-                      <td className="px-3 py-4 text-[#ff6673]">{Math.round(Number(row.confidence || 0) * 100)}%</td>
+                      <td className="px-3 py-4">{row.verified ? <CheckCircle2 className="h-4 w-4 text-[#7CFF9A]" /> : <X className="h-4 w-4 text-[#FF4D4D]" />}</td>
+                      <td className="px-3 py-4 text-[#FF4D4D]">{Math.round(Number(row.confidence || 0) * 100)}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1740,8 +1843,8 @@ export default function GenericTool({ toolId }) {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-6 rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8 xl:grid-cols-3">
-          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-6">
+        <section className="grid grid-cols-1 gap-6 rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)] xl:grid-cols-3">
+          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-6 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
             {sectionTitle('DNS Record Summary')}
             {['A', 'MX', 'AAAA', 'TXT', 'CNAME', 'NS'].map((type) => (
               <div key={type} className="flex items-center justify-between border-b border-[#554365]/70 py-3 text-sm last:border-b-0">
@@ -1750,12 +1853,12 @@ export default function GenericTool({ toolId }) {
               </div>
             ))}
           </div>
-          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-6">
+          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-6 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
             {sectionTitle('Contact Information')}
             <div className="flex flex-col items-center">
               <div
                 className="h-24 w-24 rounded-full"
-                style={{ background: `conic-gradient(#ff4f5f 0deg ${failedPct * 3.6}deg, #5add56 ${failedPct * 3.6}deg 360deg)` }}
+                style={{ background: `conic-gradient(#FF4D4D 0deg ${failedPct * 3.6}deg, #7CFF9A ${failedPct * 3.6}deg 360deg)` }}
               />
               <div className="mt-6 w-full space-y-3">
                 {Object.entries(errorCounts).length === 0 && (
@@ -1770,17 +1873,17 @@ export default function GenericTool({ toolId }) {
               </div>
             </div>
           </div>
-          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-6">
+          <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-6 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
             {sectionTitle('Findings')}
             <div className="space-y-3">
               {findingItems.map(([text, ok]) => (
                 <div key={text} className="flex items-center justify-between border-b border-[#554365]/70 pb-3 text-sm text-[#d8cce6] last:border-b-0">
                   <span>{text}</span>
-                  {ok ? <CheckCircle2 className="h-4 w-4 text-[#5add56]" /> : <ShieldAlert className="h-4 w-4 text-[#ffbf6b]" />}
+                  {ok ? <CheckCircle2 className="h-4 w-4 text-[#7CFF9A]" /> : <ShieldAlert className="h-4 w-4 text-[#F97316]" />}
                 </div>
               ))}
             </div>
-            <div className="mt-8 rounded-lg border border-[#4f3b63] bg-[#24183b] p-4 text-xs leading-5 text-[#b7abc5]">
+            <div className="mt-8 rounded-lg border border-[#4f3b63] bg-[#24183b] p-4 text-xs leading-5 text-[#b7abc5] transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
               {isScanning
                 ? 'The scan is in progress. This dashboard starts empty and updates when enumeration data returns.'
                 : totalFound === 0
@@ -1790,20 +1893,20 @@ export default function GenericTool({ toolId }) {
           </div>
         </section>
 
-        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8">
+        <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
           <div className="mb-2 text-[18px] font-medium uppercase text-[#b79aff]">Export & Share</div>
           <p className="text-sm text-[#d2c5dc]">Download or share your scan report.</p>
           <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-4">
-            <button type="button" onClick={() => window.print()} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:border-[#9f7aea]">
+            <button type="button" onClick={() => window.print()} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
               <FileText className="h-4 w-4" /> Export PDF
             </button>
-            <button type="button" onClick={() => downloadText(`${domain || 'subdomains'}-subdomains.json`, JSON.stringify(data, null, 2), 'application/json')} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:border-[#9f7aea]">
+            <button type="button" onClick={() => downloadText(`${domain || 'subdomains'}-subdomains.json`, JSON.stringify(data, null, 2), 'application/json')} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
               <FileText className="h-4 w-4" /> Export JSON
             </button>
-            <button type="button" onClick={() => downloadText(`${domain || 'subdomains'}-subdomains.csv`, csv, 'text/csv')} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:border-[#9f7aea]">
+            <button type="button" onClick={() => downloadText(`${domain || 'subdomains'}-subdomains.csv`, csv, 'text/csv')} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
               <FileText className="h-4 w-4" /> Export CSV
             </button>
-            <button type="button" onClick={() => copyText('subdomain-share', `${domain}: ${totalFound}/${totalCandidates} subdomains found`)} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:border-[#9f7aea]">
+            <button type="button" onClick={() => copyText('subdomain-share', `${domain}: ${totalFound}/${totalCandidates} subdomains found`)} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 text-sm text-[#ded4e9] transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
               <Share2 className="h-4 w-4" /> {copied === 'subdomain-share' ? 'Copied' : 'Share report'}
             </button>
           </div>
@@ -1843,7 +1946,7 @@ export default function GenericTool({ toolId }) {
               <IconCmp className="h-4 w-4" />
               <span>{label}</span>
             </div>
-            <span className={`text-[10px] ${observed ? 'text-[#69f08a]' : 'text-[#ff4f5f]'}`}>
+            <span className={`text-[10px] ${observed ? 'text-[#7CFF9A]' : 'text-[#FF4D4D]'}`}>
               {source?.status || 'Not observed'}
             </span>
           </div>
@@ -1907,7 +2010,7 @@ export default function GenericTool({ toolId }) {
                   {securityRows.map(([label, value]) => (
                     <div key={label} className="flex items-center justify-between gap-4 border-b border-[#554365]/70 py-3 text-[12px] text-[#d8cce6] last:border-b-0">
                       <span>{label}</span>
-                      <span className={label === 'Firewall' && value === 'Possible' ? 'text-[#fb923c]' : label === 'Honeypot' && value === 'No obvious signal' ? 'text-[#69f08a]' : 'text-[#f4eef7]'}>
+                      <span className={label === 'Firewall' && value === 'Possible' ? 'text-[#F97316]' : label === 'Honeypot' && value === 'No obvious signal' ? 'text-[#7CFF9A]' : 'text-[#f4eef7]'}>
                         {value}
                       </span>
                     </div>
@@ -2000,7 +2103,7 @@ export default function GenericTool({ toolId }) {
                           </button>
                         </td>
                         <td className="px-4 py-5">
-                          <span className="rounded-full border border-[#743248]/80 bg-[#351222]/72 px-3 py-1 text-[10px] font-semibold uppercase text-[#ff4f5f]">
+                          <span className="rounded-full border border-[#743248]/80 bg-[#351222]/72 px-3 py-1 text-[10px] font-semibold uppercase text-[#FF4D4D]">
                             {port.risk_level || '—'}
                           </span>
                         </td>
@@ -2086,7 +2189,7 @@ export default function GenericTool({ toolId }) {
         <div className="space-y-8">
           <section className="rounded-lg border border-[#382748] bg-[#1b0d2b]/78 p-8">
             <div className="mb-6 flex flex-wrap items-center gap-3">
-              {data.scanning ? <Activity className="h-6 w-6 animate-pulse text-[#b79aff]" /> : <CheckCircle2 className="h-6 w-6 text-[#5add56]" />}
+              {data.scanning ? <Activity className="h-6 w-6 animate-pulse text-[#b79aff]" /> : <CheckCircle2 className="h-6 w-6 text-[#7CFF9A]" />}
               <h2 className="text-[26px] font-medium text-[#f4eef7]">{data.scanning ? 'OS Fingerprinting Running' : 'OS Fingerprinting Completed'}</h2>
             </div>
             <div className="mb-7 flex flex-wrap gap-3">
@@ -2102,16 +2205,16 @@ export default function GenericTool({ toolId }) {
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.3fr_1fr]">
               <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-6">
                 <div className="mb-7 flex items-start gap-3">
-                  <Fingerprint className="mt-1 h-6 w-6 text-[#ff7a3d]" />
+                  <Fingerprint className="mt-1 h-6 w-6 text-[#F97316]" />
                   <div>
                     <div className="text-[18px] font-semibold text-[#f4eef7]">{data.detected_os || '—'}</div>
                     <div className="text-[12px] text-[#b7abc5]">{data.os_version_estimate || data.distribution_family || '—'}</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 items-center gap-7 md:grid-cols-[150px_minmax(0,1fr)]">
-                  <div className="grid h-36 w-36 place-items-center rounded-full" style={{ background: `conic-gradient(#69f08a 0deg ${confidence * 2.2}deg, #ffea5f ${confidence * 2.2}deg ${confidence * 3.05}deg, #ff7a3d ${confidence * 3.05}deg ${confidence * 3.6}deg, #4a3857 0deg)` }}>
+                  <div className="grid h-36 w-36 place-items-center rounded-full" style={{ background: `conic-gradient(#7CFF9A 0deg ${confidence * 2.2}deg, #ffea5f ${confidence * 2.2}deg ${confidence * 3.05}deg, #F97316 ${confidence * 3.05}deg ${confidence * 3.6}deg, #4a3857 0deg)` }}>
                     <div className="grid h-24 w-24 place-items-center rounded-full bg-[#13091f] text-center">
-                      <strong className="text-2xl text-[#69f08a]">{confidence}%<span className="block text-[10px] uppercase text-[#69f08a]">Confidence</span></strong>
+                      <strong className="text-2xl text-[#7CFF9A]">{confidence}%<span className="block text-[10px] uppercase text-[#7CFF9A]">Confidence</span></strong>
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -2144,7 +2247,7 @@ export default function GenericTool({ toolId }) {
                   </div>
                   <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-5">
                     <div className="mb-4 flex items-center gap-2 text-[11px] font-bold text-[#efe9f5]"><ShieldAlert className="h-4 w-4" />Exposure Score</div>
-                    <div className="text-[17px] text-[#fb923c]">{risk.level || '—'}</div>
+                    <div className="text-[17px] text-[#F97316]">{risk.level || '—'}</div>
                     <div className="text-[12px] text-[#b7abc5]">{risk.score != null ? `${risk.score}/100` : '—'}</div>
                   </div>
                   <div className="rounded-lg border border-[#63516e]/80 bg-[#13091f]/72 p-5">
@@ -2316,7 +2419,7 @@ export default function GenericTool({ toolId }) {
             <span className="text-xs font-medium uppercase" style={{ color: '#6d579b' }}>Your {meta.name} results will appear here</span>
           </div>
         ) : results.error ? (
-          <div className="p-6 text-red-400 font-mono text-sm">{results.error}</div>
+          <div className="p-6 text-[#FF4D4D] font-mono text-sm">{results.error}</div>
         ) : toolId === 'subdomains' ? (
           renderSubdomainResults(results)
         ) : toolId === 'geo' ? (

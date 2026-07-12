@@ -49,7 +49,7 @@ export default function AIExecutiveReport() {
             <div className="text-yellow-400 font-mono text-sm animate-pulse">Generating executive report...</div>
           </div>
         ) : report?.error ? (
-          <div className="p-6 text-red-400 font-mono text-sm">{report.error}</div>
+          <div className="p-6 text-[#FF4D4D] font-mono text-sm">{report.error}</div>
         ) : (
           <div className="p-6 prose prose-invert max-w-none">
             <div className="text-gray-200 leading-relaxed whitespace-pre-wrap font-body">{report?.summary || JSON.stringify(report, null, 2)}</div>

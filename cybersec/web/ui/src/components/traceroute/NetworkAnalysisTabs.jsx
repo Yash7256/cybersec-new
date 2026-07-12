@@ -34,7 +34,7 @@ export default function NetworkAnalysisTabs({ data, monitoringPanel, hopTimeline
         ))}
       </div>
 
-      <div className="flex flex-col gap-5 rounded-b-xl border border-t-0 border-white/[0.14] bg-[#201330]/82 p-7 shadow-[0_18px_60px_rgba(0,0,0,0.18)]">
+      <div className="flex flex-col gap-5 rounded-b-xl border border-t-0 border-white/[0.14] bg-[#201330]/82 p-7 shadow-[0_18px_60px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]">
         {activeTab === 'network' ? (
           <>
             <div className="grid grid-cols-2 gap-5 max-md:grid-cols-1">

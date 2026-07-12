@@ -9,11 +9,11 @@ import {
 /* ─── helpers ─────────────────────────────────────────────────────── */
 const chip = (label, tone = 'neutral') => {
   const tones = {
-    good: 'border-emerald-400/25 bg-emerald-500/10 text-[#57c254]',
-    bad: 'border-red-400/25 bg-red-500/10 text-[#f87171]',
-    warn: 'border-amber-400/25 bg-amber-500/10 text-[#fbbf24]',
+    good: 'border-[#7CFF9A]/25 bg-[#7CFF9A]/10 text-[#7CFF9A]',
+    bad: 'border-[#FF4D4D]/25 bg-[#FF4D4D]/10 text-[#FF4D4D]',
+    warn: 'border-[#F97316]/25 bg-[#F97316]/10 text-[#F97316]',
     info: 'border-cyan-400/25 bg-cyan-500/10 text-[#22d3ee]',
-    critical: 'border-red-500/35 bg-red-500/15 text-[#ef4444]',
+    critical: 'border-[#FF4D4D]/35 bg-[#FF4D4D]/15 text-[#FF4D4D]',
     neutral: 'border-white/[0.14] bg-[#190f23]/85 text-[#d8cfea]',
   };
   return (
@@ -25,15 +25,15 @@ const chip = (label, tone = 'neutral') => {
 
 const severityColor = (sev) => {
   const s = (sev || '').toLowerCase();
-  if (s === 'critical') return { text: '#ef4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.3)' };
-  if (s === 'high') return { text: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.28)' };
-  if (s === 'medium') return { text: '#fbbf24', bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.22)' };
+  if (s === 'critical') return { text: '#FF4D4D', bg: 'rgba(255,77,77,0.12)', border: 'rgba(255,77,77,0.3)' };
+  if (s === 'high') return { text: '#FF4D4D', bg: 'rgba(255,77,77,0.12)', border: 'rgba(255,77,77,0.28)' };
+  if (s === 'medium') return { text: '#F97316', bg: 'rgba(249,115,22,0.1)', border: 'rgba(249,115,22,0.22)' };
   if (s === 'low') return { text: '#94a3b8', bg: 'rgba(148,163,184,0.1)', border: 'rgba(148,163,184,0.22)' };
   return { text: '#64748b', bg: 'rgba(100,116,139,0.1)', border: 'rgba(100,116,139,0.2)' };
 };
 
 const SectionCard = ({ title, icon: Icon, children, className = '' }) => (
-  <div className={`rounded-[10px] border p-4 ${className}`} style={{ borderColor: 'rgba(124,58,237,0.18)', background: 'rgba(15,8,27,0.6)' }}>
+  <div className={`rounded-[10px] border p-4 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)] ${className}`} style={{ borderColor: 'rgba(124,58,237,0.18)', background: 'rgba(15,8,27,0.6)' }}>
     <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest mb-3.5" style={{ color: '#7a6d8a' }}>
       {Icon && <Icon className="w-4 h-4" />}
       <span>{title}</span>
@@ -43,11 +43,11 @@ const SectionCard = ({ title, icon: Icon, children, className = '' }) => (
 );
 
 const scoreColor = (s) => {
-  if (s >= 90) return '#34d399';
+  if (s >= 90) return '#7CFF9A';
   if (s >= 75) return '#22d3ee';
-  if (s >= 55) return '#fbbf24';
-  if (s >= 35) return '#fb923c';
-  return '#f87171';
+  if (s >= 55) return '#F97316';
+  if (s >= 35) return '#F97316';
+  return '#FF4D4D';
 };
 
 const scoreTone = (s) => {
@@ -139,8 +139,8 @@ function ExecutiveSummary({ data }) {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
-        <div className="rounded-lg p-3.5 border" style={{ borderColor: 'rgba(52,211,153,0.15)', background: 'rgba(52,211,153,0.04)' }}>
-          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: '#34d399' }}>
+        <div className="rounded-lg p-3.5 border transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]" style={{ borderColor: 'rgba(124,255,154,0.15)', background: 'rgba(124,255,154,0.04)' }}>
+          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: '#7CFF9A' }}>
             <CheckCircle2 className="w-3 h-3" /> Positive Findings
           </div>
           <ul className="m-0 p-0 list-none flex flex-col gap-1.5">
@@ -149,27 +149,27 @@ function ExecutiveSummary({ data }) {
             )) : <li className="text-[11px]" style={{ color: '#7a6d8a' }}>No notable security controls detected.</li>}
           </ul>
         </div>
-        <div className="rounded-lg p-3.5 border" style={{ borderColor: 'rgba(248,113,113,0.15)', background: 'rgba(248,113,113,0.04)' }}>
-          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: '#f87171' }}>
+        <div className="rounded-lg p-3.5 border transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]" style={{ borderColor: 'rgba(255,77,77,0.15)', background: 'rgba(255,77,77,0.04)' }}>
+          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: '#FF4D4D' }}>
             <AlertTriangle className="w-3 h-3" /> Largest Risks
           </div>
           <ul className="m-0 p-0 list-none flex flex-col gap-1.5">
             {sc.risks.slice(0, 5).map((r, i) => (
               <li key={i} className="flex items-start gap-1.5 text-[11px] leading-[1.5]" style={{ color: '#c4b5fd' }}>
-                <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1" style={{ background: r.impact === 'critical' || r.impact === 'high' ? '#f87171' : '#fbbf24' }} />
+                <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1" style={{ background: r.impact === 'critical' || r.impact === 'high' ? '#FF4D4D' : '#F97316' }} />
                 <span>{r.issue}</span>
               </li>
             ))}
           </ul>
         </div>
-        <div className="rounded-lg p-3.5 border" style={{ borderColor: 'rgba(251,191,36,0.15)', background: 'rgba(251,191,36,0.04)' }}>
-          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: '#fbbf24' }}>
+        <div className="rounded-lg p-3.5 border transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]" style={{ borderColor: 'rgba(249,115,22,0.15)', background: 'rgba(249,115,22,0.04)' }}>
+          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: '#F97316' }}>
             <Target className="w-3 h-3" /> Priority Actions
           </div>
           <ul className="m-0 p-0 list-none flex flex-col gap-1.5">
             {sc.priorityRecs.length ? sc.priorityRecs.map((r, i) => (
               <li key={i} className="flex items-start gap-1.5 text-[11px] leading-[1.5]" style={{ color: '#c4b5fd' }}>
-                <ArrowRight className="w-3 h-3 shrink-0 mt-0.5" style={{ color: '#fbbf24' }} />
+                <ArrowRight className="w-3 h-3 shrink-0 mt-0.5" style={{ color: '#F97316' }} />
                 <span>{r}</span>
               </li>
             )) : <li className="text-[11px]" style={{ color: '#7a6d8a' }}>No critical actions required.</li>}
@@ -437,7 +437,7 @@ function MissingSecurityHeaders({ data }) {
 
   if (!missing.length) {
     return <SectionCard title="Missing Security Headers" icon={XCircle}>
-      <p className="text-[12px] text-center py-6" style={{ color: '#34d399' }}>
+      <p className="text-[12px] text-center py-6" style={{ color: '#7CFF9A' }}>
         <CheckCircle2 className="w-4 h-4 inline mr-1.5" />All tracked security headers are present.
       </p>
     </SectionCard>;
@@ -460,12 +460,12 @@ function MissingSecurityHeaders({ data }) {
                     <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text, border: `1px solid ${sc.border}` }}>{impact}</span>
                   </div>
                   <div className="text-[10px] mt-1.5 leading-[1.5]" style={{ color: '#c4b5fd' }}>
-                    <span className="font-semibold" style={{ color: '#fbbf24' }}>Attack prevented: </span>{attackInfo.attack}
+                    <span className="font-semibold" style={{ color: '#F97316' }}>Attack prevented: </span>{attackInfo.attack}
                   </div>
                   <div className="text-[10px] mt-0.5 leading-[1.5]" style={{ color: '#7a6d8a' }}>{attackInfo.why}</div>
                 </div>
               </div>
-              <div className="mt-2 text-[10px] p-2 rounded" style={{ background: 'rgba(124,58,237,0.08)', color: '#fbbf24' }}>
+              <div className="mt-2 text-[10px] p-2 rounded" style={{ background: 'rgba(124,58,237,0.08)', color: '#F97316' }}>
                 Fix: {h.recommendation || `Add the ${h.header} response header.`}
               </div>
             </div>
@@ -482,7 +482,7 @@ function ExistingSecurityHeaders({ data }) {
     const items = [];
     (data?.security_analysis || []).forEach((a) => {
       if (a.present) {
-        const quality = a.strength === 'strong' ? { label: 'Excellent', color: '#34d399' } : a.strength === 'moderate' ? { label: 'Adequate', color: '#fbbf24' } : a.strength === 'weak' ? { label: 'Weak', color: '#fb923c' } : { label: 'Configured', color: '#22d3ee' };
+        const quality = a.strength === 'strong' ? { label: 'Excellent', color: '#7CFF9A' } : a.strength === 'moderate' ? { label: 'Adequate', color: '#F97316' } : a.strength === 'weak' ? { label: 'Weak', color: '#F97316' } : { label: 'Configured', color: '#22d3ee' };
         items.push({ header: a.header, value: a.value, quality });
       }
     });
@@ -499,8 +499,8 @@ function ExistingSecurityHeaders({ data }) {
     <SectionCard title="Existing Security Headers" icon={CheckCircle2}>
       <div className="flex flex-col gap-1.5">
         {rows.map((r) => (
-          <div key={r.header} className="flex items-center gap-3 rounded-lg px-3 py-2 border" style={{ borderColor: 'rgba(52,211,153,0.12)', background: 'rgba(52,211,153,0.04)' }}>
-            <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: '#34d399' }} />
+          <div key={r.header} className="flex items-center gap-3 rounded-lg px-3 py-2 border" style={{ borderColor: 'rgba(124,255,154,0.12)', background: 'rgba(124,255,154,0.04)' }}>
+            <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: '#7CFF9A' }} />
             <div className="flex-1 min-w-0">
               <div className="text-[12px] font-mono font-semibold" style={{ color: '#e9d5ff' }}>{r.header}</div>
               {r.value && <div className="text-[10px] font-mono truncate mt-0.5" style={{ color: '#7a6d8a' }}>{r.value}</div>}
@@ -580,7 +580,7 @@ function AttackSurfaceAnalysis({ data }) {
       <div className="grid grid-cols-1 gap-1.5">
         {findings.map((f) => {
           const sc = severityColor(f.severity);
-          const statusColor = f.status === 'Mitigated' || f.status === 'Controlled' || f.status === 'Minimal' ? '#34d399' : f.status === 'Partial' || f.status === 'Needs Review' || f.status === 'Not Tested' ? '#fbbf24' : '#f87171';
+          const statusColor = f.status === 'Mitigated' || f.status === 'Controlled' || f.status === 'Minimal' ? '#7CFF9A' : f.status === 'Partial' || f.status === 'Needs Review' || f.status === 'Not Tested' ? '#F97316' : '#FF4D4D';
           return (
             <div key={f.label} className="flex items-start gap-2.5 rounded-lg px-3 py-2 border" style={{ borderColor: 'rgba(124,58,237,0.08)', background: 'rgba(13,7,24,0.3)' }}>
               <div className="w-2 h-2 rounded-full shrink-0 mt-1" style={{ background: sc.text }} />
@@ -673,7 +673,7 @@ function SecurityRecommendations({ data }) {
 
   if (!recs.length) {
     return <SectionCard title="Recommendations" icon={ListChecks}>
-      <p className="text-[12px] text-center py-6" style={{ color: '#34d399' }}>
+      <p className="text-[12px] text-center py-6" style={{ color: '#7CFF9A' }}>
         <CheckCircle2 className="w-4 h-4 inline mr-1.5" />No recommendations — all checks passed.
       </p>
     </SectionCard>;
@@ -683,7 +683,7 @@ function SecurityRecommendations({ data }) {
     <SectionCard title="Prioritized Recommendations" icon={ListChecks}>
       <div className="flex flex-col gap-2">
         {recs.map((r, i) => {
-          const pColor = r.priority === 'Critical' ? '#ef4444' : r.priority === 'High' ? '#f87171' : r.priority === 'Medium' ? '#fbbf24' : '#94a3b8';
+          const pColor = r.priority === 'Critical' ? '#FF4D4D' : r.priority === 'High' ? '#FF4D4D' : r.priority === 'Medium' ? '#F97316' : '#94a3b8';
           return (
             <div key={i} className="rounded-lg p-3 border" style={{ borderColor: 'rgba(124,58,237,0.1)', background: 'rgba(13,7,24,0.4)' }}>
               <div className="flex items-start justify-between gap-3">
@@ -695,8 +695,8 @@ function SecurityRecommendations({ data }) {
                   <div className="text-[10px] mt-1 leading-[1.4]" style={{ color: '#c4b5fd' }}>{r.desc}</div>
                   <div className="flex items-center gap-3 mt-1.5 text-[9px]">
                     <span style={{ color: '#7a6d8a' }}>OWASP: <span style={{ color: '#c4b5fd' }}>{r.owasp}</span></span>
-                    <span style={{ color: '#7a6d8a' }}>Effort: <span style={{ color: r.effort === 'Easy' ? '#34d399' : r.effort === 'Moderate' ? '#fbbf24' : '#f87171' }}>{r.effort}</span></span>
-                    <span style={{ color: '#7a6d8a' }}>Impact: <span style={{ color: '#34d399' }}>{r.impact} pts</span></span>
+                    <span style={{ color: '#7a6d8a' }}>Effort: <span style={{ color: r.effort === 'Easy' ? '#7CFF9A' : r.effort === 'Moderate' ? '#F97316' : '#FF4D4D' }}>{r.effort}</span></span>
+                    <span style={{ color: '#7a6d8a' }}>Impact: <span style={{ color: '#7CFF9A' }}>{r.impact} pts</span></span>
                   </div>
                 </div>
               </div>
@@ -876,15 +876,15 @@ function AiRecommendations({ data }) {
     <SectionCard title="AI Recommendations" icon={Sparkles}>
       <div className="flex flex-col gap-2">
         {recs.slice(0, 4).map((r, i) => {
-          const diffColor = r.difficulty === 'Easy' ? '#34d399' : r.difficulty === 'Moderate' ? '#fbbf24' : '#f87171';
-          const riskColor = r.riskReduction === 'High' ? '#ef4444' : r.riskReduction === 'Medium' ? '#fbbf24' : '#94a3b8';
+          const diffColor = r.difficulty === 'Easy' ? '#7CFF9A' : r.difficulty === 'Moderate' ? '#F97316' : '#FF4D4D';
+          const riskColor = r.riskReduction === 'High' ? '#FF4D4D' : r.riskReduction === 'Medium' ? '#F97316' : '#94a3b8';
           return (
             <div key={i} className="flex items-center gap-3 rounded-lg px-3 py-2.5 border" style={{ borderColor: 'rgba(124,58,237,0.1)', background: 'rgba(13,7,24,0.4)' }}>
               <div className="w-5 h-5 rounded-full grid place-items-center text-[10px] font-bold shrink-0" style={{ background: `${scoreColor(score)}22`, color: scoreColor(score), border: `1px solid ${scoreColor(score)}44` }}>{i + 1}</div>
               <div className="flex-1 min-w-0">
                 <div className="text-[12px] font-semibold" style={{ color: '#e9d5ff' }}>{r.title}</div>
                 <div className="flex items-center gap-3 mt-0.5 text-[9px]">
-                  <span style={{ color: '#7a6d8a' }}>Improvement: <span style={{ color: '#34d399' }}>{r.improvement} pts</span></span>
+                  <span style={{ color: '#7a6d8a' }}>Improvement: <span style={{ color: '#7CFF9A' }}>{r.improvement} pts</span></span>
                   <span style={{ color: '#7a6d8a' }}>Risk: <span style={{ color: riskColor }}>{r.riskReduction}</span></span>
                   <span style={{ color: '#7a6d8a' }}>Effort: <span style={{ color: diffColor }}>{r.difficulty}</span></span>
                 </div>
@@ -941,11 +941,11 @@ function AiSecuritySummary({ data }) {
     ls.push(`Overall risk: ${riskLevel}. ${score < 70 ? 'Priority actions: implement missing security headers and restrict CORS/CSP policies.' : 'Continue monitoring for configuration drift and emerging vulnerabilities.'}`);
 
     const dataCompleteness = score != null ? 'High' : 'Medium';
-    return { lines: ls, confidence: { label: dataCompleteness, color: dataCompleteness === 'High' ? '#22d3ee' : '#fbbf24' } };
+    return { lines: ls, confidence: { label: dataCompleteness, color: dataCompleteness === 'High' ? '#22d3ee' : '#F97316' } };
   }, [data]);
 
   return (
-    <div className="rounded-[10px] border p-[18px_20px] relative overflow-hidden" style={{ borderColor: 'rgba(124,58,237,0.3)', background: 'linear-gradient(135deg, rgba(52,20,80,0.72) 0%, rgba(28,12,50,0.8) 100%)' }}>
+    <div className="rounded-[10px] border p-[18px_20px] relative overflow-hidden transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]" style={{ borderColor: 'rgba(124,58,237,0.3)', background: 'linear-gradient(135deg, rgba(52,20,80,0.72) 0%, rgba(28,12,50,0.8) 100%)' }}>
       <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(167,139,250,0.55), transparent)' }} />
       <div className="flex items-center gap-2.5 mb-3.5">
         <div className="w-7 h-7 rounded-lg grid place-items-center shrink-0" style={{ background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(167,139,250,0.35)' }}>
@@ -993,12 +993,12 @@ function HeaderRelationships({ data }) {
       <div className="flex flex-col items-stretch gap-0">
         {chain.map((l, i) => {
           const Icon = l.icon;
-          const statusColor = l.status === 'configured' ? '#34d399' : '#f87171';
+          const statusColor = l.status === 'configured' ? '#7CFF9A' : '#FF4D4D';
           return (
             <div key={l.id} className="flex flex-col items-center">
               <div className="w-full rounded-lg px-3.5 py-2.5 flex items-center gap-3 border transition duration-150 hover:-translate-y-px" style={{
-                borderColor: l.status === 'configured' ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)',
-                background: l.status === 'configured' ? 'rgba(52,211,153,0.06)' : 'rgba(248,113,113,0.06)',
+                borderColor: l.status === 'configured' ? 'rgba(124,255,154,0.25)' : 'rgba(255,77,77,0.25)',
+                background: l.status === 'configured' ? 'rgba(124,255,154,0.06)' : 'rgba(255,77,77,0.06)',
                 cursor: 'default',
               }}>
                 <Icon className="w-4 h-4 shrink-0" style={{ color: statusColor }} />
@@ -1011,7 +1011,7 @@ function HeaderRelationships({ data }) {
                 <div className="flex flex-col items-center py-0.5">
                   <ArrowRight className="w-3 h-3" style={{ color: '#5a4d72' }} />
                   {chain[i + 1].depends === l.id && l.status === 'missing' && (
-                    <span className="text-[8px] mt-0.5 text-center" style={{ color: '#f87171' }}>broken link</span>
+                    <span className="text-[8px] mt-0.5 text-center" style={{ color: '#FF4D4D' }}>broken link</span>
                   )}
                 </div>
               )}
@@ -1020,7 +1020,7 @@ function HeaderRelationships({ data }) {
         })}
       </div>
       {missingLinks.length > 0 && (
-        <div className="mt-3 p-3 rounded-lg text-[11px] leading-4" style={{ background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.2)', color: '#fbbf24' }}>
+        <div className="mt-3 p-3 rounded-lg text-[11px] leading-4" style={{ background: 'rgba(255,77,77,0.06)', border: '1px solid rgba(255,77,77,0.2)', color: '#F97316' }}>
           {missingLinks.length} header{missingLinks.length !== 1 ? 's' : ''} missing — the protection chain is incomplete. Each missing header reduces the overall depth-of-defense.
         </div>
       )}
@@ -1031,7 +1031,7 @@ function HeaderRelationships({ data }) {
 /* ─── 15. Export & Share ──────────────────────────────────────────── */
 function ExportSection({ onExportPdf, onExportJson, onExportCsv, onShare }) {
   return (
-    <div className="rounded-[10px] border p-[18px_20px] flex flex-wrap items-center justify-between gap-4" style={{ borderColor: 'rgba(124,58,237,0.18)', background: 'rgba(13,7,24,0.55)' }}>
+    <div className="rounded-[10px] border p-[18px_20px] flex flex-wrap items-center justify-between gap-4 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]" style={{ borderColor: 'rgba(124,58,237,0.18)', background: 'rgba(13,7,24,0.55)' }}>
       <div>
         <h3 className="text-[13px] font-bold uppercase tracking-wide m-0 mb-0.5" style={{ color: '#c4b5fd' }}>Export &amp; Share</h3>
         <p className="text-[11px] m-0" style={{ color: '#7a6d8a' }}>Download or share your scan report.</p>
@@ -1068,13 +1068,13 @@ export default function HttpHeadersMonitoringPanel({
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
         {[
           { label: 'Security Score', value: data?.security_score != null ? `${data.security_score}/100` : '\u2014', color: scoreColor(data?.security_score ?? 50), icon: Shield },
-          { label: 'Risk Level', value: data?.risk_level || '\u2014', color: data?.risk_level === 'Low' ? '#34d399' : data?.risk_level === 'Medium' ? '#fbbf24' : '#f87171', icon: ShieldAlert },
+          { label: 'Risk Level', value: data?.risk_level || '\u2014', color: data?.risk_level === 'Low' ? '#7CFF9A' : data?.risk_level === 'Medium' ? '#F97316' : '#FF4D4D', icon: ShieldAlert },
           { label: 'Headers Present', value: `${data?.security_headers?.present?.length || 0}/${(data?.security_headers?.present?.length || 0) + (data?.security_headers?.missing?.length || 0)}`, icon: CheckCircle2, color: '#22d3ee' },
-          { label: 'Missing', value: data?.security_headers?.missing?.length ?? 0, icon: XCircle, color: (data?.security_headers?.missing?.length || 0) > 0 ? '#f87171' : '#34d399' },
-          { label: 'Disclosures', value: data?.information_disclosure?.length || 0, icon: Eye, color: (data?.information_disclosure?.length || 0) > 0 ? '#fbbf24' : '#34d399' },
+          { label: 'Missing', value: data?.security_headers?.missing?.length ?? 0, icon: XCircle, color: (data?.security_headers?.missing?.length || 0) > 0 ? '#FF4D4D' : '#7CFF9A' },
+          { label: 'Disclosures', value: data?.information_disclosure?.length || 0, icon: Eye, color: (data?.information_disclosure?.length || 0) > 0 ? '#F97316' : '#7CFF9A' },
           { label: 'Technologies', value: data?.technologies?.length || 0, icon: Cpu, color: '#c4b5fd' },
         ].map((s) => (
-          <div key={s.label} className="flex flex-col gap-1 p-2.5 rounded-[10px] border" style={{ borderColor: 'rgba(124,58,237,0.2)', background: 'rgba(13,7,24,0.65)' }}>
+          <div key={s.label} className="flex flex-col gap-1 p-2.5 rounded-[10px] border transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]" style={{ borderColor: 'rgba(124,58,237,0.2)', background: 'rgba(13,7,24,0.65)' }}>
             <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: '#7a6d8a' }}>
               <s.icon className="w-3 h-3" />
               {s.label}

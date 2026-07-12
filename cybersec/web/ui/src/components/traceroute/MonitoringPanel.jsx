@@ -9,17 +9,17 @@ function segmentColor(type) {
   const t = (type || '').toLowerCase();
   if (t.includes('local') || t.includes('private')) return { bar: '#a78bfa', badge: 'rgba(167,139,250,0.15)', text: '#a78bfa', border: 'rgba(167,139,250,0.3)' };
   if (t.includes('cdn') || t.includes('cloud')) return { bar: '#22d3ee', badge: 'rgba(34,211,238,0.12)', text: '#22d3ee', border: 'rgba(34,211,238,0.28)' };
-  if (t.includes('backbone') || t.includes('transit') || t.includes('isp')) return { bar: '#34d399', badge: 'rgba(52,211,153,0.12)', text: '#34d399', border: 'rgba(52,211,153,0.28)' };
+  if (t.includes('backbone') || t.includes('transit') || t.includes('isp')) return { bar: '#7CFF9A', badge: 'rgba(124,255,154,0.12)', text: '#7CFF9A', border: 'rgba(124,255,154,0.28)' };
   if (t.includes('filtered') || t.includes('hidden')) return { bar: '#64748b', badge: 'rgba(100,116,139,0.12)', text: '#64748b', border: 'rgba(100,116,139,0.22)' };
-  return { bar: '#fbbf24', badge: 'rgba(251,191,36,0.1)', text: '#fbbf24', border: 'rgba(251,191,36,0.25)' };
+  return { bar: '#F97316', badge: 'rgba(249,115,22,0.1)', text: '#F97316', border: 'rgba(249,115,22,0.25)' };
 }
 
 function segmentSeverity(avgLatency) {
   if (avgLatency == null) return { label: 'Unknown', color: '#64748b' };
-  if (avgLatency < 20) return { label: 'Good', color: '#34d399' };
-  if (avgLatency < 80) return { label: 'Moderate', color: '#fbbf24' };
-  if (avgLatency < 200) return { label: 'High', color: '#fb923c' };
-  return { label: 'Severe', color: '#f87171' };
+  if (avgLatency < 20) return { label: 'Good', color: '#7CFF9A' };
+  if (avgLatency < 80) return { label: 'Moderate', color: '#F97316' };
+  if (avgLatency < 200) return { label: 'High', color: '#F97316' };
+  return { label: 'Severe', color: '#FF4D4D' };
 }
 
 function buildSegments(hops) {
@@ -74,8 +74,8 @@ function buildAsnFlow(hops) {
 
 const CATEGORY_COLORS = {
   private: { bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.25)', text: '#a78bfa' },
-  isp: { bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.25)', text: '#34d399' },
-  transit: { bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.22)', text: '#fbbf24' },
+  isp: { bg: 'rgba(124,255,154,0.12)', border: 'rgba(124,255,154,0.25)', text: '#7CFF9A' },
+  transit: { bg: 'rgba(249,115,22,0.1)', border: 'rgba(249,115,22,0.22)', text: '#F97316' },
   cdn: { bg: 'rgba(34,211,238,0.12)', border: 'rgba(34,211,238,0.25)', text: '#22d3ee' },
   filtered: { bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.22)', text: '#94a3b8' },
   destination: { bg: 'rgba(186,156,255,0.15)', border: 'rgba(186,156,255,0.3)', text: '#ba9cff' },
@@ -200,12 +200,12 @@ function buildAiSummary(data, hops, segments) {
 }
 
 function confidenceLevel(data, hops) {
-  if (data?.ai_summary) return { label: 'Very High', color: '#34d399' };
+  if (data?.ai_summary) return { label: 'Very High', color: '#7CFF9A' };
   const rttCount = hops.filter((h) => h.rtt_ms != null).length;
   if (rttCount >= 12) return { label: 'High', color: '#22d3ee' };
-  if (rttCount >= 8) return { label: 'Medium', color: '#fbbf24' };
-  if (rttCount >= 4) return { label: 'Low', color: '#fb923c' };
-  return { label: 'Very Low', color: '#f87171' };
+  if (rttCount >= 8) return { label: 'Medium', color: '#F97316' };
+  if (rttCount >= 4) return { label: 'Low', color: '#F97316' };
+  return { label: 'Very Low', color: '#FF4D4D' };
 }
 
 /* ─── Segment Breakdown ──────────────────────────────────────────── */
@@ -233,7 +233,7 @@ function SegmentBreakdown({ hops }) {
               <div className="flex flex-wrap gap-2 text-[10px] text-[#7a6d8a]">
                 {seg.avgRtt != null && <span>Avg latency <strong style={{ color: '#c4b5fd' }}>{roundMs(seg.avgRtt)} ms</strong></span>}
                 {seg.location && <span>{seg.location}</span>}
-                {seg.loss > 0 && <span style={{ color: '#f87171' }}>{seg.loss}% loss</span>}
+                {seg.loss > 0 && <span style={{ color: '#FF4D4D' }}>{seg.loss}% loss</span>}
               </div>
               <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[9px] font-bold" style={{ background: `${sev.color}18`, color: sev.color, border: `1px solid ${sev.color}33` }}>
                 {sev.label}
@@ -281,14 +281,14 @@ function AsnFlowDiagram({ hops }) {
 function MitrePanel({ hops, data }) {
   const { findings, severity } = useMemo(() => buildMitreFindings(hops, data), [hops, data]);
 
-  const severityColor = severity === 'high' ? '#f87171' : severity === 'medium' ? '#fbbf24' : '#64748b';
-  const severityBg = severity === 'high' ? 'rgba(248,113,113,0.12)' : severity === 'medium' ? 'rgba(251,191,36,0.12)' : 'rgba(100,116,139,0.12)';
+  const severityColor = severity === 'high' ? '#FF4D4D' : severity === 'medium' ? '#F97316' : '#64748b';
+  const severityBg = severity === 'high' ? 'rgba(255,77,77,0.12)' : severity === 'medium' ? 'rgba(249,115,22,0.12)' : 'rgba(100,116,139,0.12)';
 
   if (!findings.length) {
     return <p className="m-0 text-sm italic text-[#5a4d72]">No anomalies detected on this route</p>;
   }
 
-  const colors = { high: '#f87171', medium: '#fbbf24', low: '#94a3b8' };
+  const colors = { high: '#FF4D4D', medium: '#F97316', low: '#94a3b8' };
   const severityLabel = severity.charAt(0).toUpperCase() + severity.slice(1);
 
   return (
@@ -319,7 +319,7 @@ function AiSummaryPanel({ data, hops, segments }) {
   const confidence = useMemo(() => confidenceLevel(data, hops), [data, hops]);
 
   return (
-    <div className="rounded-[10px] border border-[rgba(124,58,237,0.3)] p-[18px_20px] relative overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(52,20,80,0.72) 0%, rgba(28,12,50,0.8) 100%)' }}>
+    <div className="rounded-[10px] border border-[rgba(124,58,237,0.3)] p-[18px_20px] relative overflow-hidden transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]" style={{ background: 'linear-gradient(135deg, rgba(52,20,80,0.72) 0%, rgba(28,12,50,0.8) 100%)' }}>
       <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(167,139,250,0.55), transparent)' }} />
       <div className="flex items-center gap-2.5 mb-3.5">
         <div className="w-7 h-7 rounded-lg grid place-items-center shrink-0" style={{ background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(167,139,250,0.35)' }}>
@@ -349,7 +349,7 @@ export default function MonitoringPanel({ data, hops }) {
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
-        <div className="rounded-[10px] border p-4" style={{ borderColor: 'rgba(124,58,237,0.18)', background: 'rgba(15,8,27,0.6)' }}>
+        <div className="rounded-[10px] border p-4 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]" style={{ borderColor: 'rgba(124,58,237,0.18)', background: 'rgba(15,8,27,0.6)' }}>
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest mb-3.5" style={{ color: '#7a6d8a' }}>
             <BarChart3 className="w-4 h-4" />
             <span>Segment Breakdown</span>
@@ -357,7 +357,7 @@ export default function MonitoringPanel({ data, hops }) {
           <SegmentBreakdown hops={hops || []} />
         </div>
 
-        <div className="rounded-[10px] border p-4" style={{ borderColor: 'rgba(124,58,237,0.18)', background: 'rgba(15,8,27,0.6)' }}>
+        <div className="rounded-[10px] border p-4 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]" style={{ borderColor: 'rgba(124,58,237,0.18)', background: 'rgba(15,8,27,0.6)' }}>
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest mb-3.5" style={{ color: '#7a6d8a' }}>
             <Share2 className="w-4 h-4" />
             <span>ASN / Provider Flow</span>
@@ -365,12 +365,12 @@ export default function MonitoringPanel({ data, hops }) {
           <AsnFlowDiagram hops={hops || []} />
         </div>
 
-        <div className="rounded-[10px] border p-4" style={{ borderColor: 'rgba(124,58,237,0.18)', background: 'rgba(15,8,27,0.6)' }}>
+        <div className="rounded-[10px] border p-4 transition hover:-translate-y-0.5 hover:border-[#ba9cff]/45 hover:shadow-[0_16px_42px_rgba(0,0,0,0.22)]" style={{ borderColor: 'rgba(124,58,237,0.18)', background: 'rgba(15,8,27,0.6)' }}>
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest mb-3.5" style={{ color: '#7a6d8a' }}>
             <ShieldAlert className="w-4 h-4" />
             <span>MITRE ATT&CK Mapping</span>
             {data?.route_risk && (
-              <span className="ml-auto inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider" style={{ color: '#f87171', background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.28)' }}>
+              <span className="ml-auto inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider" style={{ color: '#FF4D4D', background: 'rgba(255,77,77,0.12)', border: '1px solid rgba(255,77,77,0.28)' }}>
                 {data.route_risk}
               </span>
             )}
