@@ -153,29 +153,31 @@ class NVDClient:
                     raise Exception("NVD rate limit exceeded")
                 elif response.status_code == 404:
                     logger.debug(f"NVD 404 for URL: {url}")
-                    return {"vulnerabilities": []}
+                    return None
                 elif response.status_code >= 500:
                     logger.warning(f"NVD server error {response.status_code}")
-                    return {"vulnerabilities": []}
+                    return None
                 
                 response.raise_for_status()
                 return response.json()
         
         except json.JSONDecodeError as e:
             logger.error(f"NVD JSON decode failed: {e}")
-            return {"vulnerabilities": []}
+            return None
         except Exception as e:
             logger.error(f"NVD request failed: {e}")
-            return {"vulnerabilities": []}
+            return None
     
     async def get_cve_by_id(self, cve_id: str) -> Optional[CVEResult]:
         """Get a specific CVE by ID."""
         params = {"cveId": cve_id}
         url = f"{self.base_url}"
-        
+
         response_data = await self._make_request(url, params)
+        if response_data is None:
+            return None
         vulnerabilities = response_data.get("vulnerabilities", [])
-        
+
         if vulnerabilities:
             return self._parse_cve_entry(vulnerabilities[0])
         return None
@@ -189,6 +191,8 @@ class NVDClient:
         url = f"{self.base_url}"
         
         response_data = await self._make_request(url, params)
+        if response_data is None:
+            return []
         vulnerabilities = response_data.get("vulnerabilities", [])
         
         results = []
@@ -211,6 +215,8 @@ class NVDClient:
         url = f"{self.base_url}"
         
         response_data = await self._make_request(url, params)
+        if response_data is None:
+            return []
         vulnerabilities = response_data.get("vulnerabilities", [])
         
         results = []
@@ -257,6 +263,10 @@ class NVDClient:
         # --- live NVD query ---
         keyword = f"{service_name} {service_version}".strip()
         cves = await self.search_cves_by_keyword(keyword, max_results=50)
+
+        # If the NVD request itself failed, return empty without caching
+        if cves is None:
+            return []
 
         # Filter by CVSS score and recency
         min_score = settings.NVD_MIN_CVSS_SCORE

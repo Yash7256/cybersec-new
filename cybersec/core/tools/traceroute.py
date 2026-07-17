@@ -396,9 +396,9 @@ async def traceroute(target: str, max_hops: int = 30, *, allow_private: bool = F
     max_hops = max(1, min(64, max_hops))
 
     # Resolve target to IP for SSRF guard and to avoid TOCTOU / arg-injection
+    from cybersec.core.tools.dns import resolve_hostname
     try:
-        loop = asyncio.get_running_loop()
-        resolved_ip = (await loop.getaddrinfo(target, None, family=socket.AF_INET))[0][4][0]
+        resolved_ip = await resolve_hostname(target)
     except Exception as exc:
         return TracerouteResult(target, [], 0, f"DNS resolution failed: {exc}")
 

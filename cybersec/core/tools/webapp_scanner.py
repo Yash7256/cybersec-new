@@ -195,10 +195,10 @@ class WebAppScanner:
         host = urlparse(url).hostname
         if not host:
             return None
+        from cybersec.core.tools.dns import resolve_hostname
         try:
-            addrinfo = await asyncio.get_event_loop().getaddrinfo(host, None)
-            return addrinfo[0][4][0]
-        except OSError:
+            return await resolve_hostname(host)
+        except Exception:
             return None
 
     async def _safe_get(

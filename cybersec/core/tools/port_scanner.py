@@ -2125,9 +2125,9 @@ async def scan_ports(
         ports = list(COMMON_PORTS.keys())
     
     # Resolve target to IP
+    from cybersec.core.tools.dns import resolve_hostname
     try:
-        loop = asyncio.get_running_loop()
-        ip = (await loop.getaddrinfo(target, None, family=socket.AF_INET))[0][4][0]
+        ip = await resolve_hostname(target)
     except Exception as e:
         return PortScanResult(
             target=target,
@@ -2389,9 +2389,9 @@ async def stream_port_scan_events(
         },
     }
 
+    from cybersec.core.tools.dns import resolve_hostname
     try:
-        loop = asyncio.get_running_loop()
-        ip = (await loop.getaddrinfo(target, None, family=socket.AF_INET))[0][4][0]
+        ip = await resolve_hostname(target)
     except Exception as e:
         yield {"type": "error", "error": f"DNS resolution failed: {e}"}
         return

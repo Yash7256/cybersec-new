@@ -506,9 +506,9 @@ def _probabilities(family_scores: dict[str, int], distribution_scores: dict[str,
 
 
 async def _resolve_ipv4(target: str) -> tuple[str | None, str | None]:
+    from cybersec.core.tools.dns import resolve_hostname
     try:
-        loop = asyncio.get_running_loop()
-        ip = (await loop.getaddrinfo(target, None, family=socket.AF_INET, type=socket.SOCK_STREAM))[0][4][0]
+        ip = await resolve_hostname(target)
         return ip, None
     except Exception as exc:
         return None, f"DNS resolution failed: {exc}"

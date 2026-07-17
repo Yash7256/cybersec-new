@@ -1,4 +1,3 @@
-import asyncio
 import time
 from dataclasses import dataclass, field
 from urllib.parse import urlparse
@@ -562,10 +561,10 @@ async def _resolve_host(url: str) -> str | None:
     host = urlparse(url).hostname
     if not host:
         return None
+    from cybersec.core.tools.dns import resolve_hostname
     try:
-        addrinfo = await asyncio.get_event_loop().getaddrinfo(host, None)
-        return addrinfo[0][4][0]
-    except OSError:
+        return await resolve_hostname(host)
+    except Exception:
         return None
 
 

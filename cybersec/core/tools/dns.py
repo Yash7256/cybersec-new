@@ -1,8 +1,26 @@
 import asyncio
 from dataclasses import dataclass
+import socket
 import time
 from dns.asyncresolver import Resolver
 from dns.resolver import NXDOMAIN, NoAnswer
+
+_DNS_NAMESERVERS = ["8.8.8.8", "1.1.1.1"]
+
+
+async def resolve_hostname(hostname: str, family: int = socket.AF_INET) -> str:
+    """Resolve hostname to IP. Tries system resolver first, then dnspython with public DNS."""
+    try:
+        loop = asyncio.get_running_loop()
+        return (await loop.getaddrinfo(hostname, None, family=family))[0][4][0]
+    except Exception:
+        pass
+    resolver = Resolver()
+    resolver.nameservers = _DNS_NAMESERVERS
+    resolver.timeout = 5
+    resolver.lifetime = 5
+    answers = await resolver.resolve(hostname, "A" if family == socket.AF_INET else "AAAA")
+    return answers[0].to_text()
 
 @dataclass
 class DNSResult:

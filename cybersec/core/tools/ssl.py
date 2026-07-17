@@ -31,15 +31,10 @@ async def ssl_audit(host: str, port: int = 443, allow_private: bool = False) -> 
     from cybersec.config.settings import settings
     
     # SSRF protection - resolve host and check if IP is allowed
+    from cybersec.core.tools.dns import resolve_hostname
     try:
-        addrinfo = await asyncio.get_event_loop().getaddrinfo(host, port)
-        if not addrinfo:
-            return SSLResult(host, port, None, None, None, False, False, False, "Failed to resolve host")
-        
-        ip = addrinfo[0][4][0]  # First resolved IP
-        
+        ip = await resolve_hostname(host)
         if not allow_private:
-            # Lazy import to avoid circular dependency
             from cybersec.core.tools.port_scanner import _is_scan_target_allowed
             if not _is_scan_target_allowed(ip):
                 return SSLResult(host, port, None, None, None, False, False, False, 

@@ -1,6 +1,5 @@
 import asyncio
 import re
-import socket
 import statistics
 import sys
 import time
@@ -343,9 +342,9 @@ async def _geo_for_ip(ip: str) -> dict:
 async def ping_host(target: str, count: int = 4, *, allow_private: bool = False) -> PingResult:
     count = max(1, min(100, count))
     dns_start = time.perf_counter()
+    from cybersec.core.tools.dns import resolve_hostname
     try:
-        loop = asyncio.get_running_loop()
-        ip = (await loop.getaddrinfo(target, None, family=socket.AF_INET))[0][4][0]
+        ip = await resolve_hostname(target)
     except Exception as exc:
         return PingResult(
             target,
