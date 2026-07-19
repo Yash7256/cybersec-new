@@ -10,55 +10,52 @@ from datetime import datetime
 
 from cybersec.config.settings import settings
 
-class DnsRequest(BaseModel):
+class _StripWhitespaceModel(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+class DnsRequest(_StripWhitespaceModel):
     target: str = Field(
         min_length=1,
         max_length=253,
-        strip_whitespace=True,
         description="Hostname or IP address to look up",
     )
     record_type: str = "ALL"
 
-class WhoisRequest(BaseModel):
+class WhoisRequest(_StripWhitespaceModel):
     target: str = Field(
         min_length=1,
         max_length=253,
-        strip_whitespace=True,
         description="Domain name or IP address to look up",
     )
     
-class PingRequest(BaseModel):
+class PingRequest(_StripWhitespaceModel):
     target: str = Field(
         min_length=1,
         max_length=253,
-        strip_whitespace=True,
         description="Hostname or IP address to ping",
     )
     count: int = Field(default=4, ge=1, le=100)
     
-class TracerouteRequest(BaseModel):
+class TracerouteRequest(_StripWhitespaceModel):
     target: str = Field(
         min_length=1,
         max_length=253,
-        strip_whitespace=True,
         description="Hostname or IP address to trace",
     )
     max_hops: int = Field(default=30, ge=1, le=64)
     
-class SslRequest(BaseModel):
+class SslRequest(_StripWhitespaceModel):
     host: str = Field(
         min_length=1,
         max_length=253,
-        strip_whitespace=True,
         description="Hostname to check SSL certificate for",
     )
     port: int = Field(default=443, ge=1, le=65535)
     
-class HttpHeadersRequest(BaseModel):
+class HttpHeadersRequest(_StripWhitespaceModel):
     target: str = Field(
         min_length=1,
         max_length=253,
-        strip_whitespace=True,
         description="Hostname or URL to check HTTP headers for",
     )
     path: str = "/"
@@ -101,28 +98,25 @@ class SubdomainRequest(BaseModel):
             # Not a valid IP address — this is what we want; fall through.
         return v.lower()
     
-class GeoipRequest(BaseModel):
+class GeoipRequest(_StripWhitespaceModel):
     target: str = Field(
         min_length=1,
         max_length=253,
-        strip_whitespace=True,
         description="Hostname or IP address to geolocate",
     )
 
-class OsFingerprintRequest(BaseModel):
+class OsFingerprintRequest(_StripWhitespaceModel):
     target: str = Field(
         min_length=1,
         max_length=253,
-        strip_whitespace=True,
         description="Hostname or IP address to fingerprint",
     )
     timeout: float = Field(default=2.0, ge=0.5, le=10.0)
 
-class PortScanRequest(BaseModel):
+class PortScanRequest(_StripWhitespaceModel):
     target: str = Field(
         min_length=1,
         max_length=253,
-        strip_whitespace=True,
         description="Hostname or IP address to scan",
     )
     ports: list[int] | None = None

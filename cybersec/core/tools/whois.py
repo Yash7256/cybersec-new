@@ -116,15 +116,33 @@ def clear_whois_cache() -> None:
 def _normalize_target(target: str) -> str:
     if target is None:
         raise ValueError("Target is required")
+    
+    # Reject control characters (CRLF, tabs, etc.) upfront to prevent injection
+    # via DNS-controlled targets that could slip into downstream shell commands.
+    if any(ch in target for ch in ("\r", "\n", "\t", "\0", "\x0b", "\x0c")):
+        raise ValueError("Target contains invalid control characters")
+    
     normalized = target.strip().lower()
 
-    
-    # Prefix with http:// if no scheme exists, so urlparse can correctly parse host
-    if not re.match(r"^[a-zA-Z]+://", normalized):
-        parsed = urlparse("http://" + normalized)
+    # Reject pseudo-protocol schemes like javascript:, data:, ftp:, etc.
+    # Matches "word:" at start but allows hostname:port (which contains a dot)
+    # and http:// / https:// (which are validated below)
+    scheme_match = re.match(r"^([a-zA-Z][a-zA-Z0-9+.-]*):", normalized)
+    if scheme_match:
+        scheme_part = scheme_match.group(1)
+        # If scheme part contains a dot, it's a hostname:port not a scheme
+        if "." not in scheme_part:
+            # Has a real scheme — only allow http:// or https://
+            if not re.match(r"^https?://", normalized):
+                raise ValueError("Invalid scheme: only http:// or https:// are allowed")
+        else:
+            # Contains dot -> hostname:port, prepend http:// for proper parsing
+            normalized = "http://" + normalized
     else:
-        parsed = urlparse(normalized)
-        
+        # No scheme — prefix with http:// for parsing
+        normalized = "http://" + normalized
+
+    parsed = urlparse(normalized)
     domain = parsed.hostname or parsed.path
     if not domain:
         raise ValueError("Target is required")
