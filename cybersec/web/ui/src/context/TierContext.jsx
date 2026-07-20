@@ -1,44 +1,47 @@
 /**
  * TierContext — provides free/paid tier status and per-tool daily usage globally.
  *
- * Authentication has been disabled. Always fetches /api/user/me unconditionally
- * (no JWT token required) and exposes:
+ * Fetches /api/user/me with Clerk bearer token and exposes:
  *   { tier, toolUsage, limit, unlimited, loading, refresh, getToolUsage }
  */
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useAuth } from '@clerk/react';
 import { apiGet } from '../utils/apiClient';
 
 const TierContext = createContext(null);
 
 const DEFAULT_STATE = {
-  tier: 'paid',
+  tier: 'free',
   toolUsage: {},
-  limit: null,
-  unlimited: true,
+  limit: 5,
+  unlimited: false,
   loading: true,
 };
 
 export function TierProvider({ children }) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const [state, setState] = useState(DEFAULT_STATE);
   const fetchingRef = useRef(false);
 
   const refresh = useCallback(async () => {
     if (fetchingRef.current) return;
+    if (!isLoaded || !isSignedIn) {
+      setState((prev) => ({ ...prev, loading: false }));
+      return;
+    }
     fetchingRef.current = true;
     try {
-      // No getToken argument — backend returns default user for all requests
-      const res = await apiGet('/api/user/me', null, null);
+      const res = await apiGet('/api/user/me', null, getToken);
       if (!res || !res.ok) {
-        // Backend not ready yet; show unlimited defaults
         setState((prev) => ({ ...prev, loading: false }));
         return;
       }
       const data = await res.json();
       setState({
-        tier: data.tier ?? 'paid',
+        tier: data.tier ?? 'free',
         toolUsage: data.tool_usage ?? {},
-        limit: data.daily_limit ?? null,
-        unlimited: data.unlimited ?? true,
+        limit: data.daily_limit ?? 5,
+        unlimited: data.unlimited ?? false,
         loading: false,
       });
     } catch {
@@ -46,14 +49,16 @@ export function TierProvider({ children }) {
     } finally {
       fetchingRef.current = false;
     }
-  }, []);
+  }, [getToken, isLoaded, isSignedIn]);
 
-  // Fetch on mount
+  // Fetch on mount and when auth state changes
   useEffect(() => {
+    if (!isLoaded) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
-  }, [refresh]);
+  }, [refresh, isLoaded]);
 
-  // Listen for limit_reached events (kept for compatibility, won't fire for paid users)
+  // Listen for limit_reached events
   useEffect(() => {
     const handler = () => refresh();
     window.addEventListener('tier:limit_reached', handler);
@@ -73,9 +78,9 @@ export function TierProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTier() {
   const ctx = useContext(TierContext);
   if (!ctx) throw new Error('useTier must be used inside <TierProvider>');
   return ctx;
 }
-

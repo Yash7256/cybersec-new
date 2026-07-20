@@ -137,59 +137,75 @@ async def generate_webscan_events(
 
     all_vulns = []
     pages = []
+    scan_error: str | None = None
 
+    async def _run_checks() -> None:
+        """Inner coroutine so we can apply a hard wall-clock timeout."""
+        nonlocal all_vulns, pages, scan_error
+        try:
+            async with httpx.AsyncClient(
+                timeout=scanner.timeout, verify=False,
+                headers={"User-Agent": "CyberSec-Scanner/1.0"}, follow_redirects=False
+            ) as client:
+                pages = await scanner.crawl(target, client, allow_private=allow_private)
+
+                for check_name, check_fn in [
+                    ('Headers', lambda: scanner.check_headers(target, client, allow_private=allow_private)),
+                    ('CORS', lambda: scanner.check_cors(target, client, allow_private=allow_private)),
+                    ('Files', lambda: scanner.check_exposed_files(target, client)),
+                ]:
+                    vulns = await check_fn()
+                    all_vulns.extend(vulns)
+
+                for page in pages:
+                    if page.forms:
+                        sqli_vulns = await scanner.check_sqli(page.url, page.forms, client, allow_private=allow_private)
+                        xss_vulns = await scanner.check_xss(page.url, page.forms, client, allow_private=allow_private)
+                        csrf_vulns = await scanner.check_csrf(page.url, page.forms)
+                        all_vulns.extend(sqli_vulns)
+                        all_vulns.extend(xss_vulns)
+                        all_vulns.extend(csrf_vulns)
+        except Exception as exc:
+            scan_error = str(exc)
+
+    # Run the scan with a hard timeout; yield progress events around it
     try:
-        async with httpx.AsyncClient(
-            timeout=scanner.timeout, verify=False,
-            headers={"User-Agent": "CyberSec-Scanner/1.0"}, follow_redirects=False
-        ) as client:
-            pages = await scanner.crawl(target, client, allow_private=allow_private)
+        import asyncio as _asyncio
+
+        # Kick off _run_checks as a background task so we can yield heartbeats while it runs
+        scan_task = _asyncio.create_task(_run_checks())
+        page_count_last = 0
+        try:
+            await _asyncio.wait_for(
+                _asyncio.shield(scan_task),
+                timeout=settings.WEBAPP_SCAN_MAX_DURATION_SECONDS,
+            )
+        except _asyncio.TimeoutError:
+            scan_task.cancel()
+            try:
+                await scan_task
+            except _asyncio.CancelledError:
+                pass
+            scan_error = (
+                "Scan exceeded the maximum allowed duration and was stopped early; "
+                "results may be incomplete."
+            )
+            yield send_event('ERROR', scan_error)
+
+        if pages and len(pages) != page_count_last:
             yield send_event('CRAWL', f'Found {len(pages)} pages', pages_found=len(pages))
             await asyncio.sleep(0)
 
-            for check_name, check_fn in [
-                ('Headers', lambda: scanner.check_headers(target, client, allow_private=allow_private)),
-                ('CORS', lambda: scanner.check_cors(target, client, allow_private=allow_private)),
-                ('Files', lambda: scanner.check_exposed_files(target, client)),
-            ]:
-                yield send_event('CHECK', f'Checking {check_name.lower()}...')
-                await asyncio.sleep(0)
-                vulns = await check_fn()
-                all_vulns.extend(vulns)
-                yield send_event('CHECK', f'{check_name} check complete', vuln_count=len(vulns))
-                await asyncio.sleep(0)
-
-            for i, page in enumerate(pages):
-                yield send_event('SCAN', f'Scanning page {i+1}/{len(pages)}: {page.url[:50]}',
-                                 page_num=i+1, total_pages=len(pages), running=True)
-                await asyncio.sleep(0)
-
-                if page.forms:
-                    yield send_event('CHECK', f'Checking {len(page.forms)} form(s) on {page.url[:50]}...',
-                                     form_count=len(page.forms))
-                    await asyncio.sleep(0)
-
-                    sqli_vulns = await scanner.check_sqli(page.url, page.forms, client, allow_private=allow_private)
-                    xss_vulns = await scanner.check_xss(page.url, page.forms, client, allow_private=allow_private)
-                    csrf_vulns = await scanner.check_csrf(page.url, page.forms)
-
-                    all_vulns.extend(sqli_vulns)
-                    all_vulns.extend(xss_vulns)
-                    all_vulns.extend(csrf_vulns)
-
-                    yield send_event('CHECK', f'SQLi/XSS/CSRF checks done on page {i+1}',
-                                     vuln_count=len(sqli_vulns) + len(xss_vulns) + len(csrf_vulns))
-                    await asyncio.sleep(0)
-
-                    if sqli_vulns or xss_vulns or csrf_vulns:
-                        yield send_event('VULN',
-                                         f'Found {len(sqli_vulns)} SQLi, {len(xss_vulns)} XSS, {len(csrf_vulns)} CSRF')
-                        await asyncio.sleep(0)
-                await asyncio.sleep(0.02)
-    except Exception as e:
-        yield send_event('ERROR', f'Scan error: {str(e)}')
+        if scan_error and "exceeded" not in scan_error:
+            yield send_event('ERROR', f'Scan error: {scan_error}')
+        if scan_error:
+            _wapp_scan_meta[scan_id]["status"] = "failed"
+            _wapp_scan_meta[scan_id]["error"] = scan_error
+    except Exception as exc:
+        scan_error = str(exc)
+        yield send_event('ERROR', f'Scan error: {scan_error}')
         _wapp_scan_meta[scan_id]["status"] = "failed"
-        _wapp_scan_meta[scan_id]["error"] = str(e)
+        _wapp_scan_meta[scan_id]["error"] = scan_error
     finally:
         heartbeat_task.cancel()
         try:
@@ -208,14 +224,15 @@ async def generate_webscan_events(
     result = scanner._build_result(target=target, pages=pages, vulns=unique_vulns)
     result_dict = dataclasses.asdict(result)
 
-    _wapp_scan_meta[scan_id]["status"] = "completed"
+    if not scan_error or "exceeded" in (scan_error or ""):
+        _wapp_scan_meta[scan_id]["status"] = "completed"
     _wapp_scan_meta[scan_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
     _wapp_scan_meta[scan_id]["vulnerabilities"] = unique_vulns
 
     await _persist_web_scan(db_scan_id, unique_vulns)
 
     yield send_event('DONE', f'Scan complete. Found {len(unique_vulns)} vulnerabilities.',
-                     result=result_dict)
+                     result=result_dict, error=scan_error)
     await asyncio.sleep(0)
 
 

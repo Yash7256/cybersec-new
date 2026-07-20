@@ -105,14 +105,15 @@ class TestConfirmAuthorizedGate:
         with DB and auth dependencies overridden so no real infrastructure is needed."""
         from fastapi import FastAPI
         from cybersec.apps.api.routes import webapp as webapp_module
-        from cybersec.apps.api.deps import get_db, get_optional_user
+        from cybersec.apps.api.deps import get_db, get_current_user
+        from cybersec.database.models import User
 
         _app = FastAPI()
         _app.include_router(webapp_module.router, prefix="/api/webapp")
 
         # Override dependencies to avoid DB/auth setup
         _app.dependency_overrides[get_db] = lambda: (x for x in [None])
-        _app.dependency_overrides[get_optional_user] = lambda: None
+        _app.dependency_overrides[get_current_user] = lambda: User(id="user_test", email="test@example.com", is_active=True)
 
         return _app
 
@@ -341,7 +342,7 @@ class TestResolveIpAsync:
             return_value=[(None, None, None, None, ("93.184.216.34", 0))]
         )
 
-        with patch("asyncio.get_event_loop", return_value=loop_mock):
+        with patch("asyncio.get_running_loop", return_value=loop_mock):
             result = await scanner._resolve_ip("https://example.com/")
 
         # The async getaddrinfo was called, not the sync version
@@ -361,7 +362,7 @@ class TestResolveIpAsync:
         )
 
         with (
-            patch("asyncio.get_event_loop", return_value=loop_mock),
+            patch("asyncio.get_running_loop", return_value=loop_mock),
             patch.object(socket_mod, "getaddrinfo", side_effect=AssertionError(
                 "Blocking socket.getaddrinfo() was called — must use async version"
             )),

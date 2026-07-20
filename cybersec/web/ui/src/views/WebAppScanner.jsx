@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import {
   AlertTriangle,
   ArrowRight,
@@ -484,23 +484,101 @@ export default function WebAppScanner() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [progressLog, setProgressLog] = useState([]);
+  const abortRef = useRef(null);
   const getToken = useGetToken();
 
-  const run = async () => {
+  const run = useCallback(async () => {
     if (!url) return;
+
+    // Cancel any in-flight scan
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setResults(null);
+    setProgressLog([]);
+
+    const addLog = (msg) => setProgressLog((prev) => [...prev.slice(-49), msg]);
+
     try {
-      const r = await apiPost('/api/webapp/scan', { target: url, max_pages: 50, confirm_authorized: true }, getToken);
-      const payload = await r.json();
-      if (!r.ok) throw new Error(payload.detail || payload.error || `HTTP ${r.status}`);
-      setResults(payload);
+      // Step 1: Start the scan and get a scan_id
+      const token = await getToken();
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const startResp = await fetch('/api/webapp/start-scan', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ target: url, max_pages: 50, confirm_authorized: true }),
+        signal: controller.signal,
+      });
+      if (!startResp.ok) {
+        const body = await startResp.json().catch(() => ({}));
+        throw new Error(body.detail || body.error || `HTTP ${startResp.status}`);
+      }
+      const { scan_id } = await startResp.json();
+      if (!scan_id) throw new Error('No scan_id returned from server.');
+      addLog(`Scan started (id: ${scan_id})`);
+
+      // Step 2: Stream the scan events via GET /stream/{scan_id}
+      const streamResp = await fetch(`/api/webapp/stream/${scan_id}`, {
+        method: 'GET',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        signal: controller.signal,
+      });
+      if (!streamResp.ok) {
+        throw new Error(`Stream failed: HTTP ${streamResp.status}`);
+      }
+      if (!streamResp.body) throw new Error('Streaming not supported in this browser.');
+
+      const reader = streamResp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let done = false;
+      while (!done) {
+        const chunk = await reader.read();
+        done = chunk.done;
+        buffer += decoder.decode(chunk.value || new Uint8Array(), { stream: !done });
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop() || '';
+        for (const part of parts) {
+          const dataLine = part.split('\n').find((l) => l.startsWith('data:'));
+          if (!dataLine) continue;
+          try {
+            const event = JSON.parse(dataLine.slice(5).trim());
+            const stage = event.stage || '';
+            if (stage === 'DONE') {
+              if (event.result) {
+                setResults({ result: event.result, scan_id });
+              } else {
+                setResults({ error: event.error || 'Scan completed with no results.' });
+              }
+              addLog(`✓ ${event.message || 'Scan complete.'}`);
+              done = true;
+              break;
+            } else if (stage === 'ERROR') {
+              addLog(`⚠ ${event.message}`);
+            } else if (stage === 'heartbeat') {
+              // silent – keep connection alive
+            } else {
+              addLog(`${stage}: ${event.message}`);
+            }
+          } catch {
+            // ignore malformed SSE frames
+          }
+        }
+      }
     } catch (e) {
-      setResults({ error: e.message });
+      if (e.name !== 'AbortError') {
+        setResults({ error: e.message });
+      }
     } finally {
+      if (abortRef.current === controller) abortRef.current = null;
       setLoading(false);
     }
-  };
+  }, [url, getToken]);
 
   const scan = results?.result;
 
@@ -566,9 +644,21 @@ export default function WebAppScanner() {
             <span className="text-xs font-medium uppercase" style={{ color: '#6d579b' }}>Web App Scanner results will appear here</span>
           </div>
         ) : loading ? (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
-            <div className="w-8 h-8 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin" />
-            <div className="text-primary-400 font-mono text-sm animate-pulse">Running all checks...</div>
+          <div className="flex flex-col h-full p-6 gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-5 h-5 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin flex-shrink-0" />
+              <span className="text-primary-400 font-mono text-sm animate-pulse">Scanning in progress...</span>
+            </div>
+            <div className="flex-1 overflow-auto rounded-lg border border-white/[0.08] bg-[#0d0618] p-4 font-mono text-[11px] text-[#a98be8] space-y-1">
+              {progressLog.length === 0 && (
+                <div className="text-[#4a3960] italic">Waiting for scan events...</div>
+              )}
+              {progressLog.map((msg, i) => (
+                <div key={i} className="leading-relaxed">
+                  <span className="text-[#4a3960] mr-2">›</span>{msg}
+                </div>
+              ))}
+            </div>
           </div>
         ) : results?.error ? (
           <div className="p-6 text-[#FF4D4D] font-mono text-sm">{results.error}</div>

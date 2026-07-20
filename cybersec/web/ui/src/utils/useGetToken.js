@@ -1,9 +1,12 @@
 /**
- * useGetToken — authentication has been disabled.
+ * useGetToken — returns Clerk's getToken function from useAuth().
  *
- * Returns a stable no-op async function that always returns null.
- * The backend accepts all requests without a token (default user is always returned).
+ * Used by tool components to attach the Bearer token to API requests.
  */
+import { useAuth } from '@clerk/react';
+
 export function useGetToken() {
-  return async () => null;
+  const { getToken } = useAuth();
+  return getToken;
 }
+

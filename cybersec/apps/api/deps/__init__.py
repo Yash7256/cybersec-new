@@ -7,7 +7,7 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import jwt, JWTError
+import jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -50,11 +50,11 @@ async def get_optional_user(
             token,
             public_key,
             algorithms=["RS256"],
-            issuer=settings.CLERK_ISSUER,
+            issuer=settings.CLERK_ISSUER.rstrip("/"),
             options={"verify_aud": False},  # Clerk doesn't include aud by default
         )
-    except (JWTError, ClerkJWKSUnavailable, KeyError) as e:
-        logger.warning("JWT validation failed: %s", e)
+    except (jwt.PyJWTError, ClerkJWKSUnavailable, KeyError) as e:
+        logger.warning("JWT validation failed: %s (issuer configured: %s)", e, settings.CLERK_ISSUER)
         return None
     except Exception as e:
         logger.exception("Unexpected error during JWT validation: %s", e)

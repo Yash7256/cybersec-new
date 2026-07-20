@@ -8,14 +8,45 @@ Implements a three-path upsert strategy:
   3. New user — insert fresh row with hashed_password=NULL
 """
 import logging
-
+import httpx
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cybersec.database.models import User
+from cybersec.config.settings import settings
 
 logger = logging.getLogger(__name__)
+
+
+async def fetch_clerk_user_email(clerk_user_id: str) -> str | None:
+    """Fetch the user's email address from Clerk's Backend API using CLERK_SECRET_KEY."""
+    if not settings.CLERK_SECRET_KEY:
+        logger.warning("CLERK_SECRET_KEY not set, cannot fetch user details from Clerk API")
+        return None
+    try:
+        async with httpx.AsyncClient() as client:
+            headers = {"Authorization": f"Bearer {settings.CLERK_SECRET_KEY}"}
+            # Clerk Backend API user endpoint
+            response = await client.get(
+                f"https://api.clerk.com/v1/users/{clerk_user_id}",
+                headers=headers,
+                timeout=5.0
+            )
+            if response.status_code == 200:
+                data = response.json()
+                emails = data.get("email_addresses", [])
+                if emails:
+                    return emails[0].get("email_address")
+            else:
+                logger.warning(
+                    "Clerk API returned status %d when fetching user details for %s",
+                    response.status_code,
+                    clerk_user_id
+                )
+    except Exception as e:
+        logger.warning("Failed to fetch user email from Clerk API: %s", e)
+    return None
 
 
 async def sync_clerk_user(
@@ -47,32 +78,39 @@ async def sync_clerk_user(
             clerk_user_id,
             existing_user.id,
         )
+        # If email is not set locally but we have a way to populate it, do so
+        if not existing_user.email:
+            fetched_email = email or await fetch_clerk_user_email(clerk_user_id)
+            if fetched_email:
+                existing_user.email = fetched_email
+                await db.commit()
         return existing_user
 
+    # If email wasn't provided in the JWT payload, fetch it from Clerk API
+    if email is None:
+        email = await fetch_clerk_user_email(clerk_user_id)
+
     # -------------------------------------------------------------------------
-    # Path 2 — Legacy migration: find a pre-Clerk row by email and link it
+    # Path 2 — Match by email: if a row with this email exists, link it
     # -------------------------------------------------------------------------
     if email is not None:
-        legacy_result = await db.execute(
-            select(User).where(
-                User.email == email,
-                User.clerk_user_id.is_(None),
-            )
+        email_result = await db.execute(
+            select(User).where(User.email == email)
         )
-        legacy_user = legacy_result.scalar_one_or_none()
+        matching_user = email_result.scalar_one_or_none()
 
-        if legacy_user is not None:
-            logger.debug(
-                "sync_clerk_user: legacy migration — linking email=%s to clerk_user_id=%s "
+        if matching_user is not None:
+            logger.info(
+                "sync_clerk_user: email match — linking email=%s to clerk_user_id=%s "
                 "(users.id=%s preserved, all FK references intact)",
                 email,
                 clerk_user_id,
-                legacy_user.id,
+                matching_user.id,
             )
-            legacy_user.clerk_user_id = clerk_user_id
-            legacy_user.hashed_password = None  # password no longer needed
+            matching_user.clerk_user_id = clerk_user_id
+            matching_user.hashed_password = None  # password no longer needed
             await db.commit()
-            return legacy_user
+            return matching_user
 
     # -------------------------------------------------------------------------
     # Path 3 — New Clerk user: insert a fresh row

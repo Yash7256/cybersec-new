@@ -2,15 +2,14 @@
  * UpgradeModal — full-screen overlay shown when a free-tier user hits their
  * daily tool-use limit.
  *
- * Listens to the global 'tier:upgrade_modal' DOM event and can also be
+ * Listens to the global 'tier:limit_reached' DOM event and can also be
  * controlled via props (open / onClose).
  */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   CheckCircle2,
   Crown,
-  Infinity,
-  Lock,
+  Infinity as InfinityIcon,
   Shield,
   Sparkles,
   X,
@@ -84,9 +83,16 @@ export default function UpgradeModal({ open: controlledOpen, onClose: controlled
   // Respond to global event
   useEffect(() => {
     const handler = () => setInternalOpen(true);
-    window.addEventListener('tier:upgrade_modal', handler);
-    return () => window.removeEventListener('tier:upgrade_modal', handler);
+    window.addEventListener('tier:limit_reached', handler);
+    return () => window.removeEventListener('tier:limit_reached', handler);
   }, []);
+
+  const isOpen = controlledOpen ?? internalOpen;
+
+  const close = () => {
+    setInternalOpen(false);
+    controlledClose?.();
+  };
 
   // Respond to Escape key
   useEffect(() => {
@@ -96,13 +102,6 @@ export default function UpgradeModal({ open: controlledOpen, onClose: controlled
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   });
-
-  const isOpen = controlledOpen ?? internalOpen;
-
-  const close = () => {
-    setInternalOpen(false);
-    controlledClose?.();
-  };
 
   if (!isOpen) return null;
 
@@ -198,7 +197,7 @@ export default function UpgradeModal({ open: controlledOpen, onClose: controlled
               ))}
             </div>
             <div className="upgrade-tier-unlimited">
-              <Infinity className="w-4 h-4" style={{ color: '#a78bfa' }} />
+              <InfinityIcon className="w-4 h-4" style={{ color: '#a78bfa' }} />
               <span>Unlimited scans every day</span>
             </div>
           </div>
