@@ -7,19 +7,7 @@ import {
   LayoutDashboard, Clock, ArrowLeft, ChevronLeft, ChevronRight,
   ScanLine, Wifi, Route, Shield, FileText, Globe2, Fingerprint,
   Search, MapPin, Contact, Crosshair, Crown, Layers, Zap,
-  Activity, TrendingUp, Brain, ArrowRight,
 } from 'lucide-react';
-
-const TOOL_ROUTE = {
-  dns: '/tools/dns', whois: '/tools/whois', ping: '/tools/ping',
-  traceroute: '/tools/traceroute', ssl: '/tools/ssl',
-  http_headers: '/tools/headers', subdomain: '/tools/subdomains',
-  geoip: '/tools/geo', os_fingerprint: '/tools/osfingerprint',
-  port_scan: '/tools/portscanner', webapp: '/tools/webscan',
-  unified: '/tools/unified', ai_chat: '/tools/ai_chat',
-  ai_analyze: '/tools/ai_analyze',
-};
-
 
 const TOOL_META = {
   dns:            { label: 'DNS Lookup',      icon: Search },
@@ -124,15 +112,6 @@ export default function Dashboard() {
   const firstName = user?.firstName || email.split('@')[0] || 'there';
   const totalTools = Object.keys(TOOL_META).length;
   const dailyLimit = limit ?? 5;
-
-  // Derived stats
-  const toolsUsedToday = Object.keys(toolUsage).filter(k => (toolUsage[k]?.count ?? 0) > 0).length;
-  const aiAnalyses = (toolUsage.ai_chat?.count ?? 0) + (toolUsage.ai_analyze?.count ?? 0);
-  const totalScansToday = Object.values(toolUsage).reduce((sum, e) => sum + (e?.count ?? 0), 0);
-  const usagePct = totalTools > 0 ? Math.round((toolsUsedToday / totalTools) * 100) : 0;
-  const unusedTools = Object.entries(TOOL_META)
-    .filter(([k]) => !toolUsage[k] || (toolUsage[k]?.count ?? 0) === 0)
-    .slice(0, 6);
 
   return (
     <div className="dash-fade-in flex flex-col gap-8 h-full overflow-y-auto pr-2">
@@ -383,55 +362,6 @@ export default function Dashboard() {
           )}
         </div>
       </section>
-
-      {/* ── Section 4: Stats Overview ────────────────────────────── */}
-      <section>
-        <h2 className="text-sm font-semibold tracking-wide uppercase mb-4" style={{ color: '#6b5fa0' }}>Overview</h2>
-        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
-          {[
-            { icon: Activity,  label: 'Total Scans',     value: totalScansToday,      color: '#a78bfa', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.12)' },
-            { icon: Layers,    label: 'Tools Explored',  value: `${toolsUsedToday}/${totalTools}`, color: '#22d3ee', bg: 'rgba(34,211,238,0.06)', border: 'rgba(34,211,238,0.12)' },
-            { icon: Brain,     label: 'AI Analyses',     value: aiAnalyses,           color: '#c084fc', bg: 'rgba(192,132,252,0.06)', border: 'rgba(192,132,252,0.12)' },
-            { icon: TrendingUp, label: 'Tool Coverage',  value: `${usagePct}%`,        color: '#f59e0b', bg: 'rgba(245,158,11,0.06)',  border: 'rgba(245,158,11,0.12)' },
-          ].map(({ icon: Icon, label, value, color, bg, border }) => (
-            <div key={label} className="dash-stat-card" style={{ background: bg, border: `1px solid ${border}` }}>
-              <Icon className="w-4 h-4 mb-2" style={{ color }} />
-              <span className="text-2xl font-bold font-mono leading-none" style={{ color }}>{value}</span>
-              <span className="text-[10px] font-medium mt-0.5" style={{ color: '#6b5fa0' }}>{label}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Section 5: Recommended Tools ─────────────────────────── */}
-      {unusedTools.length > 0 && (
-        <section>
-          <h2 className="text-sm font-semibold tracking-wide uppercase mb-4" style={{ color: '#6b5fa0' }}>Try Next</h2>
-          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))' }}>
-            {unusedTools.map(([tool, meta]) => {
-              const Icon = meta.icon;
-              return (
-                <button
-                  key={tool}
-                  onClick={() => navigate(TOOL_ROUTE[tool] || '/tools/' + tool)}
-                  className="dash-reco-card text-left"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="dash-reco-icon">
-                      <Icon className="w-4 h-4" style={{ color: '#a78bfa' }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-xs font-semibold block truncate" style={{ color: '#c4b5fd' }}>{meta.label}</span>
-                      <span className="text-[10px]" style={{ color: '#4a3960' }}>Not used today</span>
-                    </div>
-                    <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#4a3960' }} />
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
     </div>
   );
 }

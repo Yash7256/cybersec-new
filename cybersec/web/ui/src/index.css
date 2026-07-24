@@ -3121,8 +3121,6 @@
 .dash-fade-in > section:nth-child(1) { animation: dashFadeIn 450ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both; }
 .dash-fade-in > section:nth-child(2) { animation: dashFadeIn 450ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both; }
 .dash-fade-in > section:nth-child(3) { animation: dashFadeIn 450ms cubic-bezier(0.22, 1, 0.36, 1) 180ms both; }
-.dash-fade-in > section:nth-child(4) { animation: dashFadeIn 450ms cubic-bezier(0.22, 1, 0.36, 1) 240ms both; }
-.dash-fade-in > section:nth-child(5) { animation: dashFadeIn 450ms cubic-bezier(0.22, 1, 0.36, 1) 300ms both; }
 
 /* ── Buttons — Premium glassmorphism system ────────────────────────────── */
 
@@ -3319,67 +3317,9 @@
   transition: filter 240ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── Dashboard stat cards ──────────────────────────────────────────── */
-
-.dash-stat-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px 10px;
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
-  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 220ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.dash-stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(var(--accent-cyan-rgb), 0.10);
-}
-
-/* ── Dashboard recommended tools ───────────────────────────────────── */
-
-.dash-reco-card {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: rgba(19, 9, 33, 0.55);
-  border: 1px solid rgba(199, 183, 232, 0.10);
-  backdrop-filter: blur(6px);
-  transition: background 200ms cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
-              transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.dash-reco-card:hover {
-  background: rgba(var(--accent-cyan-rgb), 0.04);
-  border-color: rgba(var(--accent-cyan-rgb), 0.18);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(var(--accent-cyan-rgb), 0.08);
-}
-
-.dash-reco-card:active {
-  transform: translateY(0);
-  background: rgba(var(--accent-cyan-rgb), 0.07);
-}
-
-.dash-reco-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: rgba(var(--accent-cyan-rgb), 0.06);
-  border: 1px solid rgba(var(--accent-cyan-rgb), 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
 /* ── Accent focus ring — cyan for accessibility ──────────────────────── */
 .dash-btn:focus-visible,
-.dash-select:focus-visible,
-.dash-reco-card:focus-visible {
+.dash-select:focus-visible {
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }
