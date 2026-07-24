@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams, Outlet } from 'react-router-dom';
 import { SignIn, SignUp, useAuth } from '@clerk/react';
+import { useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import PortScanner from './views/PortScanner';
@@ -14,6 +15,388 @@ import Dashboard from './views/Dashboard';
 import { TierProvider } from './context/TierContext';
 import UpgradeModal from './components/UpgradeModal';
 
+// ─── Auth page background wrapper style ──────────────────────────────────────
+const authPageStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  width: '100%',
+  background: '#07040f',
+  backgroundImage: [
+    'radial-gradient(ellipse at 50% 35%, rgba(109,40,217,0.22) 0%, transparent 60%)',
+    'radial-gradient(ellipse at 50% 80%, rgba(76,29,149,0.14) 0%, transparent 55%)',
+    'url(/assets/Vector.png)',
+    'url(/assets/GRID.png)',
+  ].join(', '),
+  backgroundRepeat: 'no-repeat, no-repeat, no-repeat, no-repeat',
+  backgroundPosition: 'center, center, center 65%, center top',
+  backgroundSize: 'cover, cover, 108% auto, auto 40%',
+  padding: '20px 16px',
+};
+
+// ─── Shared Clerk appearance config ──────────────────────────────────────────
+const clerkAppearance = {
+  layout: {
+    socialButtonsPlacement: 'top',
+    socialButtonsVariant: 'blockButton',
+    showOptionalFields: false,
+  },
+  elements: {
+    // ── Root card ─────────────────────────────────────────────────────────────
+    card: {
+      background: 'rgba(13,7,30,0.78)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderRadius: '20px',
+      border: '1px solid rgba(255,255,255,0.10)',
+      boxShadow: [
+        '0 24px 64px rgba(0,0,0,0.60)',
+        '0 0 0 1px rgba(109,40,217,0.08)',
+        '0 8px 24px rgba(109,40,217,0.10)',
+        'inset 0 1px 0 rgba(255,255,255,0.06)',
+      ].join(', '),
+      padding: '36px 32px 28px',
+      width: '100%',
+      maxWidth: '460px',
+    },
+
+    // ── Header ────────────────────────────────────────────────────────────────
+    header: {
+      textAlign: 'center',
+      marginBottom: '20px',
+      padding: '0',
+    },
+    logoBox: {
+      margin: '0 auto 14px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    logoImage: {
+      width: '88px',
+      height: '88px',
+      objectFit: 'contain',
+      filter: 'drop-shadow(0 0 22px rgba(139,92,246,0.65)) drop-shadow(0 0 8px rgba(167,139,250,0.45)) drop-shadow(0 2px 4px rgba(0,0,0,0.4))',
+    },
+    headerTitle: {
+      fontSize: '28px',
+      fontWeight: '700',
+      color: '#f5f0ff',
+      margin: '0 0 5px',
+      fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+      letterSpacing: '-0.025em',
+      lineHeight: '1.2',
+    },
+    headerSubtitle: {
+      fontSize: '14px',
+      fontWeight: '400',
+      color: 'rgba(196,181,253,0.55)',
+      margin: '0',
+      lineHeight: '1.5',
+      fontFamily: "'Inter', sans-serif",
+      letterSpacing: '0.005em',
+    },
+
+    // ── Social buttons ────────────────────────────────────────────────────────
+    socialButtonsRoot: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '9px',
+      marginBottom: '0',
+    },
+    socialButtonsBlockButton: {
+      borderRadius: '999px',
+      height: '48px',
+      width: '100%',
+      background: '#ffffff',
+      border: '1px solid rgba(0,0,0,0.08)',
+      color: '#111111',
+      fontSize: '14px',
+      fontWeight: '500',
+      fontFamily: "'Inter', sans-serif",
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '10px',
+      transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.18)',
+      cursor: 'pointer',
+      letterSpacing: '0.01em',
+    },
+    socialButtonsBlockButton__google: {
+      background: '#ffffff',
+      border: '1px solid rgba(0,0,0,0.08)',
+      color: '#111111',
+    },
+    socialButtonsBlockButtonText: {
+      color: '#111111',
+      fontSize: '14px',
+      fontWeight: '500',
+      fontFamily: "'Inter', sans-serif",
+    },
+    socialButtonsBlockButtonArrow: {
+      display: 'none',
+    },
+
+    // ── OR divider ────────────────────────────────────────────────────────────
+    dividerRow: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      padding: '14px 0',
+    },
+    dividerLine: {
+      background: 'rgba(167,139,250,0.15)',
+      height: '1px',
+      flexGrow: '1',
+    },
+    dividerText: {
+      color: 'rgba(196,181,253,0.38)',
+      fontSize: '11px',
+      fontWeight: '600',
+      letterSpacing: '1.5px',
+      textTransform: 'uppercase',
+      fontFamily: "'Inter', sans-serif",
+    },
+
+    // ── Form fields ───────────────────────────────────────────────────────────
+    form: {
+      gap: '0',
+    },
+    formField: {
+      marginBottom: '14px',
+    },
+    formFieldLabel: {
+      color: 'rgba(196,181,253,0.7)',
+      fontSize: '12px',
+      fontWeight: '500',
+      marginBottom: '7px',
+      display: 'block',
+      fontFamily: "'Inter', sans-serif",
+      letterSpacing: '0.02em',
+      textTransform: 'uppercase',
+    },
+    formFieldInput: {
+      background: 'rgba(255,255,255,0.05)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      borderRadius: '12px',
+      border: '1px solid rgba(167,139,250,0.14)',
+      color: '#f0ebff',
+      fontSize: '14px',
+      height: '48px',
+      padding: '0 16px',
+      width: '100%',
+      outline: 'none',
+      transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
+      fontFamily: "'Inter', sans-serif",
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+    },
+    formFieldInputShowPasswordButton: {
+      color: 'rgba(196,181,253,0.5)',
+    },
+
+    // ── Error states ──────────────────────────────────────────────────────────
+    formFieldError: {
+      color: '#FF4D4D',
+      fontSize: '12px',
+      fontWeight: '500',
+      marginTop: '4px',
+    },
+    formFieldErrorText: {
+      color: '#FF4D4D',
+      fontSize: '12px',
+    },
+
+    // ── Primary CTA button ────────────────────────────────────────────────────
+    formButtonPrimary: {
+      borderRadius: '999px',
+      height: '52px',
+      width: '100%',
+      background: 'linear-gradient(135deg, #c4b5fd 0%, #a78bfa 45%, #8b5cf6 100%)',
+      border: 'none',
+      color: '#150d2a',
+      fontSize: '15px',
+      fontWeight: '600',
+      fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+      transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+      cursor: 'pointer',
+      marginTop: '4px',
+      letterSpacing: '0em',
+      boxShadow: '0 4px 16px rgba(139,92,246,0.25)',
+    },
+
+    // ── Footer / switch links ─────────────────────────────────────────────────
+    footer: {
+      marginTop: '16px',
+      textAlign: 'center',
+      background: 'transparent',
+      border: 'none',
+      boxShadow: 'none',
+      padding: '0',
+    },
+    footerAction: {
+      textAlign: 'center',
+    },
+    footerActionText: {
+      color: 'rgba(196,181,253,0.5)',
+      fontSize: '13px',
+      fontFamily: "'Inter', sans-serif",
+    },
+    footerActionLink: {
+      color: '#b8a3f5',
+      fontSize: '13px',
+      fontWeight: '500',
+      textDecoration: 'underline',
+      textUnderlineOffset: '3px',
+      fontFamily: "'Inter', sans-serif",
+    },
+
+    // ── Hide unwanted Clerk chrome ────────────────────────────────────────────
+    footerPages: { display: 'none' },
+    badge: { display: 'none' },
+    // Hide the "Development Mode" / "Secured by Clerk" banners
+    // These selectors target the internal Clerk dev-mode warning bar
+    cardBox: { boxShadow: 'none', background: 'transparent' },
+  },
+};
+
+// ─── CSS hover/focus effects injected via <style> tag ────────────────────────
+// Clerk's appearance API only supports static JS objects (no :hover/:focus).
+// We inject a minimal stylesheet for the interactive states.
+const authStyles = `
+  /* ── Social button hover ─────────────────────────────────────────────── */
+  .cl-socialButtonsBlockButton:hover {
+    background: #f5f5f5 !important;
+    border-color: rgba(0,0,0,0.12) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18) !important;
+  }
+  .cl-socialButtonsBlockButton:active {
+    background: #ebebeb !important;
+    transform: translateY(0) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
+  }
+
+  /* Force solid white background on ALL social buttons (kill glassmorphism) */
+  .cl-socialButtonsBlockButton {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+    color: #111111 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18) !important;
+  }
+
+  /* Force dark text on button labels */
+  .cl-socialButtonsBlockButtonText {
+    color: #111111 !important;
+  }
+
+  /* Hide Apple and GitHub buttons entirely */
+  [class*="apple"], [data-provider="apple"], [aria-label*="Apple"],
+  [class*="github"], [data-provider="github"], [aria-label*="GitHub"] { display: none !important; }
+
+  /* Consistent icon sizing across all social providers */
+  .cl-socialButtonsBlockButtonIcon,
+  .cl-socialButtonsBlockButtonIconContainer,
+  .cl-socialButtonsBlockButton img,
+  .cl-socialButtonsBlockButton svg:not(.cl-spinner) {
+    width: 18px !important;
+    height: 18px !important;
+    flex-shrink: 0 !important;
+    object-fit: contain !important;
+  }
+
+  /* ── Input hover & focus ──────────────────────────────────────────────── */
+  .cl-formFieldInput:hover {
+    border-color: rgba(167,139,250,0.28) !important;
+  }
+  .cl-formFieldInput:focus {
+    border-color: rgba(167,139,250,0.60) !important;
+    box-shadow: 0 0 0 3px rgba(109,40,217,0.16), 0 2px 8px rgba(109,40,217,0.10) !important;
+    background: rgba(255,255,255,0.07) !important;
+    outline: none !important;
+  }
+  .cl-formFieldInput::placeholder {
+    color: rgba(196,181,253,0.35) !important;
+  }
+
+  /* ── CTA button hover glow ────────────────────────────────────────────── */
+  .cl-formButtonPrimary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 28px rgba(139,92,246,0.45), 0 0 0 1px rgba(167,139,250,0.30) !important;
+  }
+  .cl-formButtonPrimary:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 4px 12px rgba(139,92,246,0.25) !important;
+  }
+  .cl-formButtonPrimary:disabled {
+    opacity: 0.45 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  /* Hide any internal spinner SVG arrows in CTA button */
+  .cl-formButtonPrimary__arrow { display: none !important; }
+
+  /* ── Remove Clerk chrome ──────────────────────────────────────────────── */
+  .cl-internal-b382ae,
+  .cl-internal-wkkub3,
+  [data-clerk-component] .cl-footer [class*="internal"],
+  .cl-footer__poweredBy,
+  .cl-poweredByClerk { display: none !important; }
+
+  /* Hide Last Used badge */
+  .cl-badge, [class*="cl-badge"] { display: none !important; }
+
+  /* ── Card & rootBox sizing ────────────────────────────────────────────── */
+  .cl-rootBox { width: 100% !important; max-width: 460px !important; }
+  .cl-card  { width: 100% !important; }
+
+  /* Remove any Clerk-injected bottom padding on the card box */
+  .cl-cardBox { padding-bottom: 0 !important; }
+
+  /* ── Footer link hover ────────────────────────────────────────────────── */
+  .cl-footerActionLink:hover {
+    color: #c4b5fd !important;
+    opacity: 1 !important;
+  }
+`;
+
+// ─── Auth page wrapper component ─────────────────────────────────────────────
+function AuthPage({ children }) {
+  useEffect(() => {
+    const fix = () => {
+      // Hide GitHub button
+      document.querySelectorAll('button').forEach(btn => {
+        const text = (btn.textContent || '').toLowerCase();
+        if (text.includes('github')) {
+          btn.style.display = 'none';
+        }
+      });
+    };
+    fix();
+    const id = setInterval(fix, 100);
+    const obs = new MutationObserver(fix);
+    obs.observe(document.body, { childList: true, subtree: true, attributes: true });
+    return () => { clearInterval(id); obs.disconnect(); };
+  }, []);
+
+  return (
+    <>
+      <style>{authStyles}</style>
+      <div style={authPageStyle}>
+        {children}
+      </div>
+    </>
+  );
+}
+
+// ─── Route guards ─────────────────────────────────────────────────────────────
 function DynamicTool() {
   const { toolId } = useParams();
   if (toolId === 'dns') return <DNSLookup />;
@@ -53,13 +436,28 @@ function RequireAuth() {
   );
 }
 
+// ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
   return (
     <BrowserRouter>
       <div className="app-shell">
         <Routes>
-          <Route path="/sign-in/*" element={<SignIn routing="path" path="/sign-in" />} />
-          <Route path="/sign-up/*" element={<SignUp routing="path" path="/sign-up" />} />
+          <Route
+            path="/sign-in/*"
+            element={
+              <AuthPage>
+                <SignIn routing="path" path="/sign-in" appearance={clerkAppearance} />
+              </AuthPage>
+            }
+          />
+          <Route
+            path="/sign-up/*"
+            element={
+              <AuthPage>
+                <SignUp routing="path" path="/sign-up" appearance={clerkAppearance} />
+              </AuthPage>
+            }
+          />
 
           <Route element={<RequireAuth />}>
             <Route path="/" element={<Navigate to="/tools/portscanner" replace />} />
@@ -76,4 +474,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-

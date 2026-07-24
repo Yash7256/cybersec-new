@@ -6,8 +6,19 @@ import { apiGet } from '../utils/apiClient';
 import {
   LayoutDashboard, Clock, ArrowLeft, ChevronLeft, ChevronRight,
   ScanLine, Wifi, Route, Shield, FileText, Globe2, Fingerprint,
-  Search, MapPin, Contact, Crosshair, Crown,
+  Search, MapPin, Contact, Crosshair, Crown, Layers, Zap,
+  Activity, TrendingUp, Brain, ArrowRight,
 } from 'lucide-react';
+
+const TOOL_ROUTE = {
+  dns: '/tools/dns', whois: '/tools/whois', ping: '/tools/ping',
+  traceroute: '/tools/traceroute', ssl: '/tools/ssl',
+  http_headers: '/tools/headers', subdomain: '/tools/subdomains',
+  geoip: '/tools/geo', os_fingerprint: '/tools/osfingerprint',
+  port_scan: '/tools/portscanner', webapp: '/tools/webscan',
+  unified: '/tools/unified', ai_chat: '/tools/ai_chat',
+  ai_analyze: '/tools/ai_analyze',
+};
 
 
 const TOOL_META = {
@@ -41,19 +52,33 @@ function timeAgo(isoString) {
   return `${days}d ago`;
 }
 
+function resetsIn() {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const diff = midnight - now;
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
 function UsageBar({ count, limit }) {
   const pct = limit > 0 ? (count / limit) * 100 : 0;
   const color =
     pct >= 100 ? '#FF4D4D' :
     pct >= 60  ? '#F97316' :
     pct >= 30  ? '#FBBF24' :
-    '#7CFF9A';
+    '#22d3ee';
 
   return (
-    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+    <div className="usage-bar-track">
       <div
-        className="h-full rounded-full transition-all duration-500"
-        style={{ width: `${Math.min(pct, 100)}%`, background: color }}
+        className="usage-bar-fill"
+        style={{
+          '--bar-width': `${Math.min(pct, 100)}%`,
+          background: `linear-gradient(90deg, ${color}cc 0%, ${color} 100%)`,
+          boxShadow: `0 0 8px ${color}44`,
+        }}
       />
     </div>
   );
@@ -96,32 +121,72 @@ export default function Dashboard() {
   const historyPages = Math.ceil(historyTotal / HISTORY_PAGE_SIZE);
 
   const email = user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress || '';
+  const firstName = user?.firstName || email.split('@')[0] || 'there';
+  const totalTools = Object.keys(TOOL_META).length;
+  const dailyLimit = limit ?? 5;
+
+  // Derived stats
+  const toolsUsedToday = Object.keys(toolUsage).filter(k => (toolUsage[k]?.count ?? 0) > 0).length;
+  const aiAnalyses = (toolUsage.ai_chat?.count ?? 0) + (toolUsage.ai_analyze?.count ?? 0);
+  const totalScansToday = Object.values(toolUsage).reduce((sum, e) => sum + (e?.count ?? 0), 0);
+  const usagePct = totalTools > 0 ? Math.round((toolsUsedToday / totalTools) * 100) : 0;
+  const unusedTools = Object.entries(TOOL_META)
+    .filter(([k]) => !toolUsage[k] || (toolUsage[k]?.count ?? 0) === 0)
+    .slice(0, 6);
 
   return (
-    <div className="flex flex-col gap-6 h-full overflow-y-auto pr-2">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-white/5 transition" aria-label="Go back">
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <LayoutDashboard className="w-5 h-5" style={{ color: '#a78bfa' }} />
-        <h1 className="text-xl font-semibold" style={{ color: '#e9d5ff' }}>Dashboard</h1>
-      </div>
+    <div className="dash-fade-in flex flex-col gap-8 h-full overflow-y-auto pr-2">
+      {/* ── Header / Hero ───────────────────────────────────────── */}
+      <section>
+        <div className="flex items-start gap-3 mb-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="dash-btn dash-btn-back"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-4 h-4" style={{ color: '#a78bfa' }} />
+          </button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2.5 mb-1">
+              <LayoutDashboard className="w-6 h-6 flex-shrink-0" style={{ color: '#a78bfa' }} />
+              <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#f5f0ff' }}>
+                Dashboard
+              </h1>
+            </div>
+            <p className="text-sm ml-[38px]" style={{ color: '#6b5fa0' }}>
+              Welcome back, <span style={{ color: '#c4b5fd' }}>{firstName}</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Quick-info pills */}
+        <div className="flex flex-wrap gap-2.5 ml-[38px]">
+          <div className="dash-pill flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full"
+            style={{ background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.2)', color: '#c4b5fd' }}>
+            <Crown className="w-3.5 h-3.5" style={{ color: '#a78bfa' }} />
+            {unlimited ? 'Pro' : 'Free'} Plan
+          </div>
+          <div className="dash-pill flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full"
+            style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(199,183,232,0.12)', color: '#a78bfa' }}>
+            <Layers className="w-3.5 h-3.5" />
+            {totalTools} Tools
+          </div>
+          <div className="dash-pill flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full"
+            style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(199,183,232,0.12)', color: '#a78bfa' }}>
+            <Zap className="w-3.5 h-3.5" />
+            {unlimited ? 'Unlimited scans' : `${dailyLimit}/tool/day`}
+          </div>
+        </div>
+      </section>
 
       {/* ── Section 1: Limit Meter ───────────────────────────────── */}
       <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold" style={{ color: '#c4b5fd' }}>Daily Usage</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold tracking-wide uppercase" style={{ color: '#6b5fa0' }}>Daily Usage</h2>
           <button
             onClick={refreshTier}
             disabled={tierLoading}
-            className="text-xs px-2 py-1 rounded-lg transition"
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(199,183,232,0.15)',
-              color: tierLoading ? '#4a3960' : '#c4b5fd',
-              cursor: tierLoading ? 'not-allowed' : 'pointer',
-            }}
+            className="dash-btn dash-btn-refresh"
           >
             {tierLoading ? 'Refreshing…' : '↻ Refresh'}
           </button>
@@ -129,75 +194,69 @@ export default function Dashboard() {
         {tierLoading ? (
           <div className="text-sm" style={{ color: '#6b5fa0' }}>Loading usage data...</div>
         ) : unlimited ? (
-          <div className="flex items-center gap-2 text-sm" style={{ color: '#7CFF9A' }}>
+          <div className="flex items-center gap-2 text-sm" style={{ color: '#22d3ee' }}>
             <Crown className="w-4 h-4" /> Unlimited — no daily limits apply to your account
           </div>
         ) : (
-          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(175px, 1fr))' }}>
-            {Object.entries(TOOL_META).map(([tool, meta]) => {
-              // Merge API data with defaults — tools never used get full remaining
+          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))' }}>
+            {Object.entries(TOOL_META).map(([tool, meta], idx) => {
               const apiData = toolUsage[tool];
               const count   = apiData?.count     ?? 0;
-              const dailyLimit = limit ?? 5;
               const remaining  = apiData?.remaining ?? dailyLimit;
-              const pct        = dailyLimit > 0 ? (count / dailyLimit) * 100 : 0;
               const isExhausted = remaining === 0;
-              const barColor =
-                pct >= 100 ? '#FF4D4D' :
-                pct >= 60  ? '#F97316' :
-                pct >= 30  ? '#FBBF24' :
-                '#7CFF9A';
               const remainColor =
                 isExhausted ? '#FF4D4D' :
                 remaining <= 1 ? '#F97316' :
                 remaining <= 2 ? '#FBBF24' :
-                '#7CFF9A';
+                '#22d3ee';
               const Icon = meta.icon;
               return (
                 <div
                   key={tool}
-                  className="rounded-xl p-3 flex flex-col gap-2"
-                  style={{
-                    background: isExhausted
-                      ? 'rgba(255, 77, 77, 0.05)'
-                      : 'rgba(19, 9, 33, 0.6)',
-                    border: isExhausted
-                      ? '1px solid rgba(255, 77, 77, 0.25)'
-                      : '1px solid rgba(199, 183, 232, 0.1)',
-                  }}
+                  className={`daily-card${isExhausted ? ' exhausted' : ''}`}
+                  style={{ animationDelay: `${idx * 40}ms` }}
                 >
-                  {/* Tool name row */}
+                  {/* Row 1: Icon + name + badge */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#a78bfa' }} />
-                      <span className="text-xs font-medium truncate" style={{ color: '#c4b5fd' }}>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Icon
+                        className="card-icon w-4 h-4 flex-shrink-0"
+                        style={{ color: isExhausted ? '#FF4D4D' : '#a78bfa' }}
+                      />
+                      <span className="text-xs font-semibold truncate" style={{ color: '#c4b5fd' }}>
                         {meta.label}
                       </span>
                     </div>
                     {isExhausted && (
-                      <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded"
+                      <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md"
                         style={{ background: 'rgba(255,77,77,0.15)', color: '#FF4D4D' }}>
                         Limit
                       </span>
                     )}
                   </div>
 
-                  {/* Remaining — this is the headline number */}
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-bold leading-none font-mono" style={{ color: remainColor }}>
+                  {/* Row 2: Primary stat — "3 of 5 remaining" */}
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-bold leading-none font-mono" style={{ color: remainColor }}>
                       {remaining}
                     </span>
-                    <span className="text-[10px]" style={{ color: '#4a3960' }}>
-                      / {dailyLimit} left today
+                    <span className="text-[10px] font-medium" style={{ color: '#6b5fa0' }}>
+                      of {dailyLimit} left
                     </span>
                   </div>
 
-                  {/* Progress bar (used → limit) */}
+                  {/* Row 3: Progress bar */}
                   <UsageBar count={count} limit={dailyLimit} />
 
-                  <span className="text-[10px]" style={{ color: '#4a3960' }}>
-                    {count === 0 ? 'No uses today' : `${count} used today`}
-                  </span>
+                  {/* Row 4: Usage detail + reset timer */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-medium" style={{ color: count === 0 ? '#4a3960' : '#6b5fa0' }}>
+                      {count === 0 ? 'Ready to use' : `${count} scan${count === 1 ? '' : 's'} used`}
+                    </span>
+                    <span className="text-[10px]" style={{ color: '#4a3960' }}>
+                      resets in {resetsIn()}
+                    </span>
+                  </div>
                 </div>
               );
             })}
@@ -208,7 +267,7 @@ export default function Dashboard() {
 
       {/* ── Section 2: Account ──────────────────────────────────── */}
       <section
-        className="rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-4"
+        className="dash-section-card rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-4"
         style={{ background: 'rgba(19, 9, 33, 0.6)', border: '1px solid rgba(199, 183, 232, 0.1)' }}
       >
         <div className="flex flex-col gap-1 flex-1">
@@ -220,12 +279,7 @@ export default function Dashboard() {
         </div>
         <button
           onClick={() => signOut()}
-          className="btn-secondary text-sm px-4 py-2 rounded-lg self-start"
-          style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(199, 183, 232, 0.2)',
-            color: '#c4b5fd',
-          }}
+          className="dash-btn dash-btn-signout self-start"
         >
           Sign Out
         </button>
@@ -242,8 +296,7 @@ export default function Dashboard() {
             <select
               value={historyFilter}
               onChange={(e) => { setHistoryFilter(e.target.value); setHistoryPage(0); }}
-              className="text-xs rounded-lg px-2 py-1"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(199,183,232,0.15)', color: '#c4b5fd' }}
+              className="dash-select"
             >
               <option value="">All tools</option>
               {Object.entries(TOOL_META).map(([key, meta]) => (
@@ -254,7 +307,7 @@ export default function Dashboard() {
         </div>
 
         <div
-          className="rounded-xl overflow-hidden"
+          className="dash-section-card rounded-xl overflow-hidden"
           style={{ background: 'rgba(19, 9, 33, 0.6)', border: '1px solid rgba(199, 183, 232, 0.1)' }}
         >
           {historyLoading ? (
@@ -277,12 +330,12 @@ export default function Dashboard() {
                   return (
                     <tr
                       key={row.id}
-                      className="transition hover:bg-white/[0.02]"
+                      className="dash-table-row"
                       style={{ borderBottom: '1px solid rgba(199,183,232,0.06)' }}
                     >
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-2">
-                          <Icon className="w-3.5 h-3.5" style={{ color: '#a78bfa' }} />
+                          <Icon className="row-icon w-3.5 h-3.5" style={{ color: '#a78bfa' }} />
                           <span style={{ color: '#e9d5ff' }}>{meta.label}</span>
                         </div>
                       </td>
@@ -312,7 +365,7 @@ export default function Dashboard() {
                 <button
                   onClick={() => setHistoryPage((p) => Math.max(0, p - 1))}
                   disabled={historyPage === 0}
-                  className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-white/5 transition"
+                  className="dash-btn dash-btn-page"
                   aria-label="Previous page"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -320,7 +373,7 @@ export default function Dashboard() {
                 <button
                   onClick={() => setHistoryPage((p) => Math.min(historyPages - 1, p + 1))}
                   disabled={historyPage >= historyPages - 1}
-                  className="p-1.5 rounded-lg disabled:opacity-30 hover:bg-white/5 transition"
+                  className="dash-btn dash-btn-page"
                   aria-label="Next page"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -330,6 +383,55 @@ export default function Dashboard() {
           )}
         </div>
       </section>
+
+      {/* ── Section 4: Stats Overview ────────────────────────────── */}
+      <section>
+        <h2 className="text-sm font-semibold tracking-wide uppercase mb-4" style={{ color: '#6b5fa0' }}>Overview</h2>
+        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
+          {[
+            { icon: Activity,  label: 'Total Scans',     value: totalScansToday,      color: '#a78bfa', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.12)' },
+            { icon: Layers,    label: 'Tools Explored',  value: `${toolsUsedToday}/${totalTools}`, color: '#22d3ee', bg: 'rgba(34,211,238,0.06)', border: 'rgba(34,211,238,0.12)' },
+            { icon: Brain,     label: 'AI Analyses',     value: aiAnalyses,           color: '#c084fc', bg: 'rgba(192,132,252,0.06)', border: 'rgba(192,132,252,0.12)' },
+            { icon: TrendingUp, label: 'Tool Coverage',  value: `${usagePct}%`,        color: '#f59e0b', bg: 'rgba(245,158,11,0.06)',  border: 'rgba(245,158,11,0.12)' },
+          ].map(({ icon: Icon, label, value, color, bg, border }) => (
+            <div key={label} className="dash-stat-card" style={{ background: bg, border: `1px solid ${border}` }}>
+              <Icon className="w-4 h-4 mb-2" style={{ color }} />
+              <span className="text-2xl font-bold font-mono leading-none" style={{ color }}>{value}</span>
+              <span className="text-[10px] font-medium mt-0.5" style={{ color: '#6b5fa0' }}>{label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Section 5: Recommended Tools ─────────────────────────── */}
+      {unusedTools.length > 0 && (
+        <section>
+          <h2 className="text-sm font-semibold tracking-wide uppercase mb-4" style={{ color: '#6b5fa0' }}>Try Next</h2>
+          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))' }}>
+            {unusedTools.map(([tool, meta]) => {
+              const Icon = meta.icon;
+              return (
+                <button
+                  key={tool}
+                  onClick={() => navigate(TOOL_ROUTE[tool] || '/tools/' + tool)}
+                  className="dash-reco-card text-left"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="dash-reco-icon">
+                      <Icon className="w-4 h-4" style={{ color: '#a78bfa' }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs font-semibold block truncate" style={{ color: '#c4b5fd' }}>{meta.label}</span>
+                      <span className="text-[10px]" style={{ color: '#4a3960' }}>Not used today</span>
+                    </div>
+                    <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#4a3960' }} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

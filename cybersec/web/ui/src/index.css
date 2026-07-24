@@ -9,6 +9,11 @@
     box-sizing: border-box;
   }
 
+  :root {
+    --accent-cyan: #22d3ee;
+    --accent-cyan-rgb: 34, 211, 238;
+  }
+
   html, body, #root {
     height: 100%;
     margin: 0;
@@ -2972,4 +2977,409 @@
     border-color: rgba(34, 211, 238, 0.6);
     background: rgba(34, 211, 238, 0.1);
   }
+}
+
+/* ── Daily Usage Cards ─────────────────────────────────────────────────── */
+.daily-card {
+  position: relative;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(19, 9, 33, 0.6);
+  border: 1px solid rgba(199, 183, 232, 0.1);
+  transition: transform 260ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 260ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 260ms cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.daily-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0) 0%, rgba(167, 139, 250, 0) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 260ms cubic-bezier(0.4, 0, 0.2, 1),
+              background 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.daily-card:hover {
+  transform: scale(1.02) translateY(-2px);
+  box-shadow: 0 8px 32px rgba(109, 40, 217, 0.18),
+              0 0 0 1px rgba(167, 139, 250, 0.15);
+  border-color: rgba(167, 139, 250, 0.25);
+}
+
+.daily-card:hover::before {
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.35) 0%, rgba(139, 92, 246, 0.12) 50%, rgba(167, 139, 250, 0.35) 100%);
+}
+
+.daily-card.exhausted {
+  background: rgba(255, 77, 77, 0.05);
+  border: 1px solid rgba(255, 77, 77, 0.25);
+}
+
+.daily-card.exhausted:hover {
+  box-shadow: 0 8px 32px rgba(255, 77, 77, 0.12),
+              0 0 0 1px rgba(255, 77, 77, 0.18);
+  border-color: rgba(255, 77, 77, 0.35);
+}
+
+.daily-card.exhausted::before {
+  background: linear-gradient(135deg, rgba(255, 77, 77, 0) 0%, rgba(255, 77, 77, 0) 100%);
+}
+
+.daily-card.exhausted:hover::before {
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(255, 77, 77, 0.3) 0%, rgba(255, 77, 77, 0.08) 50%, rgba(255, 77, 77, 0.3) 100%);
+}
+
+.daily-card .card-icon {
+  transition: transform 260ms cubic-bezier(0.4, 0, 0.2, 1),
+              filter 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.daily-card:hover .card-icon {
+  transform: scale(1.12);
+  filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.45));
+}
+
+.daily-card.exhausted:hover .card-icon {
+  filter: drop-shadow(0 0 6px rgba(255, 77, 77, 0.45));
+}
+
+/* ── Usage Bar ─────────────────────────────────────────────────────────── */
+.usage-bar-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  position: relative;
+}
+
+.usage-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  width: 0;
+  animation: usageBarGrow 800ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: 150ms;
+  position: relative;
+}
+
+.usage-bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.18) 50%, transparent 100%);
+  animation: usageBarShimmer 2s ease-in-out infinite;
+  animation-delay: 950ms;
+}
+
+@keyframes usageBarGrow {
+  from { width: 0; }
+  to   { width: var(--bar-width); }
+}
+
+@keyframes usageBarShimmer {
+  0%, 100% { transform: translateX(-100%); }
+  50%      { transform: translateX(100%); }
+}
+
+/* Card entrance animation */
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.daily-card {
+  animation: cardFadeIn 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Dashboard Micro-interactions ──────────────────────────────────────── */
+
+/* Page-level fade-in */
+@keyframes dashFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dash-fade-in {
+  animation: dashFadeIn 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dash-fade-in > section:nth-child(1) { animation: dashFadeIn 450ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both; }
+.dash-fade-in > section:nth-child(2) { animation: dashFadeIn 450ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both; }
+.dash-fade-in > section:nth-child(3) { animation: dashFadeIn 450ms cubic-bezier(0.22, 1, 0.36, 1) 180ms both; }
+.dash-fade-in > section:nth-child(4) { animation: dashFadeIn 450ms cubic-bezier(0.22, 1, 0.36, 1) 240ms both; }
+.dash-fade-in > section:nth-child(5) { animation: dashFadeIn 450ms cubic-bezier(0.22, 1, 0.36, 1) 300ms both; }
+
+/* ── Buttons — Premium glassmorphism system ────────────────────────────── */
+
+/* Shared base: frosted glass + border glow */
+.dash-btn {
+  position: relative;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.01em;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(199, 183, 232, 0.12);
+  border-radius: 10px;
+  transition: background 260ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 260ms cubic-bezier(0.4, 0, 0.2, 1),
+              color 260ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 260ms cubic-bezier(0.4, 0, 0.2, 1),
+              transform 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dash-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(167, 139, 250, 0.25);
+  box-shadow: 0 4px 20px rgba(109, 40, 217, 0.12),
+              0 0 0 1px rgba(167, 139, 250, 0.08) inset;
+  transform: translateY(-1px);
+}
+
+.dash-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.dash-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Back button — icon-only, slides left */
+.dash-btn-back {
+  color: #a78bfa;
+  padding: 8px;
+  background: rgba(167, 139, 250, 0.06);
+  border-color: rgba(167, 139, 250, 0.1);
+}
+
+.dash-btn-back:hover {
+  background: rgba(167, 139, 250, 0.12);
+  border-color: rgba(167, 139, 250, 0.25);
+  box-shadow: 0 0 16px rgba(109, 40, 217, 0.15),
+              0 0 0 1px rgba(167, 139, 250, 0.12) inset;
+  transform: translateX(-2px);
+}
+
+/* Refresh button — subtle purple accent */
+.dash-btn-refresh {
+  color: #c4b5fd;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 10px;
+}
+
+.dash-btn-refresh:hover:not(:disabled) {
+  background: rgba(167, 139, 250, 0.1);
+  border-color: rgba(167, 139, 250, 0.3);
+  color: #d8cfec;
+  box-shadow: 0 4px 16px rgba(109, 40, 217, 0.14),
+              0 0 0 1px rgba(167, 139, 250, 0.12) inset;
+}
+
+/* Sign out button — danger-tinted glass */
+.dash-btn-signout {
+  color: #c4b5fd;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(199, 183, 232, 0.15);
+}
+
+.dash-btn-signout:hover:not(:disabled) {
+  background: rgba(255, 77, 77, 0.06);
+  border-color: rgba(255, 77, 77, 0.25);
+  color: #FF8A8A;
+  box-shadow: 0 4px 20px rgba(255, 77, 77, 0.1),
+              0 0 0 1px rgba(255, 77, 77, 0.08) inset;
+}
+
+.dash-btn-signout:active:not(:disabled) {
+  background: rgba(255, 77, 77, 0.1);
+}
+
+/* Pagination buttons — compact, icon-only */
+.dash-btn-page {
+  color: #6b5fa0;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(199, 183, 232, 0.08);
+  border-radius: 8px;
+}
+
+.dash-btn-page:hover:not(:disabled) {
+  background: rgba(167, 139, 250, 0.1);
+  border-color: rgba(167, 139, 250, 0.25);
+  color: #a78bfa;
+  box-shadow: 0 0 12px rgba(109, 40, 217, 0.12);
+  transform: scale(1.08);
+}
+
+.dash-btn-page:active:not(:disabled) {
+  transform: scale(0.95);
+  box-shadow: none;
+}
+
+/* ── Stat pills ────────────────────────────────────────────────────────── */
+.dash-pill {
+  transition: background 240ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 240ms cubic-bezier(0.4, 0, 0.2, 1),
+              transform 240ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dash-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.12);
+  border-color: rgba(167, 139, 250, 0.3) !important;
+  background: rgba(167, 139, 250, 0.12) !important;
+}
+
+/* ── Section cards (Account, Scan History) ─────────────────────────────── */
+.dash-section-card {
+  transition: border-color 260ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dash-section-card:hover {
+  border-color: rgba(167, 139, 250, 0.2) !important;
+  box-shadow: 0 4px 24px rgba(109, 40, 217, 0.08);
+}
+
+/* ── Filter dropdown — glassmorphism select ────────────────────────────── */
+.dash-select {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 28px 5px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(199, 183, 232, 0.12);
+  border-radius: 10px;
+  color: #c4b5fd;
+  transition: border-color 260ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 260ms cubic-bezier(0.4, 0, 0.2, 1),
+              background 260ms cubic-bezier(0.4, 0, 0.2, 1);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 24 24' stroke='%236b5fa0'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.dash-select:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(167, 139, 250, 0.25);
+}
+
+.dash-select:focus {
+  outline: none;
+  border-color: rgba(167, 139, 250, 0.4);
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.1),
+              0 0 12px rgba(109, 40, 217, 0.06);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.dash-select option {
+  background: #130921;
+  color: #c4b5fd;
+}
+
+/* ── History table row hover ───────────────────────────────────────────── */
+.dash-table-row {
+  transition: background 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dash-table-row:hover {
+  background: rgba(167, 139, 250, 0.04);
+}
+
+.dash-table-row:hover .row-icon {
+  filter: drop-shadow(0 0 4px rgba(167, 139, 250, 0.35));
+}
+
+.row-icon {
+  transition: filter 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Dashboard stat cards ──────────────────────────────────────────── */
+
+.dash-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 10px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dash-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(var(--accent-cyan-rgb), 0.10);
+}
+
+/* ── Dashboard recommended tools ───────────────────────────────────── */
+
+.dash-reco-card {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(19, 9, 33, 0.55);
+  border: 1px solid rgba(199, 183, 232, 0.10);
+  backdrop-filter: blur(6px);
+  transition: background 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dash-reco-card:hover {
+  background: rgba(var(--accent-cyan-rgb), 0.04);
+  border-color: rgba(var(--accent-cyan-rgb), 0.18);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(var(--accent-cyan-rgb), 0.08);
+}
+
+.dash-reco-card:active {
+  transform: translateY(0);
+  background: rgba(var(--accent-cyan-rgb), 0.07);
+}
+
+.dash-reco-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(var(--accent-cyan-rgb), 0.06);
+  border: 1px solid rgba(var(--accent-cyan-rgb), 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Accent focus ring — cyan for accessibility ──────────────────────── */
+.dash-btn:focus-visible,
+.dash-select:focus-visible,
+.dash-reco-card:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
 }

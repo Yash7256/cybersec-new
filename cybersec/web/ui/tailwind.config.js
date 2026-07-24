@@ -25,6 +25,11 @@ export default {
           red: '#FF4D4D',
           green: '#7CFF9A',
           orange: '#F97316',
+        },
+        accent: {
+          DEFAULT: '#22d3ee',
+          light: '#67e8f9',
+          dark: '#0891b2',
         }
       },
       fontFamily: {
