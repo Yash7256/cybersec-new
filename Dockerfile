@@ -26,7 +26,7 @@ ENV POETRY_NO_INTERACTION=1 \
 COPY pyproject.toml poetry.lock* ./
 RUN poetry install --only=main --no-root --no-interaction --no-ansi || \
     pip install fastapi uvicorn sqlalchemy asyncpg alembic python-jose[cryptography] \
-                passlib[bcrypt] click rich httpx dnspython python-whois cryptography \
+                click rich httpx dnspython python-whois cryptography \
                 reportlab pydantic-settings email-validator slowapi scapy groq \
                 mitreattack-python arq python-multipart playwright==1.52.0 gunicorn
 

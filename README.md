@@ -314,7 +314,7 @@ make test-watch         # re-run on file change
 | Migrations | Alembic |
 | Scanner | Pure asyncio — zero nmap dependency |
 | AI | Groq SDK (llama3-8b) + Gemini + rule-based fallback |
-| Auth | JWT via python-jose + bcrypt |
+| Auth | Clerk-managed JWT via python-jose |
 | Rate limiting | SlowAPI (API) + TokenBucket (per-scan) |
 | Reports | reportlab (PDF) + stdlib csv/json |
 | CLI | Click + Rich |

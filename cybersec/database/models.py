@@ -13,8 +13,6 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     # email: nullable so Clerk users who don't expose their email can still be stored
     email = Column(String(255), unique=True, nullable=True)
-    # hashed_password: NULL for Clerk-authed users; only populated for legacy rows
-    hashed_password = Column(String(255), nullable=True)
     # clerk_user_id: the Clerk identity token (format: user_XXXX); NULL for legacy users
     clerk_user_id = Column(String(255), unique=True, nullable=True, index=True)
     is_active = Column(Boolean, default=True)

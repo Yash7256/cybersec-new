@@ -5,7 +5,7 @@ Maintains a local `users` row for every Clerk-authenticated user who hits the AP
 Implements a three-path upsert strategy:
   1. Fast path — clerk_user_id already exists → return immediately
   2. Legacy migration — email match on a legacy row → link in-place, preserve FKs
-  3. New user — insert fresh row with hashed_password=NULL
+  3. New user — insert fresh row (Clerk identity only, no local password)
 """
 import logging
 import httpx
@@ -108,7 +108,6 @@ async def sync_clerk_user(
                 matching_user.id,
             )
             matching_user.clerk_user_id = clerk_user_id
-            matching_user.hashed_password = None  # password no longer needed
             await db.commit()
             return matching_user
 
@@ -123,7 +122,6 @@ async def sync_clerk_user(
     new_user = User(
         clerk_user_id=clerk_user_id,
         email=email,
-        hashed_password=None,
         is_active=True,
     )
     db.add(new_user)
