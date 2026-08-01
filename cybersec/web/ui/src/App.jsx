@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams, Outlet } from 'react-router-dom';
 import { SignIn, SignUp, useAuth } from '@clerk/react';
-import { useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import PortScanner from './views/PortScanner';
@@ -20,24 +19,22 @@ const authPageStyle = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+  position: 'relative',
+  overflow: 'hidden',
   minHeight: '100vh',
   width: '100%',
-  background: '#07040f',
-  backgroundImage: [
-    'radial-gradient(ellipse at 50% 35%, rgba(109,40,217,0.22) 0%, transparent 60%)',
-    'radial-gradient(ellipse at 50% 80%, rgba(76,29,149,0.14) 0%, transparent 55%)',
-    'url(/assets/Vector.png)',
-    'url(/assets/GRID.png)',
-  ].join(', '),
-  backgroundRepeat: 'no-repeat, no-repeat, no-repeat, no-repeat',
-  backgroundPosition: 'center, center, center 65%, center top',
-  backgroundSize: 'cover, cover, 108% auto, auto 40%',
+  background: '#0b0618',
+  backgroundImage: 'url(/assets/GRID.png)',
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'center top',
+  backgroundSize: 'auto 40%',
   padding: '20px 16px',
 };
 
 // ─── Shared Clerk appearance config ──────────────────────────────────────────
 const clerkAppearance = {
   layout: {
+    logoImageUrl: '/assets/logo.png',
     socialButtonsPlacement: 'top',
     socialButtonsVariant: 'blockButton',
     showOptionalFields: false,
@@ -45,16 +42,14 @@ const clerkAppearance = {
   elements: {
     // ── Root card ─────────────────────────────────────────────────────────────
     card: {
-      background: 'rgba(13,7,30,0.78)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
+      background: 'rgba(255,255,255,0.06)',
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
       borderRadius: '20px',
-      border: '1px solid rgba(255,255,255,0.10)',
+      border: '1px solid rgba(255,255,255,0.18)',
       boxShadow: [
-        '0 24px 64px rgba(0,0,0,0.60)',
-        '0 0 0 1px rgba(109,40,217,0.08)',
-        '0 8px 24px rgba(109,40,217,0.10)',
-        'inset 0 1px 0 rgba(255,255,255,0.06)',
+        '0 16px 48px rgba(0,0,0,0.40)',
+        'inset 0 1px 0 rgba(255,255,255,0.12)',
       ].join(', '),
       padding: '36px 32px 28px',
       width: '100%',
@@ -68,14 +63,14 @@ const clerkAppearance = {
       padding: '0',
     },
     logoBox: {
-      margin: '0 auto 14px',
+      margin: '0 auto 10px',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
     },
     logoImage: {
-      width: '88px',
-      height: '88px',
+      width: '96px',
+      height: '96px',
       objectFit: 'contain',
       filter: 'drop-shadow(0 0 22px rgba(139,92,246,0.65)) drop-shadow(0 0 8px rgba(167,139,250,0.45)) drop-shadow(0 2px 4px rgba(0,0,0,0.4))',
     },
@@ -123,6 +118,11 @@ const clerkAppearance = {
       boxShadow: '0 1px 3px rgba(0,0,0,0.18)',
       cursor: 'pointer',
       letterSpacing: '0.01em',
+    },
+    socialButtonsBlockButton__github: {
+      background: '#ffffff',
+      border: '1px solid rgba(0,0,0,0.08)',
+      color: '#111111',
     },
     socialButtonsBlockButton__google: {
       background: '#ffffff',
@@ -256,9 +256,7 @@ const clerkAppearance = {
     // ── Hide unwanted Clerk chrome ────────────────────────────────────────────
     footerPages: { display: 'none' },
     badge: { display: 'none' },
-    // Hide the "Development Mode" / "Secured by Clerk" banners
-    // These selectors target the internal Clerk dev-mode warning bar
-    cardBox: { boxShadow: 'none', background: 'transparent' },
+    cardBox: { boxShadow: 'none', background: 'transparent', padding: '0' },
   },
 };
 
@@ -296,19 +294,108 @@ const authStyles = `
     color: #111111 !important;
   }
 
-  /* Hide Apple and GitHub buttons entirely */
-  [class*="apple"], [data-provider="apple"], [aria-label*="Apple"],
-  [class*="github"], [data-provider="github"], [aria-label*="GitHub"] { display: none !important; }
+  /* Force GitHub button white (overrides Clerk's dark brand color) */
+  [data-provider="github"],
+  .cl-socialButtonsBlockButton__github {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+    color: #111111 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18) !important;
+  }
 
-  /* Consistent icon sizing across all social providers */
+  /* Force GitHub ICON button white (variant: iconButton) */
+  .cl-socialButtonsIconButton__github,
+  [data-provider="github"].cl-socialButtonsIconButton {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+    color: #111111 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18) !important;
+  }
+  .cl-socialButtonsIconButton__github .cl-socialButtonsIconButtonIcon,
+  .cl-socialButtonsIconButton__github svg,
+  .cl-socialButtonsIconButton__github .cl-socialButtonsBlockButtonText,
+  .cl-socialButtonsIconButton__github .cl-socialButtonsBlockButton__text {
+    color: #111111 !important;
+    fill: #111111 !important;
+  }
+
+  /* Hide Apple button entirely (fallback; AuthPage observer also removes it) */
+  [class*="apple"], [data-provider="apple"], [aria-label*="Apple"] { display: none !important; }
+
+  /* Google button — same white pill style as GitHub */
+  [data-provider="google"],
+  .cl-socialButtonsBlockButton__google {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+    color: #111111 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  [data-provider="google"] .cl-socialButtonsBlockButtonText,
+  .cl-socialButtonsBlockButton__google .cl-socialButtonsBlockButtonText {
+    color: #111111 !important;
+  }
+  [data-provider="google"]:hover,
+  .cl-socialButtonsBlockButton__google:hover {
+    background: #f5f5f5 !important;
+    border-color: rgba(0,0,0,0.12) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18) !important;
+  }
+  [data-provider="google"]:active,
+  .cl-socialButtonsBlockButton__google:active {
+    background: #ebebeb !important;
+    transform: translateY(0) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
+  }
+
+  /* Force identical structure on ALL social buttons */
+  .cl-socialButtonsBlockButton {
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 0 16px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    font-family: 'Inter', sans-serif !important;
+    letter-spacing: 0.01em !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+  }
   .cl-socialButtonsBlockButtonIcon,
   .cl-socialButtonsBlockButtonIconContainer,
   .cl-socialButtonsBlockButton img,
   .cl-socialButtonsBlockButton svg:not(.cl-spinner) {
-    width: 18px !important;
-    height: 18px !important;
+    width: 20px !important;
+    height: 20px !important;
     flex-shrink: 0 !important;
     object-fit: contain !important;
+  }
+  .cl-socialButtonsBlockButtonText {
+    white-space: nowrap !important;
+  }
+  .cl-socialButtonsBlockButtonArrow { display: none !important; }
+
+  /* ── Vector background (own layer so it can have opacity) ─────────────── */
+  .auth-page-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url(/assets/Vector.png);
+    background-repeat: no-repeat;
+    background-position: center -50%;
+    background-size: 100% auto;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
   }
 
   /* ── Input hover & focus ──────────────────────────────────────────────── */
@@ -369,28 +456,13 @@ const authStyles = `
 
 // ─── Auth page wrapper component ─────────────────────────────────────────────
 function AuthPage({ children }) {
-  useEffect(() => {
-    const fix = () => {
-      // Hide GitHub button
-      document.querySelectorAll('button').forEach(btn => {
-        const text = (btn.textContent || '').toLowerCase();
-        if (text.includes('github')) {
-          btn.style.display = 'none';
-        }
-      });
-    };
-    fix();
-    const id = setInterval(fix, 100);
-    const obs = new MutationObserver(fix);
-    obs.observe(document.body, { childList: true, subtree: true, attributes: true });
-    return () => { clearInterval(id); obs.disconnect(); };
-  }, []);
-
   return (
     <>
       <style>{authStyles}</style>
-      <div style={authPageStyle}>
-        {children}
+      <div className="auth-page-bg" style={authPageStyle}>
+        <div style={{ position: 'relative', zIndex: 1, width: '100%', display: 'flex', justifyContent: 'center' }}>
+          {children}
+        </div>
       </div>
     </>
   );
@@ -446,7 +518,7 @@ export default function App() {
             path="/sign-in/*"
             element={
               <AuthPage>
-                <SignIn routing="path" path="/sign-in" appearance={clerkAppearance} />
+                <SignIn routing="path" path="/sign-in" afterSignInUrl="/tools/portscanner" appearance={clerkAppearance} />
               </AuthPage>
             }
           />
@@ -454,7 +526,7 @@ export default function App() {
             path="/sign-up/*"
             element={
               <AuthPage>
-                <SignUp routing="path" path="/sign-up" appearance={clerkAppearance} />
+                <SignUp routing="path" path="/sign-up" afterSignUpUrl="/tools/portscanner" appearance={clerkAppearance} />
               </AuthPage>
             }
           />
