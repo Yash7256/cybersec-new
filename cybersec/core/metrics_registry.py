@@ -12,10 +12,12 @@ from typing import Dict
 # ── Metric helpers ──────────────────────────────────────────────────────────
 
 class Counter:
-    __slots__ = ("_val", "_help",)
-    def __init__(self, help: str):
+    __slots__ = ("_name", "_val", "_help", "_labels")
+    def __init__(self, name: str, help: str, labels: dict = None):
+        self._name = name
         self._val = 0
         self._help = help
+        self._labels = dict(labels or {})
     def inc(self, n: float = 1) -> None:
         self._val += n
     def get(self) -> float:
@@ -53,16 +55,31 @@ class Histogram:
 
 # ── Global registry ─────────────────────────────────────────────────────────
 
+def _labeled_key(name: str, labels: dict = None) -> str:
+    """Storage key for a metric: base name plus a deterministic label suffix."""
+    if not labels:
+        return name
+    suffix = ",".join(f'{k}="{v}"' for k, v in sorted(labels.items()))
+    return f"{name}{{{suffix}}}"
+
+
+def _labels_suffix(labels: dict) -> str:
+    if not labels:
+        return ""
+    return "{" + ",".join(f'{k}="{v}"' for k, v in sorted(labels.items())) + "}"
+
+
 class MetricsRegistry:
     def __init__(self):
         self._counters: Dict[str, Counter] = {}
         self._gauges: Dict[str, Gauge] = {}
         self._histograms: Dict[str, Histogram] = {}
 
-    def counter(self, name: str, help: str = "") -> Counter:
-        if name not in self._counters:
-            self._counters[name] = Counter(help)
-        return self._counters[name]
+    def counter(self, name: str, help: str = "", labels: dict = None) -> Counter:
+        key = _labeled_key(name, labels)
+        if key not in self._counters:
+            self._counters[key] = Counter(name, help, labels)
+        return self._counters[key]
 
     def gauge(self, name: str, help: str = "") -> Gauge:
         if name not in self._gauges:
@@ -79,10 +96,10 @@ class MetricsRegistry:
         ts = int(time.time() * 1000)
         prefix = "cybersec_"
 
-        for name, c in self._counters.items():
-            lines.append(f"# HELP {prefix}{name} {c._help}")
-            lines.append(f"# TYPE {prefix}{name} counter")
-            lines.append(f"{prefix}{name} {c.get()} {ts}")
+        for c in self._counters.values():
+            lines.append(f"# HELP {prefix}{c._name} {c._help}")
+            lines.append(f"# TYPE {prefix}{c._name} counter")
+            lines.append(f"{prefix}{c._name}{_labels_suffix(c._labels)} {c.get()} {ts}")
 
         for name, g in self._gauges.items():
             lines.append(f"# HELP {prefix}{name} {g._help}")

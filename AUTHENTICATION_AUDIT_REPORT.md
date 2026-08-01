@@ -99,26 +99,31 @@ if (token) {
 
 ### 2. Backend JWT Validation ✅
 
-**Status:** CORRECT
+**Status:** CORRECT (audience verification hardened 2026-08-01)
 
 **Findings:**
 - JWT validation using RS256 algorithm
 - Public key fetched from Clerk JWKS endpoint
 - Issuer verification against `CLERK_ISSUER`
-- Audience verification when present
+- Audience verification when `CLERK_AUDIENCE` is set (opt-in; empty default for backward compatibility)
+- Startup warning in `main.py` lifespan when `CLERK_AUDIENCE` is unset
 - Proper error handling for expired/invalid tokens
 
 **Evidence:**
 ```python
 # deps/__init__.py
-payload = jwt.decode(
-    token,
-    public_key,
-    algorithms=["RS256"],
-    issuer=settings.CLERK_ISSUER,
-    options=decode_options,
-)
+decode_kwargs = {
+    "algorithms": ["RS256"],
+    "issuer": settings.CLERK_ISSUER.rstrip("/"),
+}
+if settings.CLERK_AUDIENCE:
+    decode_kwargs["audience"] = settings.CLERK_AUDIENCE
+else:
+    decode_kwargs["options"] = {"verify_aud": False}
+payload = jwt.decode(token, public_key, **decode_kwargs)
 ```
+
+See also: [AUTH_HARDENING_CHANGELOG.md](./AUTH_HARDENING_CHANGELOG.md) for Clerk JWT template setup.
 
 ---
 

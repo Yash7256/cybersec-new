@@ -31,6 +31,14 @@ class Settings(BaseSettings):
     CLERK_SECRET_KEY: str = ""
     CLERK_JWKS_URL: str = ""
     CLERK_ISSUER: str = ""
+    # Expected JWT "aud" claim. Empty = audience verification disabled (backward compatible).
+    # Set to a stable app identifier (e.g. "cybersec-toolkit-api") once a Clerk JWT
+    # template includes a custom aud claim. See AUTH_HARDENING_CHANGELOG.md.
+    CLERK_AUDIENCE: str = ""
+    # Svix signing secret for Clerk webhook delivery (found under
+    # Clerk Dashboard → Webhooks → your endpoint → "Signing secret").
+    # Empty = the webhook endpoint rejects requests with HTTP 503.
+    CLERK_WEBHOOK_SECRET: str = ""
     REDIS_URL: str = "redis://localhost:6379/0"
     ENABLE_SERVICE_DETECTION: bool = True
     ENABLE_ATTACK_MAPPING: bool = True

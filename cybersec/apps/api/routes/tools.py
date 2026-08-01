@@ -3,10 +3,11 @@ Tools router implementation.
 """
 import asyncio
 import logging
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from cybersec.apps.api.deps import get_db, get_current_user
+from cybersec.apps.api.rate_limit import SCAN_RATE_LIMIT, SCAN_SCOPE, user_limiter
 from cybersec.apps.api.tier import check_and_increment_usage
 from cybersec.database.models import User, ToolResult
 import dataclasses
@@ -279,7 +280,9 @@ async def run_http_headers(
     return {"tool_result_id": tool_result_id, "data": result_dict}
 
 @router.post("/subdomain")
+@user_limiter.shared_limit(SCAN_RATE_LIMIT, scope=SCAN_SCOPE)
 async def run_subdomain(
+    request: Request,
     body: SubdomainRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -292,7 +295,9 @@ async def run_subdomain(
 
 
 @router.post("/subdomain/stream")
+@user_limiter.shared_limit(SCAN_RATE_LIMIT, scope=SCAN_SCOPE)
 async def stream_subdomain(
+    request: Request,
     body: SubdomainRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -378,7 +383,9 @@ async def run_geoip_legacy_get(
 
 @router.post("/os-fingerprint")
 @router.post("/os_fingerprint")
+@user_limiter.shared_limit(SCAN_RATE_LIMIT, scope=SCAN_SCOPE)
 async def run_os_fingerprint(
+    request: Request,
     body: OsFingerprintRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -393,7 +400,9 @@ async def run_os_fingerprint(
 
 @router.post("/os-fingerprint/stream")
 @router.post("/os_fingerprint/stream")
+@user_limiter.shared_limit(SCAN_RATE_LIMIT, scope=SCAN_SCOPE)
 async def stream_os_fingerprint(
+    request: Request,
     body: OsFingerprintRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -427,7 +436,9 @@ async def stream_os_fingerprint(
     )
 
 @router.post("/port_scan")
+@user_limiter.shared_limit(SCAN_RATE_LIMIT, scope=SCAN_SCOPE)
 async def run_port_scan(
+    request: Request,
     body: PortScanRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -486,7 +497,9 @@ async def run_port_scan(
 
 
 @router.post("/port_scan/stream")
+@user_limiter.shared_limit(SCAN_RATE_LIMIT, scope=SCAN_SCOPE)
 async def stream_port_scan(
+    request: Request,
     body: PortScanRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)

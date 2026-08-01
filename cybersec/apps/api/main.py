@@ -13,15 +13,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from cybersec.config import settings
+from cybersec.apps.api.rate_limit import limiter, rate_limit_exceeded_handler
 
 # Import routers
-from cybersec.apps.api.routes import auth, tools, ai, reports, webapp, user
+from cybersec.apps.api.routes import auth, tools, ai, reports, webapp, user, webhooks
 from cybersec.runtime.scan_workers import start_workers, stop_workers
 
 @asynccontextmanager
@@ -54,9 +53,20 @@ async def lifespan(app: FastAPI):
         logger.info("Database tables initialized")
     except Exception as e:
         logger.warning("Database init: %s", e)
+
+    # ── Auth hardening checks ───────────────────────────────────────
+    from cybersec.config import settings
+    if not settings.CLERK_AUDIENCE:
+        logger.warning(
+            "CLERK_AUDIENCE is not set — JWT audience verification is disabled. "
+            "Tokens with any (or no) aud claim will be accepted if signature and "
+            "issuer are valid. Set CLERK_AUDIENCE to a stable app identifier "
+            "(e.g. 'cybersec-toolkit-api') and configure a matching custom 'aud' "
+            "claim in a Clerk JWT template for production. "
+            "See https://clerk.com/docs/backend-requests/jwt-templates"
+        )
     
     # ── Scan state safety check ─────────────────────────────────────
-    from cybersec.config import settings
     from cybersec.core.redis_client import get_shared_redis_client
     if settings.WORKERS > 1:
         r = get_shared_redis_client()
@@ -222,9 +232,8 @@ def create_app() -> FastAPI:
     )
 
     # Rate limiting
-    limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
     app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
     app.add_middleware(SlowAPIMiddleware)
 
     app.add_middleware(
@@ -242,6 +251,7 @@ def create_app() -> FastAPI:
     app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
     app.include_router(webapp.router, prefix="/api/webapp", tags=["webapp"])
     app.include_router(user.router, prefix="/api/user", tags=["user"])
+    app.include_router(webhooks.router, prefix="/api/webhooks", tags=["webhooks"])
 
     @app.get("/api/health", tags=["health"])
     async def health_check():
