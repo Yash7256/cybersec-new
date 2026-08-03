@@ -2,11 +2,19 @@
 SQLAlchemy database models for CyberSec.
 """
 import datetime
-from sqlalchemy import Column, String, Boolean, Enum, Integer, Text, ForeignKey, TIMESTAMP
+from sqlalchemy import Column, String, Boolean, Enum, Integer, Text, ForeignKey, TIMESTAMP, Index, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 
 from cybersec.database.base import Base, UUIDPrimaryKeyMixin, TimestampMixin
+
+# Shared run-status vocabulary used by both scans and tool_results. The
+# underlying Postgres type is scan_status_enum (legacy name) so the two tables
+# literally share one enum type — a single source of truth for status values.
+RunStatusEnum = Enum(
+    'pending', 'running', 'completed', 'failed', 'cancelled', 'timed_out',
+    name='scan_status_enum',
+)
 
 class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "users"
@@ -33,12 +41,12 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 class Scan(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "scans"
 
-    user_id = Column(ForeignKey("users.id"), nullable=True)
+    # user_id: nullable (anonymous/pre-auth scans) — orphan the row if the user is deleted
+    user_id = Column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     target = Column(String(255), nullable=False)
     scan_type = Column(String(50), nullable=False)
     status = Column(
-        Enum('pending', 'running', 'completed', 'failed', 'cancelled', 'timed_out',
-             name='scan_status_enum'),
+        RunStatusEnum,
         default='pending',
     )
     port_range = Column(String(100), nullable=True)
@@ -67,18 +75,53 @@ class ScanResult(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 class ToolResult(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "tool_results"
 
-    user_id = Column(ForeignKey("users.id"), nullable=True)
+    # user_id: nullable (anonymous/pre-auth results) — orphan the row if the user is deleted
+    user_id = Column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     tool_name = Column(String(50), nullable=False)
     target = Column(String(255), nullable=False)
     result_data = Column(JSONB, nullable=False)
+
+    # Lifecycle tracking — same status vocabulary as Scan (shared enum type).
+    # server_default='completed': current insert paths (tools.py _save_tool_result)
+    # write rows only after a run finishes, so 'completed' is accurate until those
+    # paths adopt explicit pending/running transitions.
+    status = Column(RunStatusEnum, nullable=True, server_default='completed')
+    started_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    completed_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    error_message = Column(Text, nullable=True)
+
+    # Distributed state tracking — mirrors Scan; for long-running/streaming tools only
+    heartbeat_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    worker_id = Column(String(100), nullable=True)
+    progress_pct = Column(Integer, nullable=True)
 
 class Report(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "reports"
 
     scan_id = Column(ForeignKey("scans.id", ondelete="CASCADE"), nullable=False)
-    user_id = Column(ForeignKey("users.id"), nullable=True)
+    # user_id: nullable (anonymous/pre-auth reports) — orphan the row if the user is deleted
+    user_id = Column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     format = Column(Enum('json', 'csv', 'pdf', name='report_format_enum'), nullable=False)
     file_path = Column(String(500), nullable=True)
+
+class ToolUsageEvent(Base, UUIDPrimaryKeyMixin):
+    """Append-only per-invocation usage event for analytics.
+
+    Complements (does not replace) the live same-day counter in
+    users.tool_usage: one row per gated tool invocation, kept forever so
+    per-tool usage history can be queried (e.g. "whois runs in the last 30
+    days"). Deliberately minimal — no created_at/updated_at mixin.
+    """
+    __tablename__ = "tool_usage_events"
+
+    user_id = Column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    tool_name = Column(String(50), nullable=False)
+    used_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_tool_usage_events_user_tool_used_at", "user_id", "tool_name", "used_at"),
+        Index("ix_tool_usage_events_used_at", "used_at"),
+    )
 
 class WorkerHeartbeat(Base):
     """Tracks worker process liveness for scan ownership recovery."""

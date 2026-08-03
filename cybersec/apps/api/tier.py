@@ -26,7 +26,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import flag_modified
 
-from cybersec.database.models import User
+from cybersec.database.models import User, ToolUsageEvent
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +114,14 @@ async def check_and_increment_usage(
     # Explicitly mark the JSONB column dirty — required when mutating nested dicts
     # because SQLAlchemy may not detect in-place changes to mutable JSON columns.
     flag_modified(user, "tool_usage")
+
+    # Append-only usage event for analytics — mirrors the JSONB increment above.
+    # Same transaction/commit as the counter update so the two never diverge.
+    db.add(ToolUsageEvent(
+        user_id=user.id,
+        tool_name=tool_name,
+        used_at=datetime.datetime.now(datetime.timezone.utc),
+    ))
 
     logger.debug(
         "tier: user %s tool=%s usage %d/%d",
