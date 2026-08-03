@@ -38,7 +38,48 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     # e.g.  { "dns": { "count": 3, "date": "2026-06-30" }, "whois": { "count": 1, "date": "2026-06-30" } }
     tool_usage = Column(JSONB, nullable=False, default=dict, server_default='{}')
 
+class ToolRun(Base, UUIDPrimaryKeyMixin, TimestampMixin):
+    """Unified parent entity for every tool execution.
+
+    One row per run, regardless of tool: port scans and web-app scans
+    (backfilled from the legacy scans table) as well as the JSONB-payload
+    tools (backfilled from tool_results). Structured results live in
+    scan_results (port/web details), JSONB payloads in tool_results.result_data
+    — both children point here via tool_run_id.
+
+    tool_name uses the tier vocabulary: 'port_scan', 'webapp', 'dns', 'whois',
+    'ping', 'traceroute', 'ssl', 'http_headers', 'subdomain', 'geoip',
+    'os_fingerprint', ...
+    """
+    __tablename__ = "tool_runs"
+
+    # user_id: nullable (anonymous/pre-auth runs) — orphan the row if the user is deleted
+    user_id = Column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    tool_name = Column(String(50), nullable=False)
+    target = Column(String(255), nullable=False)
+    status = Column(
+        RunStatusEnum,
+        default='pending',
+    )
+    # Port-scan-specific (unused by JSONB tools)
+    port_range = Column(String(100), nullable=True)
+    options = Column(JSONB, nullable=True)
+    started_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    completed_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    error_message = Column(Text, nullable=True)
+
+    # Distributed state tracking — port-scan recovery use only
+    heartbeat_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    worker_id = Column(String(100), nullable=True)
+    progress_pct = Column(Integer, default=0)
+
+
 class Scan(Base, UUIDPrimaryKeyMixin, TimestampMixin):
+    """Legacy port-scan/web-scan parent — superseded by ToolRun (add_tool_runs_parent).
+
+    Kept as the historical carrier so existing routes keep working; the
+    follow-up pass repoints writers to ToolRun and drops this table.
+    """
     __tablename__ = "scans"
 
     # user_id: nullable (anonymous/pre-auth scans) — orphan the row if the user is deleted
@@ -64,6 +105,9 @@ class ScanResult(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "scan_results"
 
     scan_id = Column(ForeignKey("scans.id", ondelete="CASCADE"), nullable=False)
+    # Unified lineage — points at tool_runs (backfilled from scan_id in
+    # add_tool_runs_parent); nullable until writers are repointed.
+    tool_run_id = Column(ForeignKey("tool_runs.id", ondelete="CASCADE"), nullable=True, index=True)
     port = Column(Integer, nullable=True)
     protocol = Column(String(10), nullable=True)
     state = Column(String(20), nullable=True)
@@ -73,6 +117,11 @@ class ScanResult(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     cves = Column(JSONB, nullable=True)
 
 class ToolResult(Base, UUIDPrimaryKeyMixin, TimestampMixin):
+    """Legacy JSONB-payload carrier — the parent run now lives in ToolRun.
+
+    Kept so existing writers (tools.py _save_tool_result) keep working; the
+    follow-up pass creates a ToolRun row and links it here via tool_run_id.
+    """
     __tablename__ = "tool_results"
 
     # user_id: nullable (anonymous/pre-auth results) — orphan the row if the user is deleted
@@ -80,6 +129,9 @@ class ToolResult(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     tool_name = Column(String(50), nullable=False)
     target = Column(String(255), nullable=False)
     result_data = Column(JSONB, nullable=False)
+    # Unified lineage — points at tool_runs (backfilled from id in
+    # add_tool_runs_parent); nullable until writers are repointed.
+    tool_run_id = Column(ForeignKey("tool_runs.id", ondelete="CASCADE"), nullable=True, index=True)
 
     # Lifecycle tracking — same status vocabulary as Scan (shared enum type).
     # server_default='completed': current insert paths (tools.py _save_tool_result)
@@ -99,6 +151,9 @@ class Report(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "reports"
 
     scan_id = Column(ForeignKey("scans.id", ondelete="CASCADE"), nullable=False)
+    # Unified lineage — points at tool_runs (backfilled from scan_id in
+    # add_tool_runs_parent); nullable until writers are repointed.
+    tool_run_id = Column(ForeignKey("tool_runs.id", ondelete="CASCADE"), nullable=True, index=True)
     # user_id: nullable (anonymous/pre-auth reports) — orphan the row if the user is deleted
     user_id = Column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     format = Column(Enum('json', 'csv', 'pdf', name='report_format_enum'), nullable=False)
